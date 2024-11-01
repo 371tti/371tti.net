@@ -1,0 +1,10 @@
+[package]
+name = "RustWebserverTemplate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+env_logger = "0.9"
+tera = "1.14.1"
+chrono = "0.4"

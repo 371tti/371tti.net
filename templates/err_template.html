@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+    <title>ERR-{{ code }} </title>
+    <style>
+        * {
+            box-sizing: border-box;
+            word-wrap: break-word;
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #12151b;
+            color: #bbbbbbbb;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            border-right: solid 10mm {{ color }};
+        }
+
+        h1 {
+            font-size: 4em;
+            font-weight: lighter;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+        }
+        
+        .q {
+            padding: 10mm 10mm;
+            overflow-y: auto;
+            height: 100%;
+            width: 100%;
+        }
+
+        .i {
+            margin: 0mm 0 0 10mm;
+            border-left: solid 1px #bbbbbbbb;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+        }
+
+        p {
+            margin: 4mm 0mm 1mm 2mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="q">
+        <h1>Error {{ code }}</h1>
+        <div class="i">
+            <ul>
+                <li>{{ ms }}</li>
+            </ul>
+        </div>
+
+        <p>Solution</p>
+        <div class="i">
+            <ul>
+                {% for suggestion in suggestions %}
+                    <li>{{ loop.index }}. {{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <p>Debug</p>
+        <div class="i">
+            <ul>
+                {% for key, value in debug_info %}
+                <li>{{ key }}: <ul>
+                    <li>{{ value }}</li>
+                </ul>
+            </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
