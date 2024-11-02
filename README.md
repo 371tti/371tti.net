@@ -1,5 +1,6 @@
-# RustWebserverTemplate
- rustのwebサーバーテンプレ
+# 371tti.net
 
-実行ディレクトリにtemplatesフォルダを配置します
+371tti.netのソースコード
+
+
 

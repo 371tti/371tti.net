@@ -10,6 +10,7 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn new() -> Self {
+        
         let app_config = AppConfig {
             server_bind: "0.0.0.0:83".to_string(),
             server_backlog: 512,

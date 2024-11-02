@@ -3,6 +3,7 @@ use actix_web::{middleware, web, App, HttpRequest, HttpResponse, HttpServer, Res
 use actix_web::middleware::{ErrorHandlerResponse, Logger};
 use env_logger::Env;
 use sys::app_set;
+use tera::Context;
 
 use crate::sys::app_set::AppSet;
 use crate::sys::init::AppConfig;
@@ -12,7 +13,36 @@ mod handler;
 
 #[actix_web::get("/")]
 async fn index(app_set: web::Data<AppSet>, req: HttpRequest) -> impl Responder {
-    "Hello, world!"
+    let response = app_set.app_config.template.render("371tti.net.html", &Context::new()).unwrap_or_else(|err| {
+        eprint!("Template Error: {:?}", err);
+        "Err...".to_string()
+    });
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(response)
+}
+
+#[actix_web::get("/371tti_icon.jpg")]
+async fn tti_icon(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
+    if let Some(file_data) = app_set.static_cache.get("371tti_icon.jpg") {
+        HttpResponse::Ok()
+            .content_type("image/jpg")
+            .body(file_data.clone())
+    } else {
+        HttpResponse::NotFound().body("File not found")
+    }
+}
+
+#[actix_web::get("/banner.jpg")]
+async fn banner(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
+    if let Some(file_data) = app_set.static_cache.get("banner.jpg") {
+        HttpResponse::Ok()
+            .content_type("image/jpg")
+            .body(file_data.clone())
+    } else {
+        HttpResponse::NotFound().body("File not found")
+    }
 }
 
 #[actix_web::get("/err/{statuscode}")]
@@ -47,6 +77,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_set.clone())
             .service(index)
             .service(error_test)
+            .service(tti_icon)
+            .service(banner)
     })
     .bind(app_config.server_bind.clone())?
     .workers(app_config.server_workers.clone())
