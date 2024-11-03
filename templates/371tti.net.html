@@ -431,59 +431,18 @@
             z-index: 999999;
             position: absolute;
             display: flex;
-            transition: all 0.4s;
-            transform: translateX(100%);
-            border-radius: 50%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateX(0);
         }
 
-        .S-ber {
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            background-color: #ffffff;
-            z-index: 99999;
-            transition: all 0.4s;
-            transform: translateX(calc(100% - 10mm));
+        #load-overlay-txt {
+            color: #000000;
         }
+
     </style>
-
-    <script>
-        document.addEventListener("mousemove", (e) => {
-            const { clientX: mouseX, clientY: mouseY } = e;
-            const { innerWidth: width, innerHeight: height } = window;
-
-            // 画面中央を基準にして、XとYの傾きを計算
-            const rotateY = (mouseX / width - 0.5) * 10; // -5度から5度の範囲で傾ける
-            const rotateX = (mouseY / height - 0.5) * -10; // -5度から5度の範囲で傾ける
-
-            // 背景を傾ける
-            document.querySelector(".bg_pattern").style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        });
-
-        // マウスが画面外に出たときのリセット
-        document.addEventListener("mouseleave", () => {
-            document.querySelector(".bg_pattern").style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
-        });
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // 全てのa要素を取得
-            const links = document.querySelectorAll("a");
-            const load_overlay = document.querySelector(".load-overlay");
-
-            // 各a要素にイベントリスナーを追加
-            links.forEach(link => {
-                link.addEventListener("click", (event) => {
-                    event.preventDefault();
-                    load_overlay.style.transform = "translateX(0)";
-                    load_overlay.style.borderRadius = "0%";
-                    setTimeout(() => {
-                        window.location.assign(link.href);
-                    }, 400);
-
-                });
-            });
-        });
-    </script>
 
 
 </head>
@@ -491,9 +450,116 @@
 
 
 <body>
-<div class="load-overlay"></div>
-<div class="S-ber"></div>
+<!-- 効果付与用 -->
+<div class="load-overlay">
+    <p id="load-overlay-txt">Loading Ready...</p>
+</div>
 <div class="bg_pattern Polka"></div>
+<script>
+    document.addEventListener("mousemove", (e) => {
+        const { clientX: mouseX, clientY: mouseY } = e;
+        const { innerWidth: width, innerHeight: height } = window;
+
+        // 画面中央を基準にして、XとYの傾きを計算
+        const rotateY = (mouseX / width - 0.5) * 10; // -5度から5度の範囲で傾ける
+        const rotateX = (mouseY / height - 0.5) * -10; // -5度から5度の範囲で傾ける
+
+        // 背景を傾ける
+        document.querySelector(".bg_pattern").style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    // マウスが画面外に出たときのリセット
+    document.addEventListener("mouseleave", () => {
+        document.querySelector(".bg_pattern").style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+    });
+    
+    const loadOverlayTxt = document.getElementById("load-overlay-txt");
+    let microseconds = 0;
+
+    const interval = setInterval(() => {
+        microseconds += 1;
+        loadOverlayTxt.innerHTML = `Building DOM...<br>${microseconds} ms`;
+    }, 1);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // 全てのa要素を取得
+        const links = document.querySelectorAll("a");
+        const load_overlay = document.querySelector(".load-overlay");
+        setTimeout(() => {
+            loadOverlayTxt.innerHTML = "Redirecting...";
+            clearInterval(interval);
+            load_overlay.style.transform = "translateX(100%)";
+        }, 10);
+
+        // 各a要素にイベントリスナーを追加
+        links.forEach(link => {
+            link.addEventListener("click", (event) => {
+                event.preventDefault();
+                load_overlay.style.transform = "translateX(0)";
+                setTimeout(() => {
+                    window.location.assign(link.href);
+                }, 200);
+            });
+        });
+    });
+
+    window.addEventListener("beforeunload", (event) => {
+        const load_overlay = document.querySelector(".load-overlay");
+        load_overlay.style.transform = "translateX(0)";
+});
+</script>
+
+
+
+
+
+<div class="S-ber"><div class="loading-spinner"></div></div>
+<style> 
+.S-ber {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: #ffffff;
+            z-index: 99999;
+            transition: all 0.4s;
+            transform: translateX(calc(100% - 10mm))
+        }
+    .loading-spinner {
+        position: absolute;
+        bottom: 0mm;
+        left: 0mm;
+        width: 10mm;
+        height: 10mm;
+        border: 1.5mm solid #ffffff00;
+        border-top: 1.5mm solid #000000;
+        border-radius: 50%;
+        animation: spin 0.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<script>
+document.addEventListener("readystatechange", () => {
+    if (document.readyState === "complete") {
+        const loading_spinner = document.querySelector(".loading-spinner");
+        loading_spinner.style.animation = "none";
+        loading_spinner.style.display = "none";
+    }
+});
+
+</script>
+
+
+
+
+
 <div class="q" id="content">
     <div class="box">
         <div class="flex block-m">
@@ -636,15 +702,11 @@
 
 </div>
 
-<script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'8db8e4ad8de8d3ca',t:'MTczMDQzMjczOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
-<iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"
-    src="./371tti.net_files/saved_resource.html"></iframe>
-<script defer="" src="./371tti.net_files/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
-    integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
-    data-cf-beacon="{&quot;rayId&quot;:&quot;8db8e4ad8de8d3ca&quot;,&quot;version&quot;:&quot;2024.10.4&quot;,&quot;r&quot;:1,&quot;token&quot;:&quot;393dbb1f31214e13978162158bd4252f&quot;,&quot;serverTiming&quot;:{&quot;name&quot;:{&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfSpeedBrain&quot;:true,&quot;cfCacheStatus&quot;:true}}}"
-    crossorigin="anonymous"></script>
-
 
 </body>
+
+
+
+
 
 </html>

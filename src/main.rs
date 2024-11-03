@@ -34,6 +34,39 @@ async fn tti_icon(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Respond
     }
 }
 
+#[actix_web::get("/favicon.ico")]
+async fn icon(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
+    if let Some(file_data) = app_set.static_cache.get("favicon.ico") {
+        HttpResponse::Ok()
+            .content_type("image/x-icon")
+            .body(file_data.clone())
+    } else {
+        HttpResponse::NotFound().body("File not found")
+    }
+}
+
+#[actix_web::get("/robots.txt")]
+async fn robots(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
+    if let Some(file_data) = app_set.static_cache.get("robots.txt") {
+        HttpResponse::Ok()
+            .content_type("text/plain")
+            .body(file_data.clone())
+    } else {
+        HttpResponse::NotFound().body("File not found")
+    }
+}
+
+#[actix_web::get("/ads.txt")]
+async fn ads(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
+    if let Some(file_data) = app_set.static_cache.get("ads.txt") {
+        HttpResponse::Ok()
+            .content_type("text/plain")
+            .body(file_data.clone())
+    } else {
+        HttpResponse::NotFound().body("File not found")
+    }
+}
+
 #[actix_web::get("/banner.jpg")]
 async fn banner(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
     if let Some(file_data) = app_set.static_cache.get("banner.jpg") {
@@ -79,6 +112,9 @@ async fn main() -> std::io::Result<()> {
             .service(error_test)
             .service(tti_icon)
             .service(banner)
+            .service(icon)
+            .service(robots)
+            .service(ads)
     })
     .bind(app_config.server_bind.clone())?
     .workers(app_config.server_workers.clone())
