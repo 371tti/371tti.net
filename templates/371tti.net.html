@@ -13,6 +13,7 @@
     <meta property="og:title" content="371tti.net">
     <meta property="og:type" content="article">
     <meta property="og:url" content="/">
+    <meta property="og:image" content="/banner.jpg">
 
     <title>371tti.net</title>
 
@@ -404,7 +405,36 @@
         }
     </style>
 
-    <style>
+
+
+</head>
+
+
+
+<body>
+
+<!-- 効果付与用 -->
+<div class="load-overlay">
+    <p id="load-overlay-txt">Loading Ready...</p>
+</div>
+<div class="bg_pattern Polka"></div>
+<style>
+        .load-overlay {
+            background-color: #ffffff;
+            height: 100%;
+            width: 100%;
+            z-index: 999999;
+            position: absolute;
+            display: flex;
+            transition: all 0.4s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateX(0);
+        }
+        #load-overlay-txt {
+            color: #000000;
+        }
         .bg_pattern {
             position: fixed;
             top: 0;
@@ -418,43 +448,11 @@
             /* 3D効果を強調 */
             transition: transform 0.5s ease-out;
         }
-
         .Polka {
             background-image: radial-gradient(#ffffff55 2px, #00000000 2px);
             background-size: 10mm 10mm;
         }
-
-        .load-overlay {
-            background-color: #ffffff;
-            height: 100%;
-            width: 100%;
-            z-index: 999999;
-            position: absolute;
-            display: flex;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: translateX(0);
-        }
-
-        #load-overlay-txt {
-            color: #000000;
-        }
-
-    </style>
-
-
-</head>
-
-
-
-<body>
-<!-- 効果付与用 -->
-<div class="load-overlay">
-    <p id="load-overlay-txt">Loading Ready...</p>
-</div>
-<div class="bg_pattern Polka"></div>
+</style>
 <script>
     document.addEventListener("mousemove", (e) => {
         const { clientX: mouseX, clientY: mouseY } = e;
@@ -489,28 +487,34 @@
             loadOverlayTxt.innerHTML = "Redirecting...";
             clearInterval(interval);
             load_overlay.style.transform = "translateX(100%)";
-        }, 10);
+            load_overlay.style.backgroundColor = "{{ color }}";
+        }, 20);
 
         // 各a要素にイベントリスナーを追加
         links.forEach(link => {
             link.addEventListener("click", (event) => {
                 event.preventDefault();
                 load_overlay.style.transform = "translateX(0)";
+                load_overlay.style.backgroundColor = "#ffffff";
                 setTimeout(() => {
                     window.location.assign(link.href);
-                }, 200);
+                }, 400);
             });
         });
+
+        
     });
 
-    window.addEventListener("beforeunload", (event) => {
+    window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        setTimeout(() => {
         const load_overlay = document.querySelector(".load-overlay");
-        load_overlay.style.transform = "translateX(0)";
-});
+        load_overlay.style.transform = "translateX(100%)";
+        load_overlay.style.backgroundColor = "{{ color }}";
+        }, 100);
+    }
+    });
 </script>
-
-
-
 
 
 <div class="S-ber"><div class="loading-spinner"></div></div>
@@ -519,7 +523,7 @@
             position: absolute;
             height: 100%;
             width: 100%;
-            background-color: #ffffff;
+            background-color: {{ color }};
             z-index: 99999;
             transition: all 0.4s;
             transform: translateX(calc(100% - 10mm))
@@ -553,7 +557,6 @@ document.addEventListener("readystatechange", () => {
         loading_spinner.style.display = "none";
     }
 });
-
 </script>
 
 
@@ -668,24 +671,39 @@ document.addEventListener("readystatechange", () => {
             <h2 class="h">Links</h2>
             <div class="indent">
                 <p>バーナー集かな</p>
-                <li>371tti.net: ここ</li>
-                <a href="https://371tti.net"><img src="/banner.jpg" alt="ばーなーがぞう" height="50mm"></a>
-                <b onclick="copyToClipboard()" id="barner_cp_0">Copy</b>
+                <div class="copyable" data-code='<a href="https://371tti.net"><img src="https://banner.jpg" alt="ばーなーがぞう" height="50mm"></a>'>
+                    <a href="https://371tti.net">
+                        <img src="/banner.jpg" alt="ばーなーがぞう" height="50mm">
+                    </a>
+                    <p class="copy-message">Right click to copy</p>
+                </div>
 
-                <textarea id="codeText" style="display: none;">
-            <a href="https://371tti.net"><img src="/banner.jpg" alt="ばーなーがぞう" height="50mm"></a>
-                </textarea>
-            
+
                 <script>
-                    function copyToClipboard() {
-                        const codeText = document.getElementById("codeText");
-                        codeText.style.display = "block";
-                        codeText.select();
-                        document.execCommand("copy");
-                        codeText.style.display = "none";
-                        document.getElementById("barner_cp_0").innerText = "Copied!";
-                    }
-                </script>
+                    // .copyableクラスを持つすべての要素に右クリックイベントを設定
+                    document.querySelectorAll('.copyable').forEach(element => {
+                        element.addEventListener('contextmenu', (event) => {
+                            // コピーするコードを取得
+                            const code = element.getAttribute('data-code');
+                            
+                            // クリップボードにコピー
+                            navigator.clipboard.writeText(code).then(() => {
+                                const message = element.querySelector('.copy-message');
+                                message.textContent = "Copied!";  // メッセージを「Copied!」に変更
+                                
+                                // 2秒後に「Right click to copy」に戻す
+                                setTimeout(() => {
+                                    message.textContent = "Right click to copy";
+                                }, 2000);
+                            }).catch(err => {
+                                console.error("コピーに失敗しました:", err);
+                            });
+                            
+                            // デフォルトのコンテキストメニューを無効化
+                            event.preventDefault();
+                        });
+                    });
+                    </script>
 
             </div>
 
@@ -696,7 +714,6 @@ document.addEventListener("readystatechange", () => {
     <hr>
     <p class="center">© 2024~ 371tti</p>
     <p class="center"><a href="/license">license</a>　-　<a href="/status">status</a></p>
-    <p class="center">browsing, you accept our cookies. Crunchy, right?</p>
 
 
 
