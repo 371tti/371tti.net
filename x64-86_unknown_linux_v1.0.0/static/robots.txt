@@ -1,0 +1,3 @@
+﻿User-agent: *
+Disallow: /root/
+Disallow: /y_to_mp3

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERR-{{ code }} </title>
+    <style>
+        * {
+            box-sizing: border-box;
+            position: relative;
+            overflow-wrap: break-word;
+            overflow: hidden;
+            transition: all 0.2s ease-out;
+            background-color: #ffffff00;
+            color: #cccccc;
+
+            ::selection {
+                background-color: #ffffff85;
+                /* 背景色 */
+                color: #ffffff;
+                /* 文字色 */
+            }
+
+            /* Firefox用 */
+            ::-moz-selection {
+                background-color: #ffffff7c;
+                /* 背景色 */
+                color: #ffffff;
+                /* 文字色 */
+            }
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #12151b;
+            color: #bbbbbb;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(rgba(18, 21, 27, 0.8), rgba(18, 21, 27, 0.8));
+            z-index: -1;
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: lighter;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+            display: inline-block;
+        }
+
+        p {
+            margin: 0;
+            text-shadow: 0px 0px 2mm #000000;
+            /* シャドウの例 */
+            padding: 0;
+        }
+
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin: 0;
+            padding: 0;
+            text-shadow: 0px 0px 2mm #000000;
+            margin: 0 5mm 0 0;
+
+        }
+
+        .h::before {
+            content: "#";
+            color: #898989;
+            font-size: 1.5em;
+            margin-right: 0.2em;
+            /* テキストとの余白をつけたい場合 */
+            margin-left: 0.2em;
+            /* テキストとの余白をつけたい場合 */
+            font-weight: lighter;
+        }
+
+
+
+
+        .q {
+            padding: 10mm 10mm;
+            overflow-y: auto;
+            height: 100%;
+            width: 100%;
+            border-right: solid 10mm #00000000;
+        }
+
+        .i {
+            margin: 0mm 0 0 10mm;
+            border-left: solid 1px #bbbbbb;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .block {
+            display: block;
+        }
+
+        .subtitle {
+            padding: 3mm 0 0 3mm;
+            color: #ff9900;
+        }
+
+        .indent {
+            padding: 0 0 0 5mm;
+            margin: 0 0 5mm 5mm;
+            border-left: solid 1px #bbbbbb;
+        }
+
+        .box {
+            transition: all 0.2s;
+            border: solid 1px #ffffff00;
+            margin: 5mm 5mm 0 0;
+        }
+
+
+        .box:hover {
+            animation: outLine 0.5s ease forwards;
+            /* アニメーションの適用 */
+        }
+
+        @keyframes outLine {
+            10% {
+                border: solid 1px #ffffffcc;
+            }
+
+            20% {
+                border: solid 1px #ffffffc6;
+            }
+
+            100% {
+                border: solid 1px #ffffff3e;
+            }
+        }
+
+        .frame-paint {
+            background-color: #ffffff09;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #464646;
+            color: #fff;
+            border: none;
+            font-size: 1em;
+            padding: 2mm 5mm;
+            border-radius: 0px;
+            border: #ffffff7c solid 1mm;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.4s;
+            margin: 2mm 2mm 0mm 0mm;
+        }
+
+        .button:hover {
+            background-color: #ff00e1;
+            border: #ffffff solid 1mm;
+        }
+
+        a:not(.button) {
+            text-decoration: none;
+            color: #ff5bec;
+            position: relative;
+            transition: color 0.2s;
+            display: inline-block;
+            background-color: #00000000;
+            margin: 0;
+            text-shadow: 0px 0px 2mm #000000;
+            /* シャドウの例 */
+            padding: 0;
+        }
+
+        a:hover:not(.button) {
+            color: #ff00e1;
+        }
+
+        a:not(.button)::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 0.2em;
+            background-color: #ff00e1;
+            bottom: 0;
+            left: 0;
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s;
+        }
+
+        a:hover:not(.button)::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        .index {
+            flex-direction: column;
+            display: flex;
+        }
+
+        hr {
+            margin: 5mm 0mm;
+            color: #b3b3b3;
+        }
+
+        .ll {
+            width: 60mm;
+        }
+
+        b {
+            color: #ffffff;
+        }
+
+        .stats {
+            margin: 20px 0;
+            color: #ffffff;
+        }
+
+        #chartContainer {
+            width: 100%;
+            height: 400px;
+        }
+
+        canvas {}
+
+
+        .pd {
+            margin: 2mm;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120mm, 1fr));
+            /* デフォルトは3列 */
+            gap: 0;
+            /* グリッドアイテム間のギャップ */
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 60mm);
+            /* デフォルトは3列 */
+            gap: 0;
+            /* グリッドアイテム間のギャップ */
+        }
+
+        .brock-m {
+            display: inherit;
+        }
+
+        @media (max-width: 200mm) {
+            .block-m {
+                display: block;
+            }
+
+            .q {
+                padding: 10mm 4mm;
+            }
+        }
+
+        @media (max-width: 140mm) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(80mm, 1fr));
+            }
+
+            h1 {
+                width: 70mm;
+            }
+
+            .box {
+                margin: 5mm 0 0 0;
+            }
+
+        }
+
+        /* 行をまたぐクラス */
+        .r2 {
+            grid-row: span 2;
+        }
+
+        .r3 {
+            grid-row: span 3;
+        }
+
+        .r4 {
+            grid-row: span 4;
+        }
+
+        .r5 {
+            grid-row: span 5;
+        }
+
+        .r6 {
+            grid-row: span 6;
+        }
+
+        .r7 {
+            grid-row: span 7;
+        }
+
+        .r8 {
+            grid-row: span 8;
+        }
+
+        .r9 {
+            grid-row: span 9;
+        }
+
+        .r10 {
+            grid-row: span 10;
+        }
+
+        /* 列をまたぐクラス */
+        .c2 {
+            grid-column: span 2;
+        }
+
+        .c3 {
+            grid-column: span 3;
+        }
+
+        .c4 {
+            grid-column: span 4;
+        }
+
+        .c5 {
+            grid-column: span 5;
+        }
+
+        .c6 {
+            grid-column: span 6;
+        }
+
+        .c7 {
+            grid-column: span 7;
+        }
+
+        .c8 {
+            grid-column: span 8;
+        }
+
+        .c9 {
+            grid-column: span 9;
+        }
+
+        .c10 {
+            grid-column: span 10;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            /* 水平方向の中央配置 */
+        }
+    </style>
+</head>
+
+<body>
+<!-- 効果付与用 -->
+<div class="load-overlay">
+    <p id="load-overlay-txt">Loading Ready...</p>
+</div>
+<div class="bg_pattern Polka"></div>
+<style>
+        .load-overlay {
+            background-color: #ffffff;
+            height: 100%;
+            width: 100%;
+            z-index: 999999;
+            position: absolute;
+            display: flex;
+            transition: all 0.4s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateX(0);
+        }
+        #load-overlay-txt {
+            color: #000000;
+        }
+        .bg_pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #00000000;
+            opacity: 0.4;
+            z-index: -1;
+            transform: perspective(1000px);
+            /* 3D効果を強調 */
+            transition: transform 0.5s ease-out;
+        }
+        .Polka {
+            background-image: radial-gradient(#ffffff55 2px, #00000000 2px);
+            background-size: 10mm 10mm;
+        }
+</style>
+<script>
+    document.addEventListener("mousemove", (e) => {
+        const { clientX: mouseX, clientY: mouseY } = e;
+        const { innerWidth: width, innerHeight: height } = window;
+
+        // 画面中央を基準にして、XとYの傾きを計算
+        const rotateY = (mouseX / width - 0.5) * 10; // -5度から5度の範囲で傾ける
+        const rotateX = (mouseY / height - 0.5) * -10; // -5度から5度の範囲で傾ける
+
+        // 背景を傾ける
+        document.querySelector(".bg_pattern").style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    // マウスが画面外に出たときのリセット
+    document.addEventListener("mouseleave", () => {
+        document.querySelector(".bg_pattern").style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+    });
+    
+    const loadOverlayTxt = document.getElementById("load-overlay-txt");
+    let microseconds = 0;
+
+    const interval = setInterval(() => {
+        microseconds += 1;
+        loadOverlayTxt.innerHTML = `Building DOM...<br>${microseconds} ms`;
+    }, 1);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // 全てのa要素を取得
+        const links = document.querySelectorAll("a");
+        const load_overlay = document.querySelector(".load-overlay");
+        setTimeout(() => {
+            loadOverlayTxt.innerHTML = "Redirecting...";
+            clearInterval(interval);
+            load_overlay.style.transform = "translateX(100%)";
+            load_overlay.style.backgroundColor = "{{ color }}";
+        }, 20);
+
+        // 各a要素にイベントリスナーを追加
+        links.forEach(link => {
+            link.addEventListener("click", (event) => {
+                event.preventDefault();
+                load_overlay.style.transform = "translateX(0)";
+                load_overlay.style.backgroundColor = "#ffffff";
+                setTimeout(() => {
+                    window.location.assign(link.href);
+                }, 400);
+            });
+        });
+
+        
+    });
+
+    window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        setTimeout(() => {
+        const load_overlay = document.querySelector(".load-overlay");
+        load_overlay.style.transform = "translateX(100%)";
+        load_overlay.style.backgroundColor = "{{ color }}";
+        }, 100);
+    }
+    });
+</script>
+<div class="S-ber"><div class="loading-spinner"></div></div>
+<style> 
+.S-ber {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: {{ color }};
+            z-index: 99999;
+            transition: all 0.4s;
+            transform: translateX(calc(100% - 10mm))
+        }
+    .loading-spinner {
+        position: absolute;
+        bottom: 0mm;
+        left: 0mm;
+        width: 10mm;
+        height: 10mm;
+        border: 1.5mm solid #ffffff00;
+        border-top: 1.5mm solid #000000;
+        border-radius: 50%;
+        animation: spin 0.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<script>
+document.addEventListener("readystatechange", () => {
+    if (document.readyState === "complete") {
+        const loading_spinner = document.querySelector(".loading-spinner");
+        loading_spinner.style.animation = "none";
+        loading_spinner.style.display = "none";
+    }
+});
+</script>
+    <div class="q">
+        <h1>Error {{ code }}</h1>
+        <div class="i">
+            <ul>
+                <li>{{ ms }}</li>
+            </ul>
+        </div>
+
+        <h2>Solution</h2>
+        <div class="i">
+            <ul>
+                {% for suggestion in suggestions %}
+                    <li>{{ loop.index }}. {{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h2>Debug</h2>
+        <div class="i">
+            <ul>
+                {% for key, value in debug_info %}
+                <li>{{ key }}: <ul>
+                    <li>{{ value }}</li>
+                </ul>
+            </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <hr>
+        <p class="center">© 2024~ 371tti</p>
+        <p class="center"><a href="/">top_page</a>　-　<a href="/license">license</a></p>
+    </div>
+
+</body>
+</html>
