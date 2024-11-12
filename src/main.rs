@@ -16,7 +16,7 @@ async fn index(app_set: web::Data<AppSet>, req: HttpRequest) -> impl Responder {
     let mut context = Context::new();
     context.insert("color", "#ffffff");
 
-    let response = app_set.app_config.template.render("371tti.net.html", &context).unwrap_or_else(|err| {
+    let response = app_set.app_config.template.render("index.html", &context).unwrap_or_else(|err| {
         eprint!("Template Error: {:?}", err);
         "Err...".to_string()
     });
@@ -25,12 +25,28 @@ async fn index(app_set: web::Data<AppSet>, req: HttpRequest) -> impl Responder {
         .content_type("text/html")
         .body(response)
 }
+
 #[actix_web::get("/license")]
 async fn license(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
     let mut context = Context::new();
     context.insert("color", "#777777");
 
     let response = app_set.app_config.template.render("license.html", &context).unwrap_or_else(|err| {
+        eprint!("Template Error: {:?}", err);
+        "Err...".to_string()
+    });
+
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(response)
+}
+
+#[actix_web::get("/terms")]
+async fn terms(app_set: web::Data<AppSet>, _req: HttpRequest) -> impl Responder {
+    let mut context = Context::new();
+    context.insert("color", "#777777");
+
+    let response = app_set.app_config.template.render("terms.html", &context).unwrap_or_else(|err| {
         eprint!("Template Error: {:?}", err);
         "Err...".to_string()
     });
@@ -133,6 +149,7 @@ async fn main() -> std::io::Result<()> {
             .service(robots)
             .service(ads)
             .service(license)
+            .service(terms)
     })
     .bind(app_config.server_bind.clone())?
     .workers(app_config.server_workers.clone())
