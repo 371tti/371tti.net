@@ -1,11 +1,18 @@
 <!DOCTYPE html>
+<html lang="jp">
 
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERR-{{ code }} </title>
+    <meta name="description" content="371tti.net">
+    <meta property="og:description" content="371tti.net license">
+    <meta property="og:title" content="371tti.net">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/license">
+    <title>License - 371tti.net</title>
     <style>
+        /* Include the same styles as in the reference page */
         * {
             box-sizing: border-box;
             position: relative;
@@ -14,21 +21,16 @@
             transition: all 0.2s ease-out;
             background-color: #ffffff00;
             color: #cccccc;
+        }
 
-            ::selection {
-                background-color: #ffffff85;
-                /* 背景色 */
-                color: #ffffff;
-                /* 文字色 */
-            }
+        ::selection {
+            background-color: #ffffff85;
+            color: #ffffff;
+        }
 
-            /* Firefox用 */
-            ::-moz-selection {
-                background-color: #ffffff7c;
-                /* 背景色 */
-                color: #ffffff;
-                /* 文字色 */
-            }
+        ::-moz-selection {
+            background-color: #ffffff7c;
+            color: #ffffff;
         }
 
         ::-webkit-scrollbar {
@@ -54,7 +56,6 @@
             overflow: hidden;
         }
 
-
         .overlay {
             position: absolute;
             top: 0;
@@ -77,7 +78,6 @@
         p {
             margin: 0;
             text-shadow: 0px 0px 2mm #000000;
-            /* シャドウの例 */
             padding: 0;
         }
 
@@ -90,7 +90,6 @@
             padding: 0;
             text-shadow: 0px 0px 2mm #000000;
             margin: 0 5mm 0 0;
-
         }
 
         .h::before {
@@ -98,14 +97,9 @@
             color: #898989;
             font-size: 1.5em;
             margin-right: 0.2em;
-            /* テキストとの余白をつけたい場合 */
             margin-left: 0.2em;
-            /* テキストとの余白をつけたい場合 */
             font-weight: lighter;
         }
-
-
-
 
         .q {
             padding: 10mm 10mm;
@@ -150,10 +144,8 @@
             margin: 5mm 5mm 0 0;
         }
 
-
         .box:hover {
             animation: outLine 0.5s ease forwards;
-            /* アニメーションの適用 */
         }
 
         @keyframes outLine {
@@ -203,8 +195,8 @@
             background-color: #00000000;
             margin: 0;
             text-shadow: 0px 0px 2mm #000000;
-            /* シャドウの例 */
             padding: 0;
+            display: inline-flex;
         }
 
         a:hover:not(.button) {
@@ -259,7 +251,6 @@
 
         canvas {}
 
-
         .pd {
             margin: 2mm;
         }
@@ -267,17 +258,13 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120mm, 1fr));
-            /* デフォルトは3列 */
             gap: 0;
-            /* グリッドアイテム間のギャップ */
         }
 
         .button-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, 60mm);
-            /* デフォルトは3列 */
             gap: 0;
-            /* グリッドアイテム間のギャップ */
         }
 
         .brock-m {
@@ -306,10 +293,8 @@
             .box {
                 margin: 5mm 0 0 0;
             }
-
         }
 
-        /* 行をまたぐクラス */
         .r2 {
             grid-row: span 2;
         }
@@ -346,7 +331,6 @@
             grid-row: span 10;
         }
 
-        /* 列をまたぐクラス */
         .c2 {
             grid-column: span 2;
         }
@@ -386,13 +370,13 @@
         .center {
             display: flex;
             justify-content: center;
-            /* 水平方向の中央配置 */
         }
     </style>
 </head>
 
 <body>
-<!-- 効果付与用 -->
+
+    <!-- 効果付与用 -->
 <div class="load-overlay">
     <p id="load-overlay-txt">Loading Ready...</p>
 </div>
@@ -494,6 +478,7 @@
     }
     });
 </script>
+
 <div class="S-ber"><div class="loading-spinner"></div></div>
 <style> 
 .S-ber {
@@ -535,38 +520,52 @@ document.addEventListener("readystatechange", () => {
     }
 });
 </script>
-    <div class="q">
-        <h1>Error {{ code }}</h1>
-        <div class="i">
-            <ul>
-                <li>{{ ms }}</li>
-            </ul>
-        </div>
 
-        <h2>Solution</h2>
-        <div class="i">
-            <ul>
-                {% for suggestion in suggestions %}
-                    <li>{{ loop.index }}. {{ suggestion }}</li>
-                {% endfor %}
-            </ul>
+<div class="q" id="content">
+    <div class="box">
+        <div class="flex block-m">
+            <h1>License</h1>
+            <div class="block subtitle">
+                <h2>371tti.net</h2>
+            </div>
         </div>
-
-        <h2>Debug</h2>
-        <div class="i">
-            <ul>
-                {% for key, value in debug_info %}
-                <li>{{ key }}: <ul>
-                    <li>{{ value }}</li>
-                </ul>
-            </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <hr>
-        <p class="center">© 2024~ 371tti</p>
-        <p class="center"><a href="/">top_page</a>　-　<a href="/license">license</a></p>
     </div>
 
+    <div class="box frame-paint">
+        <h2 class="h">Licenses and Attributions</h2>
+        <div class="indent">
+            <p>All content on this site is licensed under the MIT License unless otherwise stated.</p>
+        </div>
+    </div>
+
+    <div class="box frame-paint">
+        <h2 class="h">MIT License</h2>
+        <div class="indent">
+            <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+            <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+            <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+        </div>
+    </div>
+
+    <div class="box frame-paint">
+        <h2 class="h">Blog Content Copyright</h2>
+        <div class="indent">
+            <p>All content published on <a href="/blog">/blog</a> is the intellectual property of the respective authors. Unauthorized reproduction or use without permission is prohibited.</p>
+        </div>
+    </div>
+
+    <div class="box frame-paint">
+        <h2 class="h">Source Code</h2>
+        <div class="indent">
+            <p>The source code for this site is available on GitHub under the <a href="https://github.com/371tti/371tti.net" target="_blank" rel="noopener noreferrer">371tti/371tti.net repository</a>.</p>
+        </div>
+    </div>
+
+    <hr>
+    <p class="center">© 2024~ 371tti</p>
+    <p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
+</div>
+>
 </body>
+
 </html>
