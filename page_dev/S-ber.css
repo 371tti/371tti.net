@@ -1,0 +1,38 @@
+:root {
+    --S-ber-color: #ffffff;
+    --S-ber-close-width: 10mm;
+    --S-ber-open-width: 100mm;
+    --S-ber-animation-time: 400ms;
+    --S-ber-spin-spd: 360deg;
+}
+
+.S-ber {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: var(--S-ber-color);
+    z-index: 99999;
+    transition: all var(--S-ber-animation-time);
+    transform: translateX(calc(100% - var(--S-ber-close-width)));
+}
+
+.loading-spinner {
+position: absolute;
+bottom: 0mm;
+left: 0mm;
+width: var(--S-ber-close-width);
+height: 10mm;
+border: 1.5mm solid #ffffff00;
+border-top: 1.5mm solid #000000;
+border-radius: 50%;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+0% {
+    transform: rotate(0deg);
+}
+100% {
+    transform: rotate(var(--S-ber-spin-spd));
+}
+}
