@@ -1,6 +1,8 @@
-use std::sync::Arc;
+use std::{sync::Arc, thread::sleep};
 
 use actix_web::{dev::Server, middleware::{self, Logger}, App, HttpServer};
+use std::time::Duration;
+use log::{error, info};
 
 use crate::{config::ServerConfig, share::{self, collection::Collection}};
 
@@ -21,15 +23,46 @@ impl IndexServer {
         let server = HttpServer::new(move || {
             App::new()
                 .wrap(Logger::default())
-                // .wrap(middleware::ErrorHandlers::new().default_handler(err_handler))
-                // .app_data(app_set.clone())
+                // 他のミドルウェアやデータをここに追加可能
         })
         .bind(self.config.server_bind.clone())?
-        .workers(self.config.server_workers.clone())
-        .backlog(self.config.server_backlog.clone())
+        .workers(self.config.server_workers)
+        .backlog(self.config.server_backlog)
         .server_hostname("index")
         .run();
 
         Ok(server)
+    }
+
+    /// サーバーを開始し、再起動の管理を行う
+    pub async fn run_with_restart(self) -> Result<(), std::io::Error> {
+        if !self.config.enable {
+            info!("IndexServer is disabled.");
+            return Ok(());
+        }
+
+        loop {
+            match self.create_server() {
+                Ok(server) => {
+                    if let Err(e) = server.await {
+                        error!("IndexServer encountered an error: {}", e);
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to initialize IndexServer: {}", e);
+                }
+            }
+
+            if !self.config.restart_on_panic {
+                error!("IndexServer is set to not restart on panic.");
+                break;
+            }
+
+            // 再起動前に少し待機
+            error!("Restarting IndexServer in 5 seconds...");
+            sleep(Duration::from_secs(5));
+        }
+
+        Ok(())
     }
 }

@@ -20,8 +20,8 @@ mod utils;
 mod transfer;
 
 async fn server_start(config: Configuration, collection: Arc<Collection>) -> Result<(), Error> {
-    let index_server = index::server::IndexServer::new(config.index_server, Arc::clone(&collection)).create_server().unwrap();
-    let transfer_server = transfer::server::TransferServer::new(config.transfer_server, Arc::clone(&collection)).create_server().unwrap();
+    let index_server = index::server::IndexServer::new(config.index_server, Arc::clone(&collection)).run_with_restart();
+    let transfer_server = transfer::server::TransferServer::new(config.transfer_server, Arc::clone(&collection)).run_with_restart();
     // 追加していくの
 
     let result = tokio::join!(
@@ -29,19 +29,16 @@ async fn server_start(config: Configuration, collection: Arc<Collection>) -> Res
         transfer_server,
     );
 
-    if let Err(e) = result.0 {
-        error!("Failed to start index server: {}", e);
-        std::process::exit(1);
+    match result {
+        (Ok(_), Ok(_)) => {
+            info!("All servers have stopped.");
+            Ok(())
+        }
+        (Err(e), _) | (_, Err(e)) => {
+            error!("An error occurred: {}", e);
+            Err(e)
+        }
     }
-
-    if let Err(e) = result.1 {
-        error!("Failed to start redirector server: {}", e);
-        std::process::exit(1);
-    }
-
-
-
-    result.0
 }
 
 

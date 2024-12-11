@@ -6,7 +6,7 @@ pub struct status_ms {
 
 }
 
-
+#[derive(Clone)]
 pub struct Handler {
 
 }

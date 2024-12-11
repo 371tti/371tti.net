@@ -8,20 +8,11 @@ use crate::{index::loader, utils};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ServerConfig {
+    pub enable: bool,
     pub server_bind: String,
     pub server_workers: usize,
     pub server_backlog: u32,
-}
-
-impl ServerConfig {
-    pub fn new(bind: String, workers: usize, backlog: u32) -> Self {
-        Self {
-            server_bind: bind,
-            server_workers: workers,
-            server_backlog: backlog,
-        }
-    }
-    
+    pub restart_on_panic: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
