@@ -1,5 +1,5 @@
 :root {
-    --S-ber-color: #ffffff;
+    --S-ber-color: #656565;
     --S-ber-close-width: 10mm;
     --S-ber-open-width: 100mm;
     --S-ber-animation-time: 400ms;
@@ -7,13 +7,14 @@
 }
 
 .S-ber {
-    position: absolute;
-    height: 100%;
-    width: 100%;
+    position: fixed;
+    height: 100vh;
+    width: var(--S-ber-open-width);
     background-color: var(--S-ber-color);
     z-index: 99999;
     transition: all var(--S-ber-animation-time);
-    transform: translateX(calc(100% - var(--S-ber-close-width)));
+    right: -100%;
+    transform: translateX(calc(-100vw +  (var(--S-ber-open-width) - var(--S-ber-close-width))));
 }
 
 .loading-spinner {
@@ -35,4 +36,10 @@ animation: spin 1s linear infinite;
 100% {
     transform: rotate(var(--S-ber-spin-spd));
 }
+}
+
+.no-grid-support {
+    display: none;
+    height: 0;
+    position: static;
 }

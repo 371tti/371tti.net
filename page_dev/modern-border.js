@@ -14,9 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
         borderMask.style.setProperty("--mouse-y", `-9999px`);
         contentMask.style.setProperty("--mouse-x", `-9999px`);
         contentMask.style.setProperty("--mouse-y", `-9999px`);
-        
-        // マウス移動イベント
-        document.addEventListener("mousemove", (e) => {
+
+        // マウスやタッチ、スクロール、リサイズ時の共通処理
+        const updateMaskVisibility = (x, y) => {
             const rect = element.getBoundingClientRect();
             const margin = 200; // 反応範囲
             const extendedRect = {
@@ -26,29 +26,54 @@ document.addEventListener("DOMContentLoaded", () => {
                 bottom: rect.bottom + margin,
             };
 
-            const isMouseNear = e.clientX >= extendedRect.left &&
-                e.clientX <= extendedRect.right &&
-                e.clientY >= extendedRect.top &&
-                e.clientY <= extendedRect.bottom;
+            const isNear = x >= extendedRect.left &&
+                x <= extendedRect.right &&
+                y >= extendedRect.top &&
+                y <= extendedRect.bottom;
 
-            if (isMouseNear) {
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+            if (isNear) {
+                const localX = x - rect.left;
+                const localY = y - rect.top;
 
                 // マスクを表示
                 borderMask.style.opacity = "1";
                 contentMask.style.opacity = "1";
 
                 // CSSカスタムプロパティを更新
-                borderMask.style.setProperty("--mouse-x", `${x}px`);
-                borderMask.style.setProperty("--mouse-y", `${y}px`);
-                contentMask.style.setProperty("--mouse-x", `${x}px`);
-                contentMask.style.setProperty("--mouse-y", `${y}px`);
+                borderMask.style.setProperty("--mouse-x", `${localX}px`);
+                borderMask.style.setProperty("--mouse-y", `${localY}px`);
+                contentMask.style.setProperty("--mouse-x", `${localX}px`);
+                contentMask.style.setProperty("--mouse-y", `${localY}px`);
             } else {
                 // マスクを非表示
                 borderMask.style.opacity = "0";
                 contentMask.style.opacity = "0";
             }
-        });
+        };
+
+        // マウスやタッチ移動時
+        const handleMouseMove = (e) => {
+            updateMaskVisibility(e.clientX, e.clientY);
+        };
+
+        const handleTouchMove = (e) => {
+            const touch = e.touches[0]; // 最初のタッチポイント
+            if (touch) {
+                updateMaskVisibility(touch.clientX, touch.clientY);
+            }
+        };
+
+        // マスクを非表示にする処理
+        const hideMask = () => {
+            borderMask.style.opacity = "0";
+            contentMask.style.opacity = "0";
+        };
+
+        // イベントリスナー登録
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("touchmove", handleTouchMove);
+        document.addEventListener("mouseleave", hideMask);
+        document.addEventListener("touchend", hideMask);
+        document.addEventListener("touchcancel", hideMask);
     });
 });

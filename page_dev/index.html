@@ -17,53 +17,13 @@
 
     <title>371tti.net</title>
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 
 
 <body>
 
-<!-- 効果付与用 -->
-<div class="bg_pattern Polka"></div>
-<style>
-        .bg_pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #00000000;
-            opacity: 0.4;
-            z-index: -1;
-            transform: perspective(1000px);
-            /* 3D効果を強調 */
-            transition: transform 0.5s ease-out;
-        }
-        .Polka {
-            background-image: radial-gradient(#ffffff55 2px, #00000000 2px);
-            background-size: 10mm 10mm;
-        }
-</style>
-<script>
-    document.addEventListener("mousemove", (e) => {
-        const { clientX: mouseX, clientY: mouseY } = e;
-        const { innerWidth: width, innerHeight: height } = window;
 
-        // 画面中央を基準にして、XとYの傾きを計算
-        const rotateY = (mouseX / width - 0.5) * 10; // -5度から5度の範囲で傾ける
-        const rotateX = (mouseY / height - 0.5) * -10; // -5度から5度の範囲で傾ける
-
-        // 背景を傾ける
-        document.querySelector(".bg_pattern").style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    });
-
-    // マウスが画面外に出たときのリセット
-    document.addEventListener("mouseleave", () => {
-        document.querySelector(".bg_pattern").style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
-    });
-    
-</script>
 
 <link rel="stylesheet" href="S-ber.css">
 <script src="S-ber.js"></script>
@@ -99,8 +59,8 @@
             <h2 class="h">My_Profile</h2>
             <div class="indent">
                 <div class="flex">
-                    <div style="border-radius: 50%; height: 25mm; width: 25mm; margin: 3mm;"><img
-                            style="height: 100%; width: 100%;" src="/371tti_icon.jpg" alt="icon">
+                    <div style="clip-path: circle(50% at 50% 50%); height: 25mm; width: 25mm; margin: 3mm;"><img
+                            style="height: 100%; width: 100%;" src="https://371tti.net/371tti_icon.jpg" alt="icon">
                     </div>
                     <div class="pd">
                         <p>hi im 371tti!</p>
@@ -108,15 +68,15 @@
                 </div>
                 <p><br>学生 <br>つくること全般が好き <br>Rust信者である</p>
                 <h3>Status</h3>
-                <li><b class="tag tag-sm tag-gray">Age</b>: 16</li>
-                <li><b class="tag tag-sm tag-gray">NicName</b>: 371tti(minai tti)</li>
-                <li><b class="tag tag-sm tag-gray">Location</b>: Japan</li>
-                <li><b class="tag tag-sm tag-gray">Occupation</b>: Student</li>
-                <li><b class="tag tag-sm tag-gray">Hobby</b>: programming</li>
+                <li><b >Age</b>: 16</li>
+                <li><b >NicName</b>: 371tti(minai tti)</li>
+                <li><b >Location</b>: Japan</li>
+                <li><b >Occupation</b>: Student</li>
+                <li><b >Hobby</b>: programming</li>
                 <div class="pd"></div>
                 <h3>Skill</h3>
                 <li>
-                    <b class="tag tag-sm tag-gray">Language</b>:
+                    <b >Language</b>:
                     <a href="https://www.python.org" class="tag tag-sm" style="background-color: #306998; color: #ffffff;">Python</a>
                     <a href="https://en.cppreference.com/" class="tag tag-sm" style="background-color: #555555; color: #ffffff;">C</a>
                     <a href="https://isocpp.org/" class="tag tag-sm" style="background-color: #00599C; color: #ffffff;">C++</a>
@@ -127,12 +87,12 @@
                     <a href="https://developer.mozilla.org/en-US/docs/Web/CSS" class="tag tag-sm" style="background-color: #1572b6; color: #ffffff;">CSS</a>
                 </li>
                 <li>
-                    <b class="tag tag-sm tag-gray">Frameworks</b>:
+                    <b >Frameworks</b>:
                     <a href="https://flask.palletsprojects.com/" class="tag tag-sm">Flask</a>
                     <a href="https://actix.rs/" class="tag tag-sm">Actix-Web</a>
                 </li>
                 <li>
-                    <b class="tag tag-sm tag-gray">Tools</b>:
+                    <b >Tools</b>:
                     <a href="https://git-scm.com/" class="tag tag-sm">Git</a>
                     <a href="https://code.visualstudio.com/" class="tag tag-sm">VS Code</a>
                     <a href="https://www.jetbrains.com/idea/" class="tag tag-sm">IntelliJ IDEA</a>
@@ -227,42 +187,6 @@
 
         </div>
 
-
-        <div class="box frame-paint modern-border">
-            <h2 class="h">UI-Test</h2>
-            <div class="indent">
-                <h3>Tag Styles Test</h3>
-
-                <section>
-                    <h4>Size Variations</h4>
-                    <a href="#" class="tag tag-sm">Small Tag</a>
-                    <a href="#" class="tag tag-mid">Medium Tag</a>
-                    <a href="#" class="tag tag-lg">Large Tag</a>
-                </section>
-            
-                <section>
-                    <h4>Color Variations</h4>
-                    <a href="#" class="tag tag-gray">Gray</a>
-                    <a href="#" class="tag tag-gray-subtle">Gray Subtle</a>
-                    <a href="#" class="tag tag-blue">Blue</a>
-                    <a href="#" class="tag tag-blue-subtle">Blue Subtle</a>
-                    <a href="#" class="tag tag-purple">Purple</a>
-                    <a href="#" class="tag tag-purple-subtle">Purple Subtle</a>
-                    <a href="#" class="tag tag-amber">Amber</a>
-                    <a href="#" class="tag tag-amber-subtle">Amber Subtle</a>
-                    <a href="#" class="tag tag-red">Red</a>
-                    <a href="#" class="tag tag-red-subtle">Red Subtle</a>
-                    <a href="#" class="tag tag-green">Green</a>
-                    <a href="#" class="tag tag-green-subtle">Green Subtle</a>
-                    <a href="#" class="tag tag-teal">Teal</a>
-                    <a href="#" class="tag tag-teal-subtle">Teal Subtle</a>
-                    <a href="#" class="tag tag-inverted">Inverted</a>
-                </section>
-            </div>
-
-
-        </div>
-
         <div class="box frame-paint modern-border">
             <h2 class="h">Projects</h2>
             <div class="indent">
@@ -270,12 +194,12 @@
                 </p>
                 <ul>
                     <li>
-                        <b class="tag tag-sm tag-blue-subtle">Progress</b>: <a href="https://github.com/371tti/idis">IDIS Development</a>
-                        <p class="tag tag-sm tag-gray-subtle">目標: 分散型情報配信サービス</p>
+                        <b class="tag tag-sm tag-blue-subtle">Progress</b>: <p></p>
+                        <a href="https://github.com/371tti/idis" class="tag tag-bg tag-gray-subtle">IDIS: 分散型情報配信サービス</a>
                     </li>
                     <li>
-                        <b class="tag tag-sm tag-green">Completed</b>: <a href="https://github.com/371tti/modern-border">Modern Border Effect</a>
-                        <p class="tag tag-sm tag-gray-subtle">軽量で動的なボーダーデザイン</p>
+                        <b class="tag tag-sm tag-green">Completed</b>: <p></p>
+                        <a  href="https://github.com/371tti/modern-border" class="tag tag-bg tag-gray-subtle">modern-border.js: win10のボーダーlikeな</a>
                     </li>
                 </ul>
                 <p><a href="https://github.com/371tti">もっと見る...</a></p>

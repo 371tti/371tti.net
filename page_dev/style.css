@@ -1,8 +1,10 @@
+
 * {
     box-sizing: border-box;
     position: relative;
     overflow-wrap: break-word;
     text-indent: 0;
+    text-shadow: 0 0 6px #000; /* シャドウを追加 */
 
     ::selection {
         background-color: #ffffff85;
@@ -27,12 +29,11 @@
 html {
     margin: 0;
     padding: 0;
-    height: 100%;
     width: 100%;
-    background-color: #12151b;
+    background-color: #000000;
     color: #cccccc;
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
-    overflow: hidden;
+    height: auto; /* 必要に応じて高さを調整 */
 }
 
 body {
@@ -40,9 +41,8 @@ body {
     height: 100%;
     width: 100%;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
 }
-
 h1 {
     font-size: 3em;
     font-weight: lighter;
@@ -54,7 +54,6 @@ h1 {
 
 p {
     margin: 0;
-    text-shadow: 0px 0px 2mm #000000;
     /* シャドウの例 */
     padding: 0;
 }
@@ -66,7 +65,6 @@ h5,
 h6 {
     margin: 0;
     padding: 0;
-    text-shadow: 0px 0px 2mm #000000;
     margin: 0 5mm 0 0;
     color: #cccccc;
 }
@@ -114,8 +112,11 @@ ul {
     margin: 0;
 }
 
-.flex {
-    display: flex;
+
+@supports (display: flex) {
+    .flex {
+        display: flex;
+    }
 }
 
 .block {
@@ -159,7 +160,7 @@ ul {
 }
 
 .frame-paint {
-    background-color: #ffffff09;
+    background-color: #37137100;
 }
 
 
@@ -265,10 +266,13 @@ ul {
     color: #212529;
 }
 
-.tag:hover {
-    border: solid 0.1em #ffffff; /* ボーダー */
-}
 
+
+@supports (display: grid) {
+    .tag:hover {
+        border: solid 0.1em #ffffff; /* ボーダー */
+    }
+}
 
 
 /* ボタンのスタイル */
@@ -288,7 +292,11 @@ ul {
 
 .button:hover {
     background-color: #ff00e1; /* ホバー時の背景色 */
-    border: 1mm solid #ffffff; /* ホバー時のボーダー色 */
+}
+@supports (display: grid) {
+    .button:hover {
+        border: 1mm solid #ffffff; /* ホバー時のボーダー色 */
+    }
 }
 
 /* 通常のリンクのスタイル (ボタン以外) */
@@ -301,7 +309,6 @@ a:not(.button):not(.tag) {
     background-color: transparent; /* 背景を透明に */
     margin: 0; /* 外側余白をリセット */
     padding: 0; /* 内側余白をリセット */
-    text-shadow: 0 0 2mm #000; /* シャドウを追加 */
 }
 
 a:hover:not(.button):not(.tag) {
@@ -359,127 +366,132 @@ b {
     margin: 2mm;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120mm, 1fr));
-    /* デフォルトは3列 */
-    gap: 0;
-    /* グリッドアイテム間のギャップ */
-}
 
-.button-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 60mm);
-    /* デフォルトは3列 */
-    gap: 0;
-    /* グリッドアイテム間のギャップ */
-}
 
-.brock-m {
-    display: inherit;
-}
-
-@media (max-width: 200mm) {
-    .block-m {
-        display: block;
-    }
-
-    .q {
-        padding: 10mm 4mm;
-    }
-}
-
-@media (max-width: 140mm) {
+@supports (display: grid) {
     .grid {
-        grid-template-columns: repeat(auto-fill, minmax(80mm, 1fr));
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120mm, 1fr));
+        /* デフォルトは3列 */
+        gap: 0;
+        /* グリッドアイテム間のギャップ */
     }
-
-    h1 {
-        width: 70mm;
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 60mm);
+        /* デフォルトは3列 */
+        gap: 0;
+        /* グリッドアイテム間のギャップ */
     }
-
-    .box {
-        margin: 5mm 0 0 0;
+    .brock-m {
+        display: inherit;
     }
-
+    
+    @media (max-width: 200mm) {
+        .block-m {
+            display: block;
+        }
+    
+        .q {
+            padding: 10mm 4mm;
+        }
+    }
+    
+    @media (max-width: 140mm) {
+        .grid {
+            grid-template-columns: repeat(auto-fill, minmax(80mm, 1fr));
+        }
+    
+        h1 {
+            width: 70mm;
+        }
+    
+        .box {
+            margin: 5mm 0 0 0;
+        }
+    
+    }
+    
+    /* 行をまたぐクラス */
+    .r2 {
+        grid-row: span 2;
+    }
+    
+    .r3 {
+        grid-row: span 3;
+    }
+    
+    .r4 {
+        grid-row: span 4;
+    }
+    
+    .r5 {
+        grid-row: span 5;
+    }
+    
+    .r6 {
+        grid-row: span 6;
+    }
+    
+    .r7 {
+        grid-row: span 7;
+    }
+    
+    .r8 {
+        grid-row: span 8;
+    }
+    
+    .r9 {
+        grid-row: span 9;
+    }
+    
+    .r10 {
+        grid-row: span 10;
+    }
+    
+    /* 列をまたぐクラス */
+    .c2 {
+        grid-column: span 2;
+    }
+    
+    .c3 {
+        grid-column: span 3;
+    }
+    
+    .c4 {
+        grid-column: span 4;
+    }
+    
+    .c5 {
+        grid-column: span 5;
+    }
+    
+    .c6 {
+        grid-column: span 6;
+    }
+    
+    .c7 {
+        grid-column: span 7;
+    }
+    
+    .c8 {
+        grid-column: span 8;
+    }
+    
+    .c9 {
+        grid-column: span 9;
+    }
+    
+    .c10 {
+        grid-column: span 10;
+    }
+    
+    
 }
 
-/* 行をまたぐクラス */
-.r2 {
-    grid-row: span 2;
-}
 
-.r3 {
-    grid-row: span 3;
-}
-
-.r4 {
-    grid-row: span 4;
-}
-
-.r5 {
-    grid-row: span 5;
-}
-
-.r6 {
-    grid-row: span 6;
-}
-
-.r7 {
-    grid-row: span 7;
-}
-
-.r8 {
-    grid-row: span 8;
-}
-
-.r9 {
-    grid-row: span 9;
-}
-
-.r10 {
-    grid-row: span 10;
-}
-
-/* 列をまたぐクラス */
-.c2 {
-    grid-column: span 2;
-}
-
-.c3 {
-    grid-column: span 3;
-}
-
-.c4 {
-    grid-column: span 4;
-}
-
-.c5 {
-    grid-column: span 5;
-}
-
-.c6 {
-    grid-column: span 6;
-}
-
-.c7 {
-    grid-column: span 7;
-}
-
-.c8 {
-    grid-column: span 8;
-}
-
-.c9 {
-    grid-column: span 9;
-}
-
-.c10 {
-    grid-column: span 10;
-}
 
 .center {
     display: flex;
     justify-content: center;
-    /* 水平方向の中央配置 */
 }

@@ -1,3 +1,5 @@
+
+@supports (display: grid) {
 /* 基本スタイル */
 .modern-border {
     position: relative;
@@ -66,4 +68,5 @@
     --border-color: rgba(255, 0, 0, 0.8);
     --mask-color: rgba(255, 0, 0, 0.1);
     --border-style: solid;
+}
 }
