@@ -4,6 +4,7 @@ use std::sync::Arc;
 use actix_web::cookie::time::error;
 use actix_web::dev::ServiceResponse;
 use config::{Configuration};
+use server::server_trait::WkServer;
 use share::collection::{self, Collection};
 use tokio;
 use actix_web::{middleware, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
@@ -18,6 +19,7 @@ mod share;
 mod err_handler;
 mod utils;
 mod transfer;
+mod server;
 
 async fn server_start(config: Configuration, collection: Arc<Collection>) -> Result<(), Error> {
     let index_server = index::server::IndexServer::new(config.index_server, Arc::clone(&collection)).run_with_restart();

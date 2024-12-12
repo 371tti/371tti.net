@@ -13,6 +13,9 @@ pub struct ServerConfig {
     pub server_workers: usize,
     pub server_backlog: u32,
     pub restart_on_panic: bool,
+    pub max_failures: u32,
+    pub failure_count_period_time: u32,
+    pub restart_interval: u32,
 }
 
 #[derive(Debug, Clone, Deserialize)]
