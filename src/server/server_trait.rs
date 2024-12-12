@@ -5,8 +5,8 @@ use tokio::time::Instant;
 
 use crate::config::ServerConfig;
 
-pub trait WkServer: Sized {
-    fn config(&self) -> &ServerConfig;
+pub trait WkServer<ServiceConfig>: Sized {
+    fn config(&self) -> &ServerConfig<ServiceConfig>;
     fn create_server(&self) -> Result<Server, std::io::Error>;
     fn server_name(&self) -> &str;
     fn failed_report(&mut self, e: std::io::Error, failure_count: u32, start_time: Instant);

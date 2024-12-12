@@ -5,13 +5,15 @@ use log::{error, info};
 
 use crate::{config::ServerConfig, server::server_trait::WkServer, share::{self, collection::Collection}};
 
+use super::config::ServiceConfig;
+
 pub struct TransferServer {
-    pub config: ServerConfig,
+    pub config: ServerConfig<ServiceConfig>,
     pub share: Arc<Collection>,
 }
 
 impl TransferServer {
-    pub fn new(config: ServerConfig, share: Arc<Collection>) -> Self {
+    pub fn new(config: ServerConfig<ServiceConfig>, share: Arc<Collection>) -> Self {
         Self {
             config: config,
             share: share,
@@ -35,8 +37,8 @@ impl TransferServer {
 
 }
 
-impl WkServer for TransferServer {
-    fn config(&self) -> &ServerConfig {
+impl WkServer<ServiceConfig> for TransferServer {
+    fn config(&self) -> &ServerConfig<ServiceConfig> {
         &self.config
     }
 
