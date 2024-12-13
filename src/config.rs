@@ -4,7 +4,7 @@ use actix_web::middleware::Logger;
 use serde::Deserialize;
 use log::{error, info};
 
-use crate::{index::{self, loader, server::IndexServer}, transfer, utils};
+use crate::{actix_middleware::config::MiddlewareConfig, index::{self, loader, server::IndexServer}, transfer, utils};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ServerConfig<ServiceConfig> {
@@ -25,26 +25,19 @@ pub struct Configuration {
     pub transfer_server: ServerConfig<transfer::config::ServiceConfig>,
     pub path: String,
     pub logger_mode: String,
+    pub middleware_config: MiddlewareConfig,
 }
 
 impl Configuration {
     pub fn loader(yaml_path_r: &str) -> Self {
         // バイナリのディレクトリから相対パスでファイルを指定
-        let config_path = match utils::fs::get_file_path(yaml_path_r) {
-            Ok(path) => path,
+        let yaml_string = match utils::fs::get_file_string(yaml_path_r) {
+            Ok(s) => s,
             Err(e) => {
-                error!("Failed to get config file path: {}", e);
-                panic!("Failed to get config file path");
+                error!("Failed to read config file: {}", e);
+                panic!("Failed to read config file");
             }
-            
         };
-        let yaml_string = if let Ok(content) = fs::read_to_string(config_path) {
-            content
-        } else {
-            error!("Failed to read config file");
-            panic!("Failed to read config file");
-        };
-
 
         let config = match serde_yaml::from_str::<Configuration>(&yaml_string) {
             Ok(config) => config,

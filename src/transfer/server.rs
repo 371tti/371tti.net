@@ -3,7 +3,7 @@ use std::{sync::Arc, thread::sleep, time::Duration};
 use actix_web::{dev::Server, middleware::{self, Logger}, App, HttpServer};
 use log::{error, info};
 
-use crate::{config::ServerConfig, server::server_trait::WkServer, share::{self, collection::Collection}};
+use crate::{config::ServerConfig, server::server_trait::WkServer, share::{self, collection::Collection}, utils};
 
 use super::config::ServiceConfig;
 
@@ -21,9 +21,12 @@ impl TransferServer {
     }
     
     pub fn create_server(&self) -> Result<Server, std::io::Error> {
+        let server_name = self.server_name().to_string();
+        
         let server = HttpServer::new(move || {
+            let custom_logger = utils::logger::custom_actix_logger(&server_name);
             App::new()
-                .wrap(Logger::default())
+                .wrap(custom_logger)
                 // .wrap(middleware::ErrorHandlers::new().default_handler(err_handler))
                 // .app_data(app_set.clone())
         })

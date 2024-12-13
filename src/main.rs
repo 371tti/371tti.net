@@ -16,7 +16,7 @@ use log::{error, info};
 mod index;
 mod config;
 mod share;
-mod err_handler;
+mod actix_middleware;
 mod utils;
 mod transfer;
 mod server;

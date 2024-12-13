@@ -1,17 +1,22 @@
 use std::sync::Arc;
 
-use crate::{config::{self, Configuration}, err_handler};
+use crate::{actix_middleware::{self, status_page::middleware}, config::{self, Configuration}};
 
 #[derive(Clone)]
 pub struct Collection {
-    pub err_handler: err_handler::handler::Handler,
+    pub middleware: actix_middleware::handler::CustomMiddleware,
     pub config: config::Configuration,
 }
 
 impl Collection {
     pub fn new(config: Configuration) -> Arc<Self> {
+        let midware = match actix_middleware::handler::CustomMiddleware::new(&config) {
+            Ok(m) => m,
+            Err(e) => panic!("Error: {}", e),
+        };
+
         let collection = Self {
-            err_handler: err_handler::handler::Handler {},
+            middleware: midware,
             config: config,
         };
 

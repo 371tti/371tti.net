@@ -1,11 +1,11 @@
-use std::{sync::Arc, thread::sleep};
+use std::sync::Arc;
 
-use actix_web::{dev::Server, middleware::{self, Logger}, App, HttpServer};
+use actix_web::{dev::Server, middleware::{self, Logger}, web, App, HttpServer};
 use actix_files as fs;
-use std::time::Duration;
+
 use log::{error, info};
 
-use crate::{config::ServerConfig, server::server_trait::WkServer, share::{self, collection::Collection}, utils};
+use crate::{actix_middleware::status_page, config::ServerConfig, server::server_trait::WkServer, share::{self, collection::Collection}, utils};
 
 use super::config::ServiceConfig;
 
@@ -30,24 +30,13 @@ impl IndexServer {
 
         let server_name = self.server_name().to_string();
         let path_clone = path.clone();
+        let share_clone = web::Data::new(Arc::clone(&self.share));
         let server = HttpServer::new(move || {
-            let custom_logger = Logger::new(
-                format!(
-                    "\n[{}] \n\
-                    Client IP: %a\n\
-                    Request Line: \"%r\"\n\
-                    Status Code: %s\n\
-                    Response Size: %b bytes\n\
-                    Referer: \"%{{Referer}}i\"\n\
-                    User-Agent: \"%{{User-Agent}}i\"\n\
-                    Processing Time: ps:%Tms\n\
-                    Send Time: send:%Dms",
-                    server_name // サーバー名（例: "IndexServer"）
-                )
-                .as_str(),
-            );
+            let custom_logger = utils::logger::custom_actix_logger(&server_name);
             App::new()
+                .app_data(share_clone.clone())
                 .wrap(custom_logger)
+                .wrap(middleware::ErrorHandlers::new().default_handler(status_page::middleware::Handler::err_handler))
                 // 他のミドルウェアやデータをここに追加可能
                 .service(fs::Files::new("/", path_clone.clone()).index_file("index.html"))
         })
@@ -57,7 +46,7 @@ impl IndexServer {
         .run();
 
         Ok(server)
-    }
+    }   
 }
 
 impl WkServer<ServiceConfig> for IndexServer {
