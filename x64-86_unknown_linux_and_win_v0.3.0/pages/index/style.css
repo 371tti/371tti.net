@@ -4,7 +4,6 @@
     position: relative;
     overflow-wrap: break-word;
     text-indent: 0;
-    text-shadow: 0 0 6px #000; /* シャドウを追加 */
 
     ::selection {
         background-color: #ffffff85;
