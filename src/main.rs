@@ -18,12 +18,12 @@ mod config;
 mod share;
 mod actix_middleware;
 mod utils;
-mod transfer;
+mod api;
 mod server;
 
 async fn server_start(config: Configuration, collection: Arc<Collection>) -> Result<(), Error> {
     let index_server = index::server::IndexServer::new(config.index_server, Arc::clone(&collection)).run_with_restart();
-    let transfer_server = transfer::server::TransferServer::new(config.transfer_server, Arc::clone(&collection)).run_with_restart();
+    let transfer_server = api::server::APIServer::new(config.api_server, Arc::clone(&collection)).run_with_restart();
     // 追加していくの
 
     let result = tokio::join!(

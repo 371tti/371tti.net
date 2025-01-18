@@ -4,7 +4,7 @@ use actix_web::middleware::Logger;
 use serde::Deserialize;
 use log::{error, info};
 
-use crate::{actix_middleware::config::MiddlewareConfig, index::{self, loader, server::IndexServer}, transfer, utils};
+use crate::{actix_middleware::config::MiddlewareConfig, index::{self, loader, server::IndexServer}, api, utils};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ServerConfig<ServiceConfig> {
@@ -22,7 +22,7 @@ pub struct ServerConfig<ServiceConfig> {
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {
     pub index_server: ServerConfig<index::config::ServiceConfig>,
-    pub transfer_server: ServerConfig<transfer::config::ServiceConfig>,
+    pub api_server: ServerConfig<api::config::ServiceConfig>,
     pub path: String,
     pub logger_mode: String,
     pub middleware_config: MiddlewareConfig,
