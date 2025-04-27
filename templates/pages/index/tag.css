@@ -1,0 +1,141 @@
+:root {
+    --color-black: #000000;
+    --color-white: #ffffff;
+    --color-white-85: #ffffff85;
+    --color-white-7c: #ffffff7c;
+    --color-white-cc: #ffffffcc;
+    --color-white-c6: #ffffffc6;
+    --color-white-3e: #ffffff3e;
+    --color-gray-light: #cccccc;
+    --color-gray: #bbbbbb;
+    --color-gray-mid: #898989;
+    --color-dark-gray: #2e2e2e;
+    --color-blue: #007bff;
+    --color-blue-light: #b8daff;
+    --color-purple: #6f42c1;
+    --color-purple-dark: #4b0082;
+    --color-purple-light: #e4d8f7;
+    --color-amber: #ffc107;
+    --color-amber-dark: #805b00;
+    --color-amber-light: #ffe8a1;
+    --color-red: #dc3545;
+    --color-red-dark: #8b0000;
+    --color-red-light: #ffcccb;
+    --color-green: #28a745;
+    --color-green-dark: #155724;
+    --color-green-light: #d4edda;
+    --color-teal: #20c997;
+    --color-teal-dark: #004d40;
+    --color-teal-light: #b2dfdb;
+}
+
+
+/* 基本のタグスタイル */
+.tag {
+    display: inline-block;
+    background-color: var(--color-dark-gray); /* デフォルト背景色 */
+    color: var(--color-gray); /* デフォルト文字色 */
+    padding: 0.2em 0.6em;
+    border-radius: 0.3em;
+    text-decoration: none;
+    transition: all 0.4s;
+    border: solid 0.1em #ffffff00; /* ボーダー */
+    margin: 1mm 0 0 0; /* マージン */
+}
+
+/* サイズバリエーション */
+.tag-mid {
+    padding: 0.2em 0.6em;
+}
+
+.tag-lg {
+    padding: 0.3em 0.8em;
+}
+
+.tag-sm {
+    padding: 0em 0.2em;
+}
+
+/* 色のバリエーション */
+.tag-gray {
+    background-color: #6c757d;
+    color: var(--color-white);
+}
+
+.tag-gray-subtle {
+    background-color: #343a40;
+    color: #dcdcdc;
+}
+
+.tag-blue {
+    background-color: var(--color-blue);
+    color: var(--color-white);
+}
+
+.tag-blue-subtle {
+    background-color: #004085;
+    color: var(--color-blue-light);
+}
+
+.tag-purple {
+    background-color: var(--color-purple);
+    color: var(--color-white);
+}
+
+.tag-purple-subtle {
+    background-color: var(--color-purple-dark);
+    color: var(--color-purple-light);
+}
+
+.tag-amber {
+    background-color: var(--color-amber);
+    color: #212529;
+}
+
+.tag-amber-subtle {
+    background-color: var(--color-amber-dark);
+    color: var(--color-amber-light);
+}
+
+.tag-red {
+    background-color: var(--color-red);
+    color: var(--color-white);
+}
+
+.tag-red-subtle {
+    background-color: var(--color-red-dark);
+    color: var(--color-red-light);
+}
+
+.tag-green {
+    background-color: var(--color-green);
+    color: var(--color-white);
+}
+
+.tag-green-subtle {
+    background-color: var(--color-green-dark);
+    color: var(--color-green-light);
+}
+
+.tag-teal {
+    background-color: var(--color-teal);
+    color: var(--color-white);
+}
+
+.tag-teal-subtle {
+    background-color: var(--color-teal-dark);
+    color: var(--color-teal-light);
+}
+
+.tag-inverted {
+    background-color: var(--color-white);
+    color: #212529;
+}
+
+
+
+@supports (display: grid) {
+    .tag:hover {
+        border: solid 0.1em var(--color-white); /* ボーダー */
+    }
+}

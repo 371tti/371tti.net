@@ -1,0 +1,515 @@
+{
+  "100": {
+    "color": "#0099ffff",
+    "message": "Continue",
+    "suggest": [
+    "Continue with the request",
+    "Wait for the final response"
+    ]
+  },
+  "101": {
+    "color": "#0099ffff",
+    "message": "Switching Protocols",
+    "suggest": [
+    "Switch to the requested protocol",
+    "No immediate action needed"
+    ]
+  },
+  "102": {
+    "color": "#0099ffff",
+    "message": "Processing",
+    "suggest": [
+    "Wait for the server to finish processing"
+    ]
+  },
+  "103": {
+    "color": "#0099ffff",
+    "message": "Early Hints",
+    "suggest": [
+    "Preload requested resources",
+    "Continue waiting for the final response"
+    ]
+  },
+  
+  "200": {
+    "color": "#00ff00bb",
+    "message": "OK",
+    "suggest": [
+    "No action needed",
+    "Everything is working correctly"
+    ]
+  },
+  "201": {
+    "color": "#00ff00bb",
+    "message": "Created",
+    "suggest": [
+    "Resource has been created successfully",
+    "No further action required"
+    ]
+  },
+  "202": {
+    "color": "#00ff00bb",
+    "message": "Accepted",
+    "suggest": [
+    "Request accepted, processing continues",
+    "Check back later for completion"
+    ]
+  },
+  "203": {
+    "color": "#00ff00bb",
+    "message": "Non-Authoritative Information",
+    "suggest": [
+    "Data may be modified, but it’s generally fine",
+    "No specific action needed"
+    ]
+  },
+  "204": {
+    "color": "#00ff00bb",
+    "message": "No Content",
+    "suggest": [
+    "No additional content",
+    "No action needed"
+    ]
+  },
+  "205": {
+    "color": "#00ff00bb",
+    "message": "Reset Content",
+    "suggest": [
+    "Reset the form or view",
+    "Refresh the current page state"
+    ]
+  },
+  "206": {
+    "color": "#00ff00bb",
+    "message": "Partial Content",
+    "suggest": [
+    "Partial response received",
+    "Continue retrieving more data if needed"
+    ]
+  },
+  "207": {
+    "color": "#00ff00bb",
+    "message": "Multi-Status",
+    "suggest": [
+    "Multiple resources affected",
+    "Check each resource status individually"
+    ]
+  },
+  "208": {
+    "color": "#00ff00bb",
+    "message": "Already Reported",
+    "suggest": [
+    "Already processed resource",
+    "No further action needed"
+    ]
+  },
+  "226": {
+    "color": "#00ff00bb",
+    "message": "IM Used",
+    "suggest": [
+    "Instance manipulations applied",
+    "No further action required"
+    ]
+  },
+  
+  "300": {
+    "color": "#ffff00bb",
+    "message": "Multiple Choices",
+    "suggest": [
+    "Select one of the provided options",
+    "Update bookmarks if needed"
+    ]
+  },
+  "301": {
+    "color": "#ffff00bb",
+    "message": "Moved Permanently",
+    "suggest": [
+    "Update bookmarks to the new URL",
+    "Follow the redirect"
+    ]
+  },
+  "302": {
+    "color": "#ffff00bb",
+    "message": "Found",
+    "suggest": [
+    "Resource temporarily at another URL",
+    "Follow the new location"
+    ]
+  },
+  "303": {
+    "color": "#ffff00bb",
+    "message": "See Other",
+    "suggest": [
+    "Check the 'Location' header",
+    "Use GET method on the redirected URL"
+    ]
+  },
+  "304": {
+    "color": "#ffff00bb",
+    "message": "Not Modified",
+    "suggest": [
+    "Use cached version of the resource",
+    "No action needed"
+    ]
+  },
+  "305": {
+    "color": "#ffff00bb",
+    "message": "Use Proxy",
+    "suggest": [
+    "Access the resource through the given proxy",
+    "Update network settings if necessary"
+    ]
+  },
+  "306": {
+    "color": "#ffff00bb",
+    "message": "(Unused)",
+    "suggest": [
+    "No action needed (Code is no longer used)"
+    ]
+  },
+  "307": {
+    "color": "#ffff00bb",
+    "message": "Temporary Redirect",
+    "suggest": [
+    "Use the given URL temporarily",
+    "Request method should not change"
+    ]
+  },
+  "308": {
+    "color": "#ffff00bb",
+    "message": "Permanent Redirect",
+    "suggest": [
+    "Update bookmarks to new URL",
+    "Request method is preserved"
+    ]
+  },
+  
+  "400": {
+    "color": "#ff9900ff",
+    "message": "BadRequest",
+    "suggest": [
+    "Check the request syntax",
+    "Verify the request parameters",
+    "Ensure the URL is correct"
+    ]
+  },
+  "401": {
+    "color": "#ff9900ff",
+    "message": "Unauthorized",
+    "suggest": [
+    "Check the authentication credentials",
+    "Login again",
+    "Contact the website administrator"
+    ]
+  },
+  "402": {
+    "color": "#ff9900ff",
+    "message": "Payment Required",
+    "suggest": [
+    "Check if payment is required",
+    "Provide valid payment details"
+    ]
+  },
+  "403": {
+    "color": "#ff9900ff",
+    "message": "Forbidden",
+    "suggest": [
+    "Check the URL for errors",
+    "Request access from the administrator",
+    "Ensure you have the necessary permissions"
+    ]
+  },
+  "404": {
+    "color": "#ff9900ff",
+    "message": "NotFound",
+    "suggest": [
+    "Check the URL",
+    "Reload the page",
+    "Clear the browser cache",
+    "Try using another browser",
+    "Contact customer support"
+    ]
+  },
+  "405": {
+    "color": "#ff9900ff",
+    "message": "MethodNotAllowed",
+    "suggest": [
+    "Check the request method (GET, POST, etc.)",
+    "Refer to the website's API documentation",
+    "Ensure the method is supported"
+    ]
+  },
+  "406": {
+    "color": "#ff9900ff",
+    "message": "NotAcceptable",
+    "suggest": [
+    "Check the requested media type",
+    "Ensure server supports the requested format"
+    ]
+  },
+  "407": {
+    "color": "#ff9900ff",
+    "message": "ProxyAuthenticationRequired",
+    "suggest": [
+    "Verify proxy authentication",
+    "Contact network administrator for proxy details"
+    ]
+  },
+  "408": {
+    "color": "#ff9900ff",
+    "message": "RequestTimeout",
+    "suggest": [
+    "Check your internet connection",
+    "Ensure the server is not overloaded",
+    "Retry the request after a moment"
+    ]
+  },
+  "409": {
+    "color": "#ff9900ff",
+    "message": "Conflict",
+    "suggest": [
+    "Resolve conflicting resources",
+    "Ensure request data is consistent"
+    ]
+  },
+  "410": {
+    "color": "#ff9900ff",
+    "message": "Gone",
+    "suggest": [
+    "This resource is no longer available",
+    "Contact the website administrator for information"
+    ]
+  },
+  "411": {
+    "color": "#ff9900ff",
+    "message": "LengthRequired",
+    "suggest": [
+    "Set 'Content-Length' header in request"
+    ]
+  },
+  "412": {
+    "color": "#ff9900ff",
+    "message": "PreconditionFailed",
+    "suggest": [
+    "Verify request preconditions",
+    "Adjust precondition headers"
+    ]
+  },
+  "413": {
+    "color": "#ff9900ff",
+    "message": "PayloadTooLarge",
+    "suggest": [
+    "Reduce the request entity size",
+    "Contact administrator for size limits"
+    ]
+  },
+  "414": {
+    "color": "#ff9900ff",
+    "message": "URITooLong",
+    "suggest": [
+    "Simplify the URL length",
+    "Use a shorter URL structure"
+    ]
+  },
+  "415": {
+    "color": "#ff9900ff",
+    "message": "UnsupportedMediaType",
+    "suggest": [
+    "Check the media type in request",
+    "Ensure server supports media type"
+    ]
+  },
+  "416": {
+    "color": "#ff9900ff",
+    "message": "RangeNotSatisfiable",
+    "suggest": [
+    "Check requested range headers"
+    ]
+  },
+  "417": {
+    "color": "#ff9900ff",
+    "message": "ExpectationFailed",
+    "suggest": [
+    "Check 'Expect' request header"
+    ]
+  },
+  "418": {
+    "color": "#ff9900ff",
+    "message": "I'm a Teapot",
+    "suggest": [
+    "I'm a teapot, not a coffee machine"
+    ]
+  },
+  "421": {
+    "color": "#ff9900ff",
+    "message": "Misdirected Request",
+    "suggest": [
+    "Check the request host",
+    "Ensure request matches the server's authority"
+    ]
+  },
+  "422": {
+    "color": "#ff9900ff",
+    "message": "UnprocessableEntity",
+    "suggest": [
+    "Check request syntax and data"
+    ]
+  },
+  "423": {
+    "color": "#ff9900ff",
+    "message": "Locked",
+    "suggest": [
+    "Resource is locked",
+    "Try unlocking the resource if you have permissions"
+    ]
+  },
+  "424": {
+    "color": "#ff9900ff",
+    "message": "FailedDependency",
+    "suggest": [
+    "Check dependent requests",
+    "Resolve the dependency failures"
+    ]
+  },
+  "425": {
+    "color": "#ff9900ff",
+    "message": "TooEarly",
+    "suggest": [
+    "Wait before sending early data",
+    "Try again later"
+    ]
+  },
+  "426": {
+    "color": "#ff9900ff",
+    "message": "UpgradeRequired",
+    "suggest": [
+    "Switch to a different protocol",
+    "Check 'Upgrade' header"
+    ]
+  },
+  "428": {
+    "color": "#ff9900ff",
+    "message": "PreconditionRequired",
+    "suggest": [
+    "Add required precondition headers",
+    "Check documentation for required conditions"
+    ]
+  },
+  "429": {
+    "color": "#ff9900ff",
+    "message": "TooManyRequests",
+    "suggest": [
+    "Reduce the frequency of requests",
+    "Wait before sending more requests"
+    ]
+  },
+  "431": {
+    "color": "#ff9900ff",
+    "message": "RequestHeaderFieldsTooLarge",
+    "suggest": [
+    "Reduce header data size"
+    ]
+  },
+  "451": {
+    "color": "#ff9900ff",
+    "message": "UnavailableForLegalReasons",
+    "suggest": [
+    "Content blocked due to legal reasons",
+    "Contact the website administrator"
+    ]
+  },
+  
+  "500": {
+    "color": "#ff0000bb",
+    "message": "InternalServerError",
+    "suggest": [
+    "Wait a few moments and retry the request",
+    "Check the website's social media for updates",
+    "Contact customer support"
+    ]
+  },
+  "501": {
+    "color": "#ff0000bb",
+    "message": "NotImplemented",
+    "suggest": [
+    "Verify the request method is correct",
+    "Check if the feature is implemented",
+    "Contact the website administrator"
+    ]
+  },
+  "502": {
+    "color": "#ff0000bb",
+    "message": "BadGateway",
+    "suggest": [
+    "Check your internet connection",
+    "Wait a few moments and retry the request",
+    "Contact the website if the issue persists"
+    ]
+  },
+  "503": {
+    "color": "#ff0000bb",
+    "message": "ServiceUnavailable",
+    "suggest": [
+    "Check if the website is under maintenance",
+    "Wait and retry later",
+    "Contact the website for more information"
+    ]
+  },
+  "504": {
+    "color": "#ff0000bb",
+    "message": "GatewayTimeout",
+    "suggest": [
+    "Check your internet connection",
+    "Ensure the server is reachable",
+    "Retry the request after a moment"
+    ]
+  },
+  "505": {
+    "color": "#ff0000bb",
+    "message": "HTTPVersionNotSupported",
+    "suggest": [
+    "Verify the HTTP version used",
+    "Contact administrator to check version support"
+    ]
+  },
+  "506": {
+    "color": "#ff0000bb",
+    "message": "VariantAlsoNegotiates",
+    "suggest": [
+    "Check negotiation headers",
+    "Use a simpler request"
+    ]
+  },
+  "507": {
+    "color": "#ff0000bb",
+    "message": "InsufficientStorage",
+    "suggest": [
+    "Reduce the size of the resource",
+    "Contact administrator about storage limits"
+    ]
+  },
+  "508": {
+    "color": "#ff0000bb",
+    "message": "LoopDetected",
+    "suggest": [
+    "Check for infinite loops in request",
+    "Consult the server administrator"
+    ]
+  },
+  "510": {
+    "color": "#ff0000bb",
+    "message": "NotExtended",
+    "suggest": [
+    "Check for required extensions",
+    "Add missing extension headers"
+    ]
+  },
+  "511": {
+    "color": "#ff0000bb",
+    "message": "NetworkAuthenticationRequired",
+    "suggest": [
+    "Authenticate to access network",
+    "Check network credentials"
+    ]
+  }
+}

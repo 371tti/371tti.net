@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERR-{{ code }} </title>
+    <link rel="stylesheet" href="/style.css">
+    </head>
+    <body>
+
+    <script src="/box-load-anime.js"></script>
+
+    <link rel="stylesheet" href="/modern-border.css">
+    <script src="/modern-border.js"></script>
+
+    <script src="/copyable.js"></script>
+
+    <style>
+        :root {
+            --color-bg-2: {{color}}; /* Corrected variable name */
+        }
+    </style>
+
+    <div class="main">
+        <h1>Error {{ code }}</h1>
+        <div class="i">
+            <ul>
+                <li>{{ ms }}</li>
+            </ul>
+        </div>
+
+        <h2>Solution</h2>
+        <div class="i">
+            <ul>
+                {% for suggestion in suggestions %}
+                    <li>{{ loop.index }}. {{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h2>Debug</h2>
+        <div class="i">
+            <ul>
+                {% for key, value in debug_info %}
+                <li>{{ key }}: <ul>
+                    <li>{{ value }}</li>
+                </ul>
+            </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <hr>
+        <p class="center">© 2024~ 371tti</p>
+        <p class="center"><a href="/">top_page</a>　-　<a href="/license">license</a></p>
+    </div>
+
+</body>
+</html>
