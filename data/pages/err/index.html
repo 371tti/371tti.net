@@ -2,7 +2,7 @@
 
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ERR-{{ code }} </title>
     <link rel="stylesheet" href="/style.css">
@@ -33,21 +33,14 @@
         <h2>Solution</h2>
         <div class="i">
             <ul>
-                {% for suggestion in suggestions %}
-                    <li>{{ loop.index }}. {{ suggestion }}</li>
-                {% endfor %}
+                {{ solution }}
             </ul>
         </div>
 
         <h2>Debug</h2>
         <div class="i">
             <ul>
-                {% for key, value in debug_info %}
-                <li>{{ key }}: <ul>
-                    <li>{{ value }}</li>
-                </ul>
-            </li>
-                {% endfor %}
+                {{ debug }}
             </ul>
         </div>
         <hr>
