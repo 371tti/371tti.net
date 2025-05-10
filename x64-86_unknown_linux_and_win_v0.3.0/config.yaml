@@ -1,6 +1,6 @@
 index_server:
   enable: true
-  server_bind: 0.0.0.0:80
+  server_bind: 0.0.0.0:85
   server_workers: 8
   server_backlog: 128
   restart_on_panic: true
@@ -9,7 +9,7 @@ index_server:
   restart_interval: 5
   service_config:
     path: index
-transfer_server:
+api_server:
   enable: false
   server_bind: 0.0.0.0:82
   server_workers: 8
@@ -19,6 +19,7 @@ transfer_server:
   failure_count_period_time: 60
   restart_interval: 5
   service_config:
+    path: index
 path: pages
 logger_mode: info
 middleware_config:

@@ -5,25 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ERR-{{ code }} </title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     </head>
     <body>
 
+    <script src="/box-load-anime.js"></script>
 
+    <link rel="stylesheet" href="/modern-border.css">
+    <script src="/modern-border.js"></script>
 
-    <link rel="stylesheet" href="S-ber.css">
-    <script src="S-ber.js"></script>
-    <div class="S-ber" style="background-color: {{ color }};"><div class="loading-spinner"></div></div>
+    <script src="/copyable.js"></script>
 
-    <script src="box-load-anime.js"></script>
+    <style>
+        :root {
+            --color-bg-2: {{color}}; /* Corrected variable name */
+        }
+    </style>
 
-    <link rel="stylesheet" href="modern-border.css">
-    <script src="modern-border.js"></script>
-
-    <script src="copyable.js"></script>
-
-
-    <div class="q">
+    <div class="main">
         <h1>Error {{ code }}</h1>
         <div class="i">
             <ul>

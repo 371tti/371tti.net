@@ -16,6 +16,7 @@
     top: 0;
     left: 0;
     width: 100%;
+    border-radius: 1mm;
     height: 100%;
     pointer-events: none;
     opacity: 0;

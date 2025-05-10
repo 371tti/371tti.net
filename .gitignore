@@ -8,3 +8,5 @@ x64-86_unknown_linux_v0.2.0/RustWebserverTemplate
 x64-86_unknown_linux_v1.0.0.zip
 x64-86_unknown_linux_and_win_v0.3.0/wk-371tti-net.exe
 x64-86_unknown_linux_and_win_v0.3.0/wk-371tti-net
+.env
+.gitignore

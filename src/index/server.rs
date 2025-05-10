@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use actix_web::{dev::Server, middleware::{self, Logger}, web, App, HttpServer};
 use actix_files as fs;
+use actix_cors::Cors;
 
 use log::{error, info};
 
@@ -36,6 +37,7 @@ impl IndexServer {
             App::new()
                 .app_data(share_clone.clone())
                 .wrap(custom_logger)
+                .wrap(Cors::permissive())
                 .wrap(middleware::ErrorHandlers::new().default_handler(status_page::middleware::Handler::err_handler))
                 // 他のミドルウェアやデータをここに追加可能
                 .service(fs::Files::new("/", path_clone.clone()).index_file("index.html"))

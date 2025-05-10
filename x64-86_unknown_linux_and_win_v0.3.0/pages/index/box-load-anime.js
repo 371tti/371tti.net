@@ -1,40 +1,66 @@
-// 初期設定: box要素とその直下の子要素をスタイルして隠す
-const hideBoxAndDirectChildren = (box) => {
-    // box自身とその直下の子要素のみ取得
-    const elements = [box, ...box.children];
-    elements.forEach(el => {
+// 初期設定: box要素とその全ての子要素をスタイルして隠す
+const hideBoxAndAllChildren = (box) => {
+    // box自身と全ての子孫要素を取得
+    const elements = [box, ...Array.from(box.querySelectorAll('*'))];
+    
+    // 各要素に対してアニメーション初期スタイルを設定
+    elements.forEach((el, index) => {
         el.style.opacity = '0';
-        el.style.transform = 'translateY(10mm)';
-        el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+        el.style.transform = 'translateY(20px) scale(0.95)';
+        el.style.transition = `opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), 
+                              transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.1)`;
+        // 深さに応じて遅延を増やす（同じ階層の要素は同じ遅延を持つ）
+        const depth = getElementDepth(el, box);
+        el.style.transitionDelay = `${depth * 0.1}s`;
     });
+};
+
+// 要素の階層の深さを取得する関数
+const getElementDepth = (element, parent) => {
+    let depth = 0;
+    let current = element;
+    
+    // 親要素に到達するまで遡る
+    while (current !== parent && current.parentElement) {
+        depth++;
+        current = current.parentElement;
+    }
+    
+    return depth;
 };
 
 // 新しい.box要素がDOMに追加された場合の処理
 const observeNewBoxes = (node) => {
     if (node.classList?.contains('box')) {
-        hideBoxAndDirectChildren(node);
+        hideBoxAndAllChildren(node);
         observer.observe(node); // IntersectionObserverで監視
     }
 };
 
-// 既存の.box要素とその直下の子要素を初期化
-document.querySelectorAll('.box').forEach(hideBoxAndDirectChildren);
+// 既存の.box要素とその子要素を初期化
+document.querySelectorAll('.box').forEach(hideBoxAndAllChildren);
 
 // IntersectionObserverの作成
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            // フェードインスタイルを適用（対象とその直下の子要素）
-            const elements = [entry.target, ...entry.target.children];
-            elements.forEach(el => {
-                el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
+            // フェードインスタイルを適用（対象と全ての子要素）
+            const box = entry.target;
+            const elements = [box, ...Array.from(box.querySelectorAll('*'))];
+            
+            elements.forEach((el) => {
+                // 階層の深さに基づいた遅延を設定
+                const depth = getElementDepth(el, box);
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0) scale(1)';
+                }, depth * 100);
             });
 
             observer.unobserve(entry.target); // 一度監視したら解除
         }
     });
-}, { threshold: 0.1 });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
 
 // MutationObserverの作成
 const mutationObserver = new MutationObserver((mutations) => {
@@ -52,8 +78,6 @@ mutationObserver.observe(document.body, {
     childList: true,
     subtree: true
 });
-
-
 
 // CSSで画面全体に表示するためのスタイルを定義
 const fullScreenStyle = {

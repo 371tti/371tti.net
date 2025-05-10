@@ -1,3 +1,20 @@
+/* 
+LinerCSS
+author: 371tti,
+license: MIT
+version: 0.4.1
+*/
+
+:root {
+    /* カラー変数 */
+    --color-bg-0: #000000;
+    --color-bg-1: #232323;
+    --color-bg-2: #875e46;
+    --color-text-0: #aaaaaa;
+    --color-text-1: #ffffff;
+    --color-accent-0: #815a44;
+    --color-accent-1: #e8af7f;
+}
 
 * {
     box-sizing: border-box;
@@ -6,17 +23,17 @@
     text-indent: 0;
 
     ::selection {
-        background-color: #ffffff85;
+        background-color: var(--color-bg-1);
         /* 背景色 */
-        color: #ffffff;
+        color: var(--color-text-1);
         /* 文字色 */
     }
 
     /* Firefox用 */
     ::-moz-selection {
-        background-color: #ffffff7c;
+        background-color: var(--color-bg-1);
         /* 背景色 */
-        color: #ffffff;
+        color: var(--color-text-1);
         /* 文字色 */
     }
 }
@@ -29,10 +46,20 @@ html {
     margin: 0;
     padding: 0;
     width: 100%;
-    background-color: #000000;
-    color: #cccccc;
+    background-color: var(--color-bg-0);
+    color: var(--color-text-0);
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
-    height: auto; /* 必要に応じて高さを調整 */
+    height: 100svh
+}
+
+.main {
+    padding: 10mm 10mm;
+    overflow-y: auto;
+    height: 100svh;
+    margin: 0 auto;
+    max-width: 300mm;
+    background-color: var(--color-bg-0);
+    box-shadow: 0 0 40mm var(--color-bg-2);
 }
 
 body {
@@ -42,19 +69,14 @@ body {
     position: relative;
     overflow: auto;
 }
+
 h1 {
     font-size: 3em;
     font-weight: lighter;
     margin: 0;
     padding: 0;
-    color: #ffffff;
+    color: var(--color-text-1);
     display: inline-block;
-}
-
-p {
-    margin: 0;
-    /* シャドウの例 */
-    padding: 0;
 }
 
 h2,
@@ -65,23 +87,17 @@ h6 {
     margin: 0;
     padding: 0;
     margin: 0 5mm 0 0;
-    color: #cccccc;
+    color: var(--color-text-1);
 }
 
-.gradient-text {
-    text-transform: uppercase;
-    text-shadow: none;
-    background: linear-gradient(45deg, #ff7eb3, #ff758c, #ffab68, #ffd452, #ffffff); /* 明るい色を追加 */
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #cccccc; /* フォールバック用の単一色 */
+p {
+    margin: 0;
+    padding: 0;
 }
-
 
 .h::before {
     content: "#";
-    color: #898989;
+    color: var(--color-text-0);
     font-size: 1.5em;
     margin-right: 0.2em;
     /* テキストとの余白をつけたい場合 */
@@ -90,20 +106,9 @@ h6 {
     font-weight: lighter;
 }
 
-
-
-
-.q {
-    padding: 10mm 10mm;
-    overflow-y: auto;
-    height: 100%;
-    width: 100%;
-    border-right: solid 10mm #00000000;
-}
-
 .i {
     margin: 0mm 0 0 10mm;
-    border-left: solid 1px #bbbbbb;
+    border-left: solid 1px var(--color-text-0);
 }
 
 ul {
@@ -111,6 +116,9 @@ ul {
     margin: 0;
 }
 
+img, image {
+    border-radius: 1mm;
+}
 
 @supports (display: flex) {
     .flex {
@@ -129,162 +137,24 @@ ul {
 .indent {
     padding: 0 0 0 5mm;
     margin: 0 0 5mm 5mm;
-    border-left: solid 1px #bbbbbb;
+    border-left: solid 1px var(--color-text-0);
 }
 
 .box {
     width: 100%;
     width: calc(100% - 5mm);
-    transition: all 0.2s;
-    border: solid 1px #ffffff00;
     margin: 5mm 5mm 0 0;
 }
-
-
-.box:hover {
-    animation: outLine 0.5s ease forwards;
-    /* アニメーションの適用 */
-}
-
-@keyframes outLine {
-    10% {
-        border: solid 1px #ffffffcc;
-    }
-
-    20% {
-        border: solid 1px #ffffffc6;
-    }
-
-    100% {
-        border: solid 1px #ffffff3e;
-    }
-}
-
-.frame-paint {
-    background-color: #37137100;
-}
-
-
-/* 基本のタグスタイル */
-.tag {
-    display: inline-block;
-    background-color: #2e2e2e; /* デフォルト背景色 */
-    color: #bbbbbb; /* デフォルト文字色 */
-    padding: 0.2em 0.6em;
-    border-radius: 0.3em;
-    text-decoration: none;
-    transition: all 0.4s;
-    border: solid 0.1em #ffffff00; /* ボーダー */
-    margin: 1mm 0 0 0; /* マージン */
-}
-
-/* サイズバリエーション */
-.tag-mid {
-    padding: 0.2em 0.6em;
-}
-
-.tag-lg {
-    padding: 0.3em 0.8em;
-}
-
-.tag-sm {
-    padding: 0em 0.2em;
-}
-
-/* 色のバリエーション */
-.tag-gray {
-    background-color: #6c757d;
-    color: #ffffff;
-}
-
-.tag-gray-subtle {
-    background-color: #343a40;
-    color: #dcdcdc;
-}
-
-.tag-blue {
-    background-color: #007bff;
-    color: #ffffff;
-}
-
-.tag-blue-subtle {
-    background-color: #004085;
-    color: #b8daff;
-}
-
-.tag-purple {
-    background-color: #6f42c1;
-    color: #ffffff;
-}
-
-.tag-purple-subtle {
-    background-color: #4b0082;
-    color: #e4d8f7;
-}
-
-.tag-amber {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.tag-amber-subtle {
-    background-color: #805b00;
-    color: #ffe8a1;
-}
-
-.tag-red {
-    background-color: #dc3545;
-    color: #ffffff;
-}
-
-.tag-red-subtle {
-    background-color: #8b0000;
-    color: #ffcccb;
-}
-
-.tag-green {
-    background-color: #28a745;
-    color: #ffffff;
-}
-
-.tag-green-subtle {
-    background-color: #155724;
-    color: #d4edda;
-}
-
-.tag-teal {
-    background-color: #20c997;
-    color: #ffffff;
-}
-
-.tag-teal-subtle {
-    background-color: #004d40;
-    color: #b2dfdb;
-}
-
-.tag-inverted {
-    background-color: #ffffff;
-    color: #212529;
-}
-
-
-
-@supports (display: grid) {
-    .tag:hover {
-        border: solid 0.1em #ffffff; /* ボーダー */
-    }
-}
-
 
 /* ボタンのスタイル */
 .button {
     display: inline-block;
-    background-color: #464646; /* ボタンの背景色 */
-    color: #fff; /* テキスト色 */
-    border: 1mm solid #ffffff7c; /* ボーダー色 */
+    background-color: var(--color-bg-1); /* ボタンの背景色 */
+    color: var(--color-text-0); /* テキスト色 */
+    border-left: 1mm solid var(--color-text-0); /* ボーダー色 */
     font-size: 1em; /* フォントサイズ */
     padding: 2mm 5mm; /* 内側余白 */
-    border-radius: 0px; /* 角の丸み */
+    border-radius: 1mm;
     text-decoration: none; /* テキスト装飾を削除 */
     cursor: pointer; /* カーソルをポインターに変更 */
     transition: all 0.4s; /* ホバー時のトランジション */
@@ -292,18 +162,18 @@ ul {
 }
 
 .button:hover {
-    background-color: #ff00e1; /* ホバー時の背景色 */
+    background-color: var(--color-accent-0); /* ホバー時の背景色 */
 }
 @supports (display: grid) {
     .button:hover {
-        border: 1mm solid #ffffff; /* ホバー時のボーダー色 */
+        border-left: 1mm solid var(--color-text-1); /* ホバー時のボーダー色 */
     }
 }
 
 /* 通常のリンクのスタイル (ボタン以外) */
 a:not(.button):not(.tag) {
     text-decoration: none; /* テキスト装飾を削除 */
-    color: #ff5bec; /* リンクの色 */
+    color: var(--color-accent-1); /* リンクの色 */
     position: relative; /* 擬似要素の位置調整に必要 */
     transition: color 0.2s; /* 色変更時のトランジション */
     display: inline-flex; /* フレキシブルな表示 */
@@ -313,7 +183,7 @@ a:not(.button):not(.tag) {
 }
 
 a:hover:not(.button):not(.tag) {
-    color: #ff00e1; /* ホバー時のリンク色 */
+    color: var(--color-accent-0); /* ホバー時のリンク色 */
 }
 
 /* リンクの下線のアニメーション */
@@ -322,7 +192,7 @@ a:not(.button):not(.tag)::after {
     position: absolute; /* 擬似要素を絶対配置 */
     width: 100%; /* 擬似要素の幅を親要素に合わせる */
     height: 0.2em; /* 擬似要素の高さ */
-    background-color: #ff00e1; /* 下線の色 */
+    background-color: var(--color-accent-0); /* 下線の色 */
     bottom: 0; /* 擬似要素を下部に配置 */
     left: 0; /* 左端に配置 */
     transform: scaleX(0); /* 初期状態で下線を非表示 */
@@ -342,7 +212,9 @@ a:hover:not(.button):not(.tag)::after {
 
 hr {
     margin: 5mm 0mm;
-    color: #b3b3b3;
+    border: none;
+    height: 1px;
+    background-color: var(--color-text-0);
 }
 
 li {
@@ -355,16 +227,11 @@ li {
 }
 
 b {
-    color: #ffffff;
-}
-
-.stats {
-    margin: 20px 0;
-    color: #ffffff;
+    color: var(--color-text-1);
 }
 
 .pd {
-    margin: 2mm;
+    height: 6mm;
 }
 
 
