@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 use kurosabi::{html_format, kurosabi::Context};
 use serde::Deserialize;
 use crate::context::SiteContext;
@@ -17,7 +17,7 @@ impl ErrPage {
         }
     }
 
-    pub fn generate_status_page(&self, c: & Context<Arc<SiteContext>>) -> String{
+    pub fn generate_status_page(&self, c: & Context<SiteContext>) -> String{
         const ERR_TEMPLATE: &'static str = include_str!("../../data/pages/err/index.html");
         let binding = StatusCodeInfo::default();
         let info = self.err_infos.get(&c.res.code.to_string()).unwrap_or(&binding);

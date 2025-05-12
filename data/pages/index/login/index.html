@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="jp">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="371tti.net">
+    <meta property="og:description" content="371tti.net license">
+    <meta property="og:title" content="371tti.net">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/license">
+    <title>License - 371tti.net</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+
+<script src="/box-load-anime.js"></script>
+
+<link rel="stylesheet" href="/modern-border.css">
+<script src="/modern-border.js"></script>
+
+<div class="full center center-middle">
+<div class="main card grid-2" id="content">
+    <div class="box r1">
+        <div class="box">
+            <div class="flex block-m">
+                <h1>Login</h1>
+                <div class="block subtitle">
+                    <h2>371tti.net</h2>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="box">
+            <p id="info">Enter to get 371tti.net service</p>
+            <div class="flex-column">
+                <input type="text" id="username" name="username" placeholder="username" required>
+            </div>
+            <div class="flex-column">
+                <input type="password" id="password" name="password" autocomplete="current-password" placeholder="password" required>
+            </div>
+            <div class="pd"></div>
+            <div class="button right" id="login_button">
+                <p>login</p>
+            </div>
+        </div>
+    </div>
+    <div class="box indent r1">
+        <h2 >select account</h2>
+        <div class="pd"></div>
+        <div class="flex">
+            <div class="user-icon" style="height: 12mm;">
+                <img src="/371tti_icon.png" alt="371tti" style="height: 100%; width: 100%;">
+            </div>
+            <div class="flex-column">
+                <h3>@371tti</h3>
+                <p>session time out</p>
+            </div>
+        </div>
+        <div class="flex">
+            <div class="user-icon" style="height: 12mm;">
+                <img src="/371tti_icon.png" alt="371tti" style="height: 100%; width: 100%;">
+            </div>
+            <div class="flex-column">
+                <h3>@371tti.clone()</h3>
+                <p>session time out</p>
+            </div>
+        </div>
+        <div class="flex">
+            <div class="user-icon" style="height: 12mm;">
+                <img src="/371tti_icon.png" alt="371tti" style="height: 100%; width: 100%;">
+            </div>
+            <div class="flex-column">
+                <h3>@371tti.copy()</h3>
+                <p>session time out</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<p class="center">© 2024~ 371tti</p>
+<p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
+</body>
+<script>
+    document.getElementById("login_button").onclick = function() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+        var info = document.getElementById("info");
+
+        if (username === "" || password === "") {
+            info.innerHTML = "Please fill in all fields.";
+            return;
+        }
+
+        // Simulate a login process
+        if (username === "371tti" && password === "371tti") {
+            info.innerHTML = "Login successful! Redirecting...";
+            setTimeout(function() {
+                window.location.href = "/index";
+            }, 2000);
+        } else {
+            info.innerHTML = "Invalid username or password.";
+        }
+    };
+</script>
+</html>
