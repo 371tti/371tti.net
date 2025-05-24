@@ -183,8 +183,13 @@ img, image {
 
 .indent {
     padding: 0 0 0 5mm;
-    margin: 0 0 0mm 5mm;
+    margin: 0 0 0 5mm;
     border-left: solid 1px var(--color-text-1);
+}
+
+.indent + .indent {
+    margin-top: 5mm;
+    margin-right: 5mm;
 }
 
 input[type="password"]::-webkit-textfield-decoration-container {
@@ -230,7 +235,7 @@ input[type="email"] {
 }
 
 /* 通常のリンクのスタイル (ボタン以外) */
-a:not(.button):not(.tag) {
+a:not(.button):not(.tag):not(.link_anime) {
     text-decoration: none; /* テキスト装飾を削除 */
     color: var(--color-accent-1); /* リンクの色 */
     position: relative; /* 擬似要素の位置調整に必要 */
@@ -241,12 +246,12 @@ a:not(.button):not(.tag) {
     padding: 0; /* 内側余白をリセット */
 }
 
-a:hover:not(.button):not(.tag) {
+a:hover:not(.button):not(.tag):not(.link_anime) {
     color: var(--color-accent-0); /* ホバー時のリンク色 */
 }
 
 /* リンクの下線のアニメーション */
-a:not(.button):not(.tag)::after {
+a:not(.button):not(.tag):not(.link_anime)::after {
     content: ""; /* 擬似要素の内容を空に設定 */
     position: absolute; /* 擬似要素を絶対配置 */
     width: 100%; /* 擬似要素の幅を親要素に合わせる */
@@ -259,7 +264,7 @@ a:not(.button):not(.tag)::after {
     transition: transform 0.3s; /* アニメーションのトランジション */
 }
 
-a:hover:not(.button):not(.tag)::after {
+a:hover:not(.button):not(.tag):not(.link_anime)::after {
     transform: scaleX(1); /* ホバー時に下線を表示 */
     transform-origin: bottom left; /* 拡大の基準点を左端に変更 */
 }
