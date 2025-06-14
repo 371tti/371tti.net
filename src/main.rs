@@ -22,6 +22,20 @@ fn main() {
         c
     });
 
+    kurosabi.get("/tools", |mut c| async move {
+        c.res.html(include_str!("../data/pages/index/tools/index.html"));
+        c
+    });
+
+    kurosabi.get("/game/speed_runner", |mut c| async move {
+        c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html"));
+        c
+    });
+
+    kurosabi.get("/tool/string_converter", |mut c| async move {
+        c.res.html(include_str!("../data/pages/index/tools/string_converter.html"));
+        c
+    });
     // kurosabi.get("/login", |mut c| async move {
     //     c.c.init(&mut c.req, &mut c.res);
     //     c.res.html(include_str!("../data/pages/index/login/index.html"));

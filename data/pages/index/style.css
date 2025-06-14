@@ -179,8 +179,12 @@ img, image {
     width: 100%;
     width: calc(100%);
     padding: 0 0 5mm 0;
+    margin: 5mm 0 0 0;
 }
 
+.grid .box {
+    margin: 0;
+}
 .indent {
     padding: 0 0 0 5mm;
     margin: 0 0 0 5mm;
