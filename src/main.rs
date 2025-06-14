@@ -131,6 +131,7 @@ fn main() {
 
     let mut server = kurosabi.server()
         .host([0, 0, 0, 0])
+        .accept_threads(1)
         .port(85)
         .thread(8)
         .queue_size(1000)
