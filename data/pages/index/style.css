@@ -10,13 +10,15 @@ version: 0.4.1
     --color-bg-0: #000000;
     --color-bg-1: #232323;
     --color-bg-2: #875e46;
-    --color-text-0: #aaaaaa;
+    --color-text-0: #d1d1d1;
     --color-text-1: #ffffff;
     --color-accent-0: #815a44;
     --color-accent-1: #e8af7f;
 }
 
 * {
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+JP:wght@200..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
     box-sizing: border-box;
     position: relative;
     overflow-wrap: break-word;
@@ -48,7 +50,6 @@ html {
     width: 100%;
     background-color: var(--color-bg-0);
     color: var(--color-text-0);
-    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
     height: 100svh
 }
 
@@ -59,7 +60,6 @@ html {
     margin: 0 auto;
     max-width: 300mm;
     background-color: var(--color-bg-0);
-    box-shadow: 0 0 40mm var(--color-bg-2);
 }
 
 .center {
@@ -96,7 +96,7 @@ body {
 
 h1 {
     font-size: 3em;
-    font-weight: lighter;
+    font-weight: normal;
     margin: 0;
     padding: 0;
     color: var(--color-text-1);
@@ -108,6 +108,7 @@ h3,
 h4,
 h5,
 h6 {
+    font-weight: normal;
     margin: 0;
     padding: 0;
     margin: 0 5mm 0 0;
