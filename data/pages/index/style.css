@@ -59,7 +59,6 @@ html {
     height: 100svh;
     margin: 0 auto;
     max-width: 300mm;
-    background-color: var(--color-bg-0);
 }
 
 .center {
@@ -101,6 +100,11 @@ h1 {
     padding: 0;
     color: var(--color-text-1);
     display: inline-block;
+    text-shadow: var(--color-text-0) 0px 0 8px;
+}
+
+h2 {
+    text-shadow: var(--color-text-0) 0px 0 8px;
 }
 
 h2,

@@ -5,13 +5,11 @@ const hideBoxAndAllChildren = (box) => {
     
     // 各要素に対してアニメーション初期スタイルを設定
     elements.forEach((el, index) => {
+        // 左から右に表示されるような初期状態
         el.style.opacity = '0';
-        el.style.transform = 'translateY(20px) scale(0.95)';
-        el.style.transition = `opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), 
-                              transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.1)`;
-        // 深さに応じて遅延を増やす（同じ階層の要素は同じ遅延を持つ）
-        const depth = getElementDepth(el, box);
-        el.style.transitionDelay = `${depth * 0.1}s`;
+        el.style.transform = 'translateX(-30px)';
+        el.style.transition = `opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), 
+                              transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)`;
     });
 };
 
@@ -44,17 +42,18 @@ document.querySelectorAll('.box').forEach(hideBoxAndAllChildren);
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            // フェードインスタイルを適用（対象と全ての子要素）
+            // 左から右に覆いを取るようなフェードインスタイルを適用
             const box = entry.target;
             const elements = [box, ...Array.from(box.querySelectorAll('*'))];
             
-            elements.forEach((el) => {
-                // 階層の深さに基づいた遅延を設定
-                const depth = getElementDepth(el, box);
+            elements.forEach((el, index) => {
+                // 段階的に表示するための遅延
+                const delay = index * 16; // 16msずつ遅延
+
                 setTimeout(() => {
                     el.style.opacity = '1';
-                    el.style.transform = 'translateY(0) scale(1)';
-                }, depth * 100);
+                    el.style.transform = 'translateX(0)';
+                }, delay);
             });
 
             observer.unobserve(entry.target); // 一度監視したら解除

@@ -58,6 +58,18 @@ fn main() {
         c
     });
 
+    kurosabi.get("/backwapper.js", |mut c| async move {
+        c.res.js(include_str!("../data/pages/index/backwapper.js"));
+        c.res.header.set("Access-Control-Allow-Origin", "*");
+        c
+    });
+
+    kurosabi.get("/backwapper.css", |mut c| async move {
+        c.res.css(include_str!("../data/pages/index/backwapper.css"));
+        c.res.header.set("Access-Control-Allow-Origin", "*");
+        c
+    });
+
     kurosabi.get("/box-load-anime.js", |mut c| async move {
         c.res.js(include_str!("../data/pages/index/box-load-anime.js"));
         c.res.header.set("Access-Control-Allow-Origin", "*");
