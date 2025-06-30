@@ -35,7 +35,7 @@
         <div class="flex block-m">
             <h1>371tti.net</h1>
             <div class="block subtitle">
-                <h2>ver 0.5.0</h2>
+                <h2>ver 0.5.1</h2>
             </div>
         </div>
 
@@ -52,10 +52,14 @@
             <div class="indent">
                 <div class="flex center">
                     <div class="block">
-                        <div style="clip-path: circle(50% at 50% 50%); height: 25mm; width: 25mm; margin: 3mm;"><img
-                                style="height: 100%; width: 100%;" src="/371tti_icon.png" alt="icon">
+                        <div class="flex center">
+                            <div id="icon" style="clip-path: circle(50% at 50% 50%); height: 25mm; width: 25mm; margin: 3mm;"><img
+                                    style="height: 100%; width: 100%;" src="/371tti_icon.png" alt="icon">
+                            </div>
                         </div>
-                        <p>hi im 371tti</p>
+                        <div class="flex center">
+                        <p id="icon-message">hi im 371tti</p>
+                        </div>
                     </div>
                 </div>
                 <p><br>高専生 <br>つくること全般が好き <br>Rustistである</p>
@@ -246,7 +250,7 @@
                     <p>Webバックエンドルーター <br>軽量で高速なルーティングを提供 <br>Hono Like</p>
                 </div>
                 <div class="indent">
-                    <h3><a href="https://github.com/371tti/observer">kurosabi</a></h3>
+                    <h3><a href="https://github.com/371tti/observer-rust">observer</a></h3>
                     <a href="https://www.rust-lang.org/" class="tag tag-sm" style="background-color: #dea584; color: #000000;">Rust</a>
                     <a class="tag tag-sm">AI</a>
                     <a href="https://discord.com/" class="tag tag-sm">DiscordBot</a>
@@ -276,4 +280,205 @@
     <p class="center"><a href="/license">license</a>　-　<a href="/status">status</a>　-　<a href="/terms">terms</a></p>
 </div>
 </body>
+<script>
+    // Load screen animation
+    document.addEventListener("DOMContentLoaded", function () {
+        const icon = document.getElementById("icon");
+        const iconMessage = document.getElementById("icon-message");
+        
+        const messages = [
+            "hi im 371tti",
+            "にゃん.",
+            "うー",
+            "RUSTは最高の言語です学べ",
+            "371ttiってSEO最強",
+            "うにゃん",
+            "にゃー",
+            "ほめて",
+            "猫派です",
+            "どちらかというと理系です",
+            "実は人間てすてす",
+            "お気に入りのデザイン",
+            "アイコンは私が書いた",
+            "フレームワーク界隈カオスだ",
+            "site存続は私死die death.",
+        ];
+        
+        icon.addEventListener("click", function() {
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            iconMessage.textContent = messages[randomIndex];
+        });
+
+    });
+       const style = document.createElement('style');
+        style.textContent = `
+            .particle {
+                position: fixed;
+                color: var(--color-accent-1);
+                font-size: 12px;
+                pointer-events: none;
+                z-index: 9999;
+            }
+            .click-area {
+                min-height: 100vh;
+                cursor: crosshair;
+                touch-action: manipulation;
+            }
+            .charge-indicator {
+                position: fixed;
+                color: var(--color-text-1);
+                font-size: 16px;
+                pointer-events: none;
+                z-index: 9998;
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 変数
+        let isCharging = false;
+        let chargeStart = 0;
+        let indicator = null;
+        let startX = 0, startY = 0;
+
+        // イベントリスナー
+        document.addEventListener('mousedown', e => startCharge(e.clientX, e.clientY));
+        document.addEventListener('mouseup', e => endCharge(e.clientX, e.clientY));
+        document.addEventListener('touchstart', e => {
+            if (e.touches.length === 1) {
+                const t = e.touches[0];
+                startX = t.clientX;
+                startY = t.clientY;
+                startCharge(t.clientX, t.clientY);
+            }
+        }, {passive: true});
+
+        document.addEventListener('touchmove', e => {
+            if (e.touches.length === 1 && isCharging) {
+                const t = e.touches[0];
+                if (Math.abs(t.clientX - startX) > 15 || Math.abs(t.clientY - startY) > 15) {
+                    cancelCharge();
+                }
+            }
+        }, {passive: true});
+
+        document.addEventListener('touchend', e => {
+            if (e.changedTouches.length === 1 && isCharging) {
+                const t = e.changedTouches[0];
+                endCharge(t.clientX, t.clientY);
+            }
+        }, {passive: true});
+
+        function startCharge(x, y) {
+            isCharging = true;
+            chargeStart = Date.now(); // チャージ開始は即座に
+        
+            // 既存インジケーターを必ず削除
+            if (indicator) {
+                indicator.remove();
+                indicator = null;
+            }
+
+            // インジケーター表示は0.3秒後
+            setTimeout(() => {
+                if (isCharging) {
+                    // さらに既存インジケーターがあれば削除（多重防止）
+                    if (indicator) {
+                        indicator.remove();
+                        indicator = null;
+                    }
+                    indicator = document.createElement('div');
+                    indicator.className = 'charge-indicator';
+                    indicator.style.left = x + 20 + 'px';
+                    indicator.style.top = y - 20 + 'px';
+                    document.body.appendChild(indicator);
+                    setTimeout(() => indicator && (indicator.style.opacity = '1'), 50);
+                }
+            }, 300);
+        }
+
+        function endCharge(x, y) {
+            if (!isCharging) return;
+            
+            const holdTime = (Date.now() - chargeStart) / 1000;
+            isCharging = false;
+            
+            if (indicator) {
+                indicator.remove();
+                indicator = null;
+            }
+            
+            // 最小時間なしで即座にエフェクト発動
+            const power = Math.min(holdTime * 2, 4);
+            const count = Math.ceil(3 + power * 6);
+            const speed = 1 + power * 0.6;
+            const size = 1 + power * 0.4;
+            
+            for (let i = 0; i < count; i++) {
+                createParticle(x, y, speed, size);
+            }
+        }
+
+        function cancelCharge() {
+            isCharging = false;
+            if (indicator) {
+                indicator.remove();
+                indicator = null;
+            }
+        }
+
+        // インジケーター更新
+        setInterval(() => {
+            if (isCharging && indicator) {
+                const t = (Date.now() - chargeStart) / 1000;
+                const stars = '★'.repeat(Math.ceil(Math.min(t * 2, 4)));
+                indicator.textContent = `${stars} ${t.toFixed(1)}s`;
+            }
+        }, 100);
+
+        function createParticle(x, y, speedMult = 1, sizeMult = 1) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.textContent = '✦';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.style.fontSize = (12 * sizeMult) + 'px';
+            document.body.appendChild(p);
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = (40 + Math.random() * 40) * speedMult;
+            let vx = Math.cos(angle) * speed;
+            // 打ち上げ成分を抑制
+            let vy = Math.sin(angle) * speed - 8 * speedMult;
+            let px = x, py = y, rot = 0;
+            const start = Date.now();
+
+            function animate() {
+                const elapsed = (Date.now() - start) / 1000;
+                
+                vy += 120 * 0.01;
+                vx *= 0.98;
+                px += vx * 0.015;
+                py += vy * 0.015;
+                rot += 150 * 0.015;
+
+                const scale = Math.max(0, Math.min(0.7 * sizeMult, 0.2 + elapsed * 2.5)) * Math.max(0, 1 - elapsed / 1.3);
+                const opacity = Math.max(0, 1 - elapsed / 1.4);
+
+                p.style.left = px + 'px';
+                p.style.top = py + 'px';
+                p.style.transform = `scale(${scale}) rotate(${rot}deg)`;
+                p.style.opacity = opacity;
+
+                if (py > window.innerHeight + 30 || elapsed > 1.6 || opacity <= 0) {
+                    p.remove();
+                } else {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+</script>
 </html>

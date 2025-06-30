@@ -47,7 +47,7 @@ version: 0.4.1
 html {
     margin: 0;
     padding: 0;
-    width: 100%;
+    width: 100svw;
     background-color: var(--color-bg-0);
     color: var(--color-text-0);
     height: 100svh
@@ -94,17 +94,12 @@ body {
 }
 
 h1 {
-    font-size: 3em;
+    font-size: 2.5em;
     font-weight: normal;
     margin: 0;
     padding: 0;
     color: var(--color-text-1);
     display: inline-block;
-    text-shadow: var(--color-text-0) 0px 0 8px;
-}
-
-h2 {
-    text-shadow: var(--color-text-0) 0px 0 8px;
 }
 
 h2,
@@ -191,7 +186,7 @@ img, image {
     margin: 0;
 }
 .indent {
-    padding: 0 0 0 5mm;
+    padding: 0 5mm 0 5mm;
     margin: 0 0 0 5mm;
     border-left: solid 1px var(--color-text-1);
 }

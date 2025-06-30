@@ -12,7 +12,7 @@ window.addEventListener('load', () => {
     let ticking   = false;
 
     function sync() {
-        const offsetY = (scroller.scrollTop - base) * 0.1;
+        const offsetY = (scroller.scrollTop - base) * -0.1;
         const offsetX = (scroller.scrollTop - base) * 0.05; // X軸方向にも移動
         root.style.setProperty('--scrollOffsetX', offsetX.toFixed(1) + 'px');
         root.style.setProperty('--scrollOffsetY', offsetY.toFixed(1) + 'px');

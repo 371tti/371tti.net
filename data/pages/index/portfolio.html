@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="jp">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="371tti Portfolio - 技術者ポートフォリオ">
+    <meta property="og:description" content="371tti の技術ポートフォリオ">
+    <meta property="og:title" content="371tti Portfolio">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/portfolio">
+    <title>Portfolio - 371tti.net</title>
+    <script src="/load-screen.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/tag.css">
+</head>
+
+<body>
+    <script src="/box-load-anime.js"></script>
+    <link rel="stylesheet" href="/modern-border.css">
+    <script src="/modern-border.js"></script>
+    <script src="/copyable.js"></script>
+    <link rel="stylesheet" href="/backwapper.css">
+    <script src="/backwapper.js"></script>
+
+    <div class="backwapper"></div>
+
+    <div class="main" id="content">
+        <!-- Header Section -->
+        <div class="box">
+            <div class="flex block-m">
+                <h1>Portfolio</h1>
+                <div class="block subtitle">
+                    <h2>371tti.net</h2>
+                </div>
+            </div>
+            <div class="indent">
+                <h2>技術者ポートフォリオ<br>スキルとプロジェクトの紹介</h2>
+                <p><a href="/">← Back to Home</a></p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Profile Summary -->
+        <div class="grid">
+            <div class="r3 box frame-paint modern-border">
+                <h2 class="h">Profile Summary</h2>
+                <div class="indent">
+                    <div class="flex center">
+                        <div class="block">
+                            <div class="flex center">
+                                <div id="icon" style="clip-path: circle(50% at 50% 50%); height: 25mm; width: 25mm; margin: 3mm;">
+                                    <img style="height: 100%; width: 100%;" src="/371tti_icon.png" alt="371tti icon">
+                                </div>
+                            </div>
+                            <div class="flex center">
+                                <p id="icon-message">Full Stack Developer</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p><br><strong>371tti (みない ティーティーアイ)</strong><br>
+                    高専生・フルスタック開発者<br>
+                    Rustを愛する16歳のプログラマー</p>
+                    
+                    <div class="pd"></div>
+                    <h3>基本情報</h3>
+                    <ul>
+                        <li><strong>年齢</strong>: 16歳</li>
+                        <li><strong>所属</strong>: 高等専門学校 学生</li>
+                        <li><strong>居住地</strong>: 日本</li>
+                        <li><strong>専門分野</strong>: Web開発、システム開発、DB設計</li>
+                        <li><strong>好きな言語</strong>: Rust, Python, JavaScript</li>
+                    </ul>
+
+                    <div class="pd"></div>
+                    <div class="button-grid">
+                        <a class="button" href="https://x.com/371tti">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" style="height:8mm;">
+                                <g><path fill="white" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g>
+                            </svg>
+                            X (Twitter)
+                        </a>
+                        <a href="https://github.com/371tti" class="button" target="_blank" rel="noopener noreferrer">
+                        <svg height="32" aria-hidden="true" viewBox="0 0 24 24" width="32">
+                            <path fill="white" d="M12.5.75C6.146.75 1 5.896 1 12.25c0 5.089 3.292 9.387 7.863 10.91.575.101.79-.244.79-.546 0-.273-.014-1.178-.014-2.142-2.889.532-3.636-.704-3.866-1.35-.13-.331-.69-1.352-1.18-1.625-.402-.216-.977-.748-.014-.762.906-.014 1.553.834 1.769 1.179 1.035 1.74 2.688 1.25 3.349.948.1-.747.402-1.25.733-1.538-2.559-.287-5.232-1.279-5.232-5.678 0-1.25.445-2.285 1.178-3.09-.115-.288-.517-1.467.115-3.048 0 0 .963-.302 3.163 1.179.92-.259 1.897-.388 2.875-.388.977 0 1.955.13 2.875.388 2.2-1.495 3.162-1.179 3.162-1.179.633 1.581.23 2.76.115 3.048.733.805 1.179 1.825 1.179 3.09 0 4.413-2.688 5.39-5.247 5.678.417.36.776 1.05.776 2.128 0 1.538-.014 2.774-.014 3.162 0 .302.216.662.79.547C20.709 21.637 24 17.324 24 12.25 24 5.896 18.854.75 12.5.75Z"></path>
+                        </svg>
+                        GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Skills -->
+            <div class="c2 box frame-paint modern-border">
+                <h2 class="h">Technical Skills</h2>
+                <div class="indent">
+                    <div class="indent">
+                        <h3>Primary Languages</h3>
+                        <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                            <a href="https://www.rust-lang.org/" class="tech-box" style="background-color: var(--color-bg-1); border: 2px solid var(--color-accent-0); padding: 12px; text-align: center; text-decoration: none; color: var(--color-text-1); border-radius: 8px; aspect-ratio: 1;">
+                                <svg viewBox="0 0 144 144" style="width: 32px; height: 32px; margin-bottom: 8px;">
+                                    <path fill="currentColor" d="M67.743 31.035a3.108 3.108 0 0 1 6.216 0v1.103c0 .033.005.065.005.098l1.155 13.663c.007.084.04.167.098.234.058.067.14.114.233.132l13.708 2.583c.033.006.065.015.098.025h1.103a3.108 3.108 0 0 1 0 6.216h-1.103c-.033.01-.065.019-.098.025l-13.708 2.583c-.093.018-.175.065-.233.132-.058.067-.09.15-.098.234l-1.155 13.663c0 .033-.005.065-.005.098v1.103a3.108 3.108 0 0 1-6.216 0v-1.103c0-.033-.005-.065-.005-.098l-1.155-13.663c-.007-.084-.04-.167-.098-.234-.058-.067-.14-.114-.233-.132l-13.708-2.583c-.033-.006-.065-.015-.098-.025h-1.103a3.108 3.108 0 0 1 0-6.216h1.103c.033-.01.065-.019.098-.025l13.708-2.583c.093-.018.175-.065.233-.132.058-.067.09-.15.098-.234l1.155-13.663c0-.033.005-.065.005-.098v-1.103z"/>
+                                </svg>
+                                <div style="font-size: 11px; font-weight: bold;">Rust</div>
+                                <div style="font-size: 9px; color: var(--color-text-0);">★★★★★</div>
+                            </a>
+                            <a href="https://www.python.org" class="tech-box" style="background-color: var(--color-bg-1); border: 1px solid var(--color-text-0); padding: 12px; text-align: center; text-decoration: none; color: var(--color-text-0); border-radius: 8px; aspect-ratio: 1;">
+                                <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; margin-bottom: 8px;">
+                                    <path fill="currentColor" d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09-.33.22zM21.1 6.11l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08-.33.23z"/>
+                                </svg>
+                                <div style="font-size: 11px; font-weight: bold;">Python</div>
+                                <div style="font-size: 9px; color: var(--color-text-0);">★★★★★</div>
+                            </a>
+                            <a href="https://developer.mozilla.org/docs/Web/JavaScript" class="tech-box" style="background-color: var(--color-bg-1); border: 1px solid var(--color-text-0); padding: 12px; text-align: center; text-decoration: none; color: var(--color-text-0); border-radius: 8px; aspect-ratio: 1;">
+                                <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; margin-bottom: 8px;">
+                                    <path fill="currentColor" d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/>
+                                </svg>
+                                <div style="font-size: 11px; font-weight: bold;">JavaScript</div>
+                                <div style="font-size: 9px; color: var(--color-text-0);">★★★★</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="indent">
+                        <h3>Other Languages</h3>
+                        <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                            <a href="https://en.cppreference.com/" class="tech-box" style="background-color: var(--color-bg-1); border: 1px solid var(--color-text-0); padding: 12px; text-align: center; text-decoration: none; color: var(--color-text-0); border-radius: 8px; aspect-ratio: 1;">
+                                <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; margin-bottom: 8px;">
+                                    <path fill="currentColor" d="M16.5998 8.96997H7.8998C7.2998 8.96997 6.7998 9.46997 6.7998 10.07V17.9C6.7998 18.5 7.2998 19 7.8998 19H16.5998C17.1998 19 17.6998 18.5 17.6998 17.9V10.07C17.6998 9.46997 17.1998 8.96997 16.5998 8.96997Z" stroke="currentColor" stroke-width="1.5"/>
+                                    <path fill="currentColor" d="M12.2498 5V8.96997M9.2998 5V8.96997M15.1998 5V8.96997"/>
+                                </svg>
+                                <div style="font-size: 11px; font-weight: bold;">C</div>
+                                <div style="font-size: 9px; color: var(--color-text-0);">★★★</div>
+                            </a>
+                            <a href="https://isocpp.org/" class="tech-box" style="background-color: var(--color-bg-1); border: 1px solid var(--color-text-0); padding: 12px; text-align: center; text-decoration: none; color: var(--color-text-0); border-radius: 8px; aspect-ratio: 1;">
+                                <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; margin-bottom: 8px;">
+                                    <path fill="currentColor" d="M22.394 6c-.167-.29-.398-.543-.652-.69L12.926.22c-.509-.294-1.34-.294-1.848 0L2.26 5.31c-.508.293-.923 1.013-.923 1.6v10.18c0 .294.104.62.271.91.167.29.398.543.652.69l8.816 5.09c.508.293 1.34.293 1.848 0l8.816-5.09c.254-.147.485-.4.652-.69.167-.29.27-.616.27-.91V6.91c.003-.294-.1-.62-.268-.91zM12.01 19.74c-4.236 0-7.65-3.413-7.65-7.65s3.414-7.65 7.65-7.65 7.65 3.414 7.65 7.65-3.413 7.65-7.65 7.65z"/>
+                                    <path fill="currentColor" d="M10.717 9.665c-.434-.435-.665-1.013-.665-1.664s.231-1.229.665-1.664c.434-.434 1.012-.665 1.664-.665.651 0 1.229.231 1.664.665.434.435.665 1.013.665 1.664s-.231 1.229-.665 1.664c-.435.434-1.013.665-1.664.665-.652 0-1.23-.231-1.664-.665zm4.289 0c-.434-.435-.665-1.013-.665-1.664s.231-1.229.665-1.664c.434-.434 1.012-.665 1.664-.665.651 0 1.229.231 1.664.665.434.435.665 1.013.665 1.664s-.231 1.229-.665 1.664c-.435.434-1.013.665-1.664.665-.652 0-1.23-.231-1.664-.665z"/>
+                                </svg>
+                                <div style="font-size: 11px; font-weight: bold;">C++</div>
+                                <div style="font-size: 9px; color: var(--color-text-0);">★★★</div>
+                            </a>
+                            <a href="https://www.java.com/" class="tech-box" style="background-color: var(--color-bg-1); border: 1px solid var(--color-text-0); padding: 12px; text-align: center; text-decoration: none; color: var(--color-text-0); border-radius: 8px; aspect-ratio: 1;">
+                                <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; margin-bottom: 8px;">
+                        </div>
+                    </div>
+
+                    <div class="indent">
+                        <h3>🔧 Tools & Technologies</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+                            <a href="https://git-scm.com/" class="tag" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">
+                                📚 Git
+                            </a>
+                            <a href="https://www.docker.com/" class="tag" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">
+                                🐳 Docker
+                            </a>
+                            <a href="https://linuxcontainers.org/" class="tag" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">
+                                📦 LXC
+                            </a>
+                            <a href="https://code.visualstudio.com/" class="tag" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">
+                                💻 VS Code
+                            </a>
+                            <a href="https://www.jetbrains.com/idea/" class="tag" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">
+                                🧠 IntelliJ IDEA
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="indent">
+                        <h3>🎯 Specialties</h3>
+                        <ul>
+                            <li><strong>Web Backend Development</strong> - 高性能なAPI設計・実装</li>
+                            <li><strong>Database Design</strong> - 効率的なデータ構造設計</li>
+                            <li><strong>System Architecture</strong> - スケーラブルなシステム設計</li>
+                            <li><strong>AI Integration</strong> - LLM APIを活用したアプリケーション開発</li>
+                            <li><strong>Performance Optimization</strong> - 高速化・メモリ効率化</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Projects -->
+        <div class="box frame-paint modern-border">
+            <h2 class="h">🚀 Featured Projects</h2>
+            <div class="indent">
+                <div class="grid">
+                    <div class="c2 indent">
+                        <h3><a href="https://github.com/371tti/idis">🗄️ IDIS</a></h3>
+                        <div style="margin-bottom: 12px;">
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-accent-1); border: 1px solid var(--color-accent-0);">🦀 Rust</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">🗄️ Database</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">📁 FileSystem</span>
+                        </div>
+                        <p><strong>次世代データベースシステム</strong><br>
+                        ファイルシステムライクなインターフェースとドキュメント指向の特徴を組み合わせた革新的なDBソフトウェア。権限管理システムにより汎用的な用途に対応。</p>
+                        <ul>
+                            <li>⚡ 高速なデータアクセス</li>
+                            <li>🔐 柔軟な権限管理</li>
+                            <li>📈 スケーラブルなアーキテクチャ</li>
+                        </ul>
+                    </div>
+
+                    <div class="c2 indent">
+                        <h3><a href="https://github.com/371tti/kurosabi">🌐 kurosabi</a></h3>
+                        <div style="margin-bottom: 12px;">
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-accent-1); border: 1px solid var(--color-accent-0);">🦀 Rust</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">🖥️ Web Server</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">🛣️ Router</span>
+                        </div>
+                        <p><strong>高性能Webバックエンドルーター</strong><br>
+                        軽量かつ高速なルーティングを提供するWebフレームワーク。Hono風の直感的なAPIで開発効率を向上。</p>
+                        <ul>
+                            <li>⚡ ゼロコスト抽象化</li>
+                            <li>🔒 型安全なルーティング</li>
+                            <li>🧩 ミドルウェアサポート</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="c2 indent">
+                        <h3><a href="https://github.com/371tti/observer-rust">🤖 observer</a></h3>
+                        <div style="margin-bottom: 12px;">
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-accent-1); border: 1px solid var(--color-accent-0);">🦀 Rust</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">💬 Discord Bot</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">🧠 AI</span>
+                        </div>
+                        <p><strong>AI搭載Discord Bot</strong><br>
+                        自然な会話を実現するDiscord Bot。多機能で楽しいコミュニケーションを提供し、サーバーを活性化。</p>
+                        <ul>
+                            <li>🗣️ 自然言語処理</li>
+                            <li>📖 コンテキスト理解</li>
+                            <li>🔧 多様な機能拡張</li>
+                        </ul>
+                    </div>
+
+                    <div class="c2 indent">
+                        <h3><a href="https://github.com/371tti/tf-idf-vectorizer">📊 tf-idf-vectorizer</a></h3>
+                        <div style="margin-bottom: 12px;">
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-accent-1); border: 1px solid var(--color-accent-0);">🦀 Rust</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">📝 NLP</span>
+                            <span class="tag tag-sm" style="background-color: var(--color-bg-1); color: var(--color-text-0); border: 1px solid var(--color-text-0);">🔍 Search Engine</span>
+                        </div>
+                        <p><strong>高性能文書解析エンジン</strong><br>
+                        TF-IDF手法を用いた文書のベクトル化と検索機能を提供。リアルタイム解析と高速検索を実現。</p>
+                        <ul>
+                            <li>⚡ 高速ベクトル化</li>
+                            <li>💾 省メモリ設計</li>
+                            <li>🔄 並列処理対応</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="pd"></div>
+                <p><strong><a href="https://github.com/371tti">→ GitHub で全プロジェクトを見る</a></strong></p>
+            </div>
+        </div>
+
+        <!-- Architecture & Design Philosophy -->
+        <div class="grid">
+            <div class="c2 box frame-paint modern-border">
+                <h2 class="h">🏗️ Architecture Philosophy</h2>
+                <div class="indent">
+                    <h3>設計思想</h3>
+                    <ul>
+                        <li><strong>⚡ パフォーマンス重視</strong><br>ゼロコスト抽象化と効率的なメモリ管理</li>
+                        <li><strong>🔒 型安全性</strong><br>コンパイル時エラー検出による堅牢なコード</li>
+                        <li><strong>🧩 モジュラー設計</strong><br>再利用可能で保守しやすいアーキテクチャ</li>
+                        <li><strong>🎯 開発者体験</strong><br>直感的なAPIと豊富なドキュメント</li>
+                    </ul>
+
+                    <h3>得意な領域</h3>
+                    <ul>
+                        <li>🌐 高トラフィックWebアプリケーション</li>
+                        <li>🗄️ データベース・ストレージシステム</li>
+                        <li>🔌 API設計・マイクロサービス</li>
+                        <li>🤖 AI/ML統合システム</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="c2 box frame-paint modern-border">
+                <h2 class="h">📈 Learning & Goals</h2>
+                <div class="indent">
+                    <h3>現在学習中</h3>
+                    <ul>
+                        <li><strong>📘 TypeScript</strong> - フロントエンド開発の強化</li>
+                        <li><strong>🔷 C#</strong> - .NET エコシステムの習得</li>
+                        <li><strong>🕸️ WebAssembly</strong> - ブラウザでのRust活用</li>
+                        <li><strong>🌐 分散システム</strong> - スケーラビリティの向上</li>
+                    </ul>
+
+                    <h3>今後の目標</h3>
+                    <ul>
+                        <li>🤝 オープンソースプロジェクトへの貢献</li>
+                        <li>📝 技術記事・ブログの執筆</li>
+                        <li>👥 コミュニティ活動への参加</li>
+                        <li>💼 企業でのインターンシップ経験</li>
+                    </ul>
+
+                    <h3>興味のある分野</h3>
+                    <ul>
+                        <li>🕸️ WebAssembly & パフォーマンス最適化</li>
+                        <li>🧠 機械学習・AI応用</li>
+                        <li>⛓️ ブロックチェーン技術</li>
+                        <li>🔬 量子コンピューティング</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="box frame-paint modern-border">
+            <h2 class="h">📞 Contact & Collaboration</h2>
+            <div class="indent">
+                <p>プロジェクトのコラボレーション、技術相談、お仕事のご依頼などお気軽にご連絡ください。</p>
+                
+                <div class="grid">
+                    <div class="r2">
+                        <h3>連絡先</h3>
+                        <ul>
+                            <li><strong>GitHub</strong>: <a href="https://github.com/371tti">@371tti</a></li>
+                            <li><strong>X (Twitter)</strong>: <a href="https://x.com/371tti">@371tti</a></li>
+                            <li><strong>Discord</strong>: サーバーで活動中</li>
+                        </ul>
+                    </div>
+                    <div class="r2">
+                        <h3>対応可能な依頼</h3>
+                        <ul>
+                            <li>Web APIの開発・設計</li>
+                            <li>データベース設計・最適化</li>
+                            <li>既存システムの高速化</li>
+                            <li>技術コンサルティング</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="pd"></div>
+                <div class="button-grid">
+                    <a class="button" href="https://discord.gg/u6gDShdasR">
+                        <svg aria-hidden="true" height="32" fill="none" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19.73 4.87a18.2 18.2 0 0 0-4.6-1.44c-.21.4-.4.8-.58 1.21-1.69-.25-3.4-.25-5.1 0-.18-.41-.37-.82-.59-1.2-1.6.27-3.14.75-4.6 1.43A19.04 19.04 0 0 0 .96 17.7a18.43 18.43 0 0 0 5.63 2.87c.46-.62.86-1.28 1.2-1.98-.65-.25-1.29-.55-1.9-.92.17-.12.32-.24.47-.37 3.58 1.7 7.7 1.7 11.28 0l.46.37c-.6.36-1.25.67-1.9.92.35.7.75 1.35 1.2 1.98 2.03-.63 3.94-1.6 5.64-2.87.47-4.87-.78-9.09-3.3-12.83ZM8.3 15.12c-1.1 0-2-1.02-2-2.27 0-1.24.88-2.26 2-2.26s2.02 1.02 2 2.26c0 1.25-.89 2.27-2 2.27Zm7.4 0c-1.1 0-2-1.02-2-2.27 0-1.24.88-2.26 2-2.26s2.02 1.02 2 2.26c0 1.25-.88 2.27-2 2.27Z"></path>
+                        </svg>
+                        Discord コミュニティ参加
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <p class="center">© 2024~ 371tti | Portfolio</p>
+        <p class="center"><a href="/">Home</a> - <a href="/tools">Tools</a> - <a href="https://github.com/371tti">GitHub</a></p>
+    </div>
+
+    <script>
+        // Icon click animation
+        document.addEventListener("DOMContentLoaded", function () {
+            const icon = document.getElementById("icon");
+            const iconMessage = document.getElementById("icon-message");
+            
+            const messages = [
+                "Full Stack Developer",
+                "Rust Engineer",
+                "高専生プログラマー",
+                "DB Specialist",
+                "Web Backend Expert",
+                "System Architect",
+                "Performance Optimizer",
+                "Open Source Contributor"
+            ];
+            
+            icon.addEventListener("click", function() {
+                const randomIndex = Math.floor(Math.random() * messages.length);
+                iconMessage.textContent = messages[randomIndex];
+            });
+        });
+
+        // Particle effect system (same as index.html)
+        const style = document.createElement('style');
+        style.textContent = `
+            .particle {
+                position: fixed;
+                color: var(--color-accent-1);
+                font-size: 12px;
+                pointer-events: none;
+                z-index: 9999;
+            }
+            .charge-indicator {
+                position: fixed;
+                color: var(--color-text-1);
+                font-size: 16px;
+                pointer-events: none;
+                z-index: 9998;
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+        `;
+        document.head.appendChild(style);
+
+        let isCharging = false;
+        let chargeStart = 0;
+        let indicator = null;
+        let startX = 0, startY = 0;
+
+        document.addEventListener('mousedown', e => startCharge(e.clientX, e.clientY));
+        document.addEventListener('mouseup', e => endCharge(e.clientX, e.clientY));
+        document.addEventListener('touchstart', e => {
+            if (e.touches.length === 1) {
+                const t = e.touches[0];
+                startX = t.clientX;
+                startY = t.clientY;
+                startCharge(t.clientX, t.clientY);
+            }
+        }, {passive: true});
+
+        document.addEventListener('touchmove', e => {
+            if (e.touches.length === 1 && isCharging) {
+                const t = e.touches[0];
+                if (Math.abs(t.clientX - startX) > 15 || Math.abs(t.clientY - startY) > 15) {
+                    cancelCharge();
+                }
+            }
+        }, {passive: true});
+
+        document.addEventListener('touchend', e => {
+            if (e.changedTouches.length === 1 && isCharging) {
+                const t = e.changedTouches[0];
+                endCharge(t.clientX, t.clientY);
+            }
+        }, {passive: true});
+
+        function startCharge(x, y) {
+            isCharging = true;
+            chargeStart = Date.now();
+            
+            if (indicator) {
+                indicator.remove();
+                indicator = null;
+            }
+
+            setTimeout(() => {
+                if (isCharging) {
+                    if (indicator) {
+                        indicator.remove();
+                        indicator = null;
+                    }
+                    indicator = document.createElement('div');
+                    indicator.className = 'charge-indicator';
+                    indicator.style.left = x + 20 + 'px';
+                    indicator.style.top = y - 20 + 'px';
+                    document.body.appendChild(indicator);
+                    setTimeout(() => indicator && (indicator.style.opacity = '1'), 50);
+                }
+            }, 300);
+        }
+
+        function endCharge(x, y) {
+            if (!isCharging) return;
+            
+            const holdTime = (Date.now() - chargeStart) / 1000;
+            isCharging = false;
+            
+            if (indicator) {
+                indicator.remove();
+                indicator = null;
+            }
+            
+            const power = Math.min(holdTime * 2, 4);
+            const count = Math.ceil(3 + power * 6);
+            const speed = 1 + power * 0.6;
+            const size = 1 + power * 0.4;
+            
+            for (let i = 0; i < count; i++) {
+                createParticle(x, y, speed, size);
+            }
+        }
+
+        function cancelCharge() {
+            isCharging = false;
+            if (indicator) {
+                indicator.remove();
+                indicator = null;
+            }
+        }
+
+        setInterval(() => {
+            if (isCharging && indicator) {
+                const t = (Date.now() - chargeStart) / 1000;
+                const stars = '★'.repeat(Math.ceil(Math.min(t * 2, 4)));
+                indicator.textContent = `${stars} ${t.toFixed(1)}s`;
+            }
+        }, 100);
+
+        function createParticle(x, y, speedMult = 1, sizeMult = 1) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.textContent = '✦';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.style.fontSize = (12 * sizeMult) + 'px';
+            document.body.appendChild(p);
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = (40 + Math.random() * 40) * speedMult;
+            let vx = Math.cos(angle) * speed;
+            let vy = Math.sin(angle) * speed - 8 * speedMult;
+            let px = x, py = y, rot = 0;
+            const start = Date.now();
+
+            function animate() {
+                const elapsed = (Date.now() - start) / 1000;
+                
+                vy += 120 * 0.01;
+                vx *= 0.98;
+                px += vx * 0.015;
+                py += vy * 0.015;
+                rot += 150 * 0.015;
+
+                const scale = Math.max(0, Math.min(0.7 * sizeMult, 0.2 + elapsed * 2.5)) * Math.max(0, 1 - elapsed / 1.3);
+                const opacity = Math.max(0, 1 - elapsed / 1.4);
+
+                p.style.left = px + 'px';
+                p.style.top = py + 'px';
+                p.style.transform = `scale(${scale}) rotate(${rot}deg)`;
+                p.style.opacity = opacity;
+
+                if (py > window.innerHeight + 30 || elapsed > 1.6 || opacity <= 0) {
+                    p.remove();
+                } else {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
