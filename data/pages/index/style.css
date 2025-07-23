@@ -57,7 +57,6 @@ html {
     padding: 10mm 10mm;
     overflow-y: auto;
     height: 100svh;
-    margin: 0 auto;
     max-width: 300mm;
 }
 
@@ -222,7 +221,6 @@ input[type="email"] {
     border-left: 1mm solid var(--color-text-0); /* ボーダー色 */
     font-size: 1em; /* フォントサイズ */
     padding: 2mm 5mm; /* 内側余白 */
-    border-radius: 1mm;
     text-decoration: none; /* テキスト装飾を削除 */
     cursor: pointer; /* カーソルをポインターに変更 */
     transition: all 0.4s; /* ホバー時のトランジション */

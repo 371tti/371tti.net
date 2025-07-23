@@ -8,8 +8,8 @@ const hideBoxAndAllChildren = (box) => {
         // 左から右に表示されるような初期状態
         el.style.opacity = '0';
         el.style.transform = 'translateX(-30px)';
-        el.style.transition = `opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), 
-                              transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)`;
+        el.style.transition = `opacity 0.4s cubic-bezier(0.12, 0.63, 0, 1), 
+                              transform 0.5s cubic-bezier(0.12, 0.63, 0, 1)`;
     });
 };
 
@@ -48,7 +48,7 @@ const observer = new IntersectionObserver((entries) => {
             
             elements.forEach((el, index) => {
                 // 段階的に表示するための遅延
-                const delay = index * 16; // 16msずつ遅延
+                const delay = index * 0; // 16msずつ遅延
 
                 setTimeout(() => {
                     el.style.opacity = '1';

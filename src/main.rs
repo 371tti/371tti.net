@@ -36,14 +36,10 @@ fn main() {
         c.res.html(include_str!("../data/pages/index/tools/string_converter.html"));
         c
     });
-    // kurosabi.get("/login", |mut c| async move {
-    //     c.c.init(&mut c.req, &mut c.res);
-    //     c.res.html(include_str!("../data/pages/index/login/index.html"));
-    //     c
-    // });
 
-    kurosabi.get("/portfolio", |mut c| async move {
-        c.res.html(include_str!("../data/pages/index/portfolio.html"));
+    kurosabi.get("/login", |mut c| async move {
+        c.c.init(&mut c.req, &mut c.res);
+        c.res.html(include_str!("../data/pages/index/login/index.html"));
         c
     });
 
@@ -54,6 +50,12 @@ fn main() {
 
     kurosabi.get("/index", |mut c| async move {
         c.res.html(include_str!("../data/pages/index/index.html"));
+        c
+    });
+
+    kurosabi.get("/menue.js", |mut c| async move {
+        c.res.js(include_str!("../data/pages/index/menue.js"));
+        c.res.header.set("Access-Control-Allow-Origin", "*");
         c
     });
 
@@ -124,6 +126,12 @@ fn main() {
 
     kurosabi.get("/favicon.ico", |mut c| async move {
         c.res.data(include_bytes!("../data/pages/index/favicon.ico"), "image/x-icon");
+        c
+    });
+
+    kurosabi.get("/robots.txt", |mut c| async move {
+        c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain");
+        c.res.header.set("Access-Control-Allow-Origin", "*");
         c
     });
 
