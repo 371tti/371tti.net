@@ -86,7 +86,6 @@ const fullScreenStyle = {
     width: "100vw",
     height: "100vh",
     zIndex: "9999",
-    backgroundColor: "#000000",
 };
 
 // 元のスタイルを保持するためのマップ

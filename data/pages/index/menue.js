@@ -53,14 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.style.backdropFilter = 'blur(8px)';
             overlay.style.zIndex = '99998';
             overlay.style.display = 'none';
-            overlay.style.animation = 'fadeIn 0.2s ease';
 
             // VS Code風のコマンドパレット
             const paletteDiv = document.createElement('div');
             paletteDiv.id = 'command-palette-div';
             paletteDiv.style.position = 'fixed';
             paletteDiv.style.left = '50%';
-            paletteDiv.style.top = '25%';
+            paletteDiv.style.top = '10%';
             paletteDiv.style.transform = 'translateX(-50%)';
             paletteDiv.style.width = 'min(600px, 95vw)';
             paletteDiv.style.maxHeight = '60vh';
@@ -72,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
             paletteDiv.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
             paletteDiv.style.overflow = 'hidden';
             paletteDiv.style.zIndex = '100000';
-            paletteDiv.style.animation = 'slideIn 0.2s ease';
 
             // 検索入力部
             const inputContainer = document.createElement('div');
@@ -120,21 +118,128 @@ document.addEventListener('DOMContentLoaded', () => {
             paletteDiv.appendChild(inputContainer);
             paletteDiv.appendChild(resultsDiv);
 
-            // コマンドツリー（シンプル化）
+            // コマンドツリー（テーマコマンド追加）
             this.commandTree = [
                 { cmd: "Go: Home", desc: "Navigate to home page", action: () => location.href = "/" },
                 { cmd: "Go: Login", desc: "Navigate to login page", action: () => location.href = "/login" },
                 { cmd: "Go: Terms", desc: "Navigate to terms page", action: () => location.href = "/terms" },
                 { cmd: "Go: License", desc: "Navigate to license page", action: () => location.href = "/license" },
                 { cmd: "Go: Tools", desc: "Navigate to tools page", action: () => location.href = "/tools" },
+                { cmd: "Go: Release", desc: "Navigate to release page", action: () => location.href = "/release" },
                 { cmd: "Browser: Back", desc: "Go back in browser history", action: () => history.back() },
                 { cmd: "Browser: Forward", desc: "Go forward in browser history", action: () => history.forward() },
                 { cmd: "Browser: Reload", desc: "Reload current page", action: () => location.reload() },
+                { cmd: "Theme", desc: "Change theme (white/dark/coffee/ocean/forest/sunset/kawaii/mono-dark/mono-white/paper)", action: (args) => this.changeTheme(args) },
+                { cmd: "Theme white", desc: "Change to white theme", action: () => this.changeTheme(['white']) },
+                { cmd: "Theme dark", desc: "Change to dark theme", action: () => this.changeTheme(['dark']) },
+                { cmd: "Theme coffee", desc: "Change to coffee theme", action: () => this.changeTheme(['coffee']) },
+                { cmd: "Theme ocean", desc: "Change to ocean theme", action: () => this.changeTheme(['ocean']) },
+                { cmd: "Theme forest", desc: "Change to forest theme", action: () => this.changeTheme(['forest']) },
+                { cmd: "Theme sunset", desc: "Change to sunset theme", action: () => this.changeTheme(['sunset']) },
+                { cmd: "Theme kawaii", desc: "Change to kawaii theme", action: () => this.changeTheme(['kawaii']) },
+                { cmd: "Theme mono-dark", desc: "Change to mono-dark theme", action: () => this.changeTheme(['mono-dark']) },
+                { cmd: "Theme mono-white", desc: "Change to mono-white theme", action: () => this.changeTheme(['mono-white']) },
+                { cmd: "Theme paper", desc: "Change to paper theme", action: () => this.changeTheme(['paper']) },
             ];
+
+            // テーマ設定
+            this.themes = {
+                white: {
+                    '--color-bg-0': '#ffffff',
+                    '--color-bg-1': '#e9e9e9',
+                    '--color-bg-2': '#875e46',
+                    '--color-text-0': '#3c3c3c',
+                    '--color-text-1': '#000000',
+                    '--color-accent-0': '#ffdcc8',
+                    '--color-accent-1': '#e4873a'
+                },
+                dark: {
+                    '--color-bg-0': '#000000',
+                    '--color-bg-1': '#232323',
+                    '--color-bg-2': '#875e46',
+                    '--color-text-0': '#d1d1d1',
+                    '--color-text-1': '#ffffff',
+                    '--color-accent-0': '#815a44',
+                    '--color-accent-1': '#e8af7f'
+                },
+                coffee: {
+                    '--color-bg-0': '#1a1410',
+                    '--color-bg-1': '#251e18',
+                    '--color-bg-2': '#302820',
+                    '--color-text-0': '#b3b3b3',
+                    '--color-text-1': '#e6e6e6',
+                    '--color-accent-0': '#5d4a37',
+                    '--color-accent-1': '#9b7e64ff'
+                },
+                ocean: {
+                    '--color-bg-0': '#0f1419',
+                    '--color-bg-1': '#161d24',
+                    '--color-bg-2': '#1d262f',
+                    '--color-text-0': '#b3b3b3',
+                    '--color-text-1': '#e6e6e6',
+                    '--color-accent-0': '#5b6e81ff',
+                    '--color-accent-1': '#4a5a6a'
+                },
+                forest: {
+                    '--color-bg-0': '#0f1510',
+                    '--color-bg-1': '#151d18',
+                    '--color-bg-2': '#1b2520',
+                    '--color-text-0': '#b3b3b3',
+                    '--color-text-1': '#e6e6e6',
+                    '--color-accent-0': '#3a4a3a',
+                    '--color-accent-1': '#6f8e6fff'
+                },
+                sunset: {
+                    '--color-bg-0': '#1a1218',
+                    '--color-bg-1': '#251820',
+                    '--color-bg-2': '#301e28',
+                    '--color-text-0': '#b3b3b3',
+                    '--color-text-1': '#e6e6e6',
+                    '--color-accent-0': '#5a3a5a',
+                    '--color-accent-1': '#8c648cff'
+                },
+                kawaii: {
+                    '--color-bg-0': '#fff0f5',
+                    '--color-bg-1': '#ffe4e1',
+                    '--color-bg-2': '#ffb6c1',
+                    '--color-text-0': '#c95995ff',
+                    '--color-text-1': '#ff7cc2ff',
+                    '--color-accent-0': '#ff69b4',
+                    '--color-accent-1': '#ff7cc2ff'
+                },
+                'mono-dark': {
+                    '--color-bg-0': '#0a0a0a',
+                    '--color-bg-1': '#1a1a1a',
+                    '--color-bg-2': '#333333',
+                    '--color-text-0': '#999999',
+                    '--color-text-1': '#cccccc',
+                    '--color-accent-0': '#666666',
+                    '--color-accent-1': '#aaaaaa'
+                },
+                'mono-white': {
+                    '--color-bg-0': '#fafafa',
+                    '--color-bg-1': '#f0f0f0',
+                    '--color-bg-2': '#cccccc',
+                    '--color-text-0': '#666666',
+                    '--color-text-1': '#333333',
+                    '--color-accent-0': '#999999',
+                    '--color-accent-1': '#555555'
+                },
+                paper: {
+                    '--color-bg-0': '#f7f5f3',
+                    '--color-bg-1': '#e8e5e0',
+                    '--color-bg-2': '#d4c5a9',
+                    '--color-text-0': '#5d5347',
+                    '--color-text-1': '#2d2520',
+                    '--color-accent-0': '#a67c52',
+                    '--color-accent-1': '#8b5a3c'
+                }
+            };
 
             // 初期化
             this.selectedIndex = -1;
             this.filteredCommands = [];
+            this.isAnimating = false; // アニメーション状態フラグを追加
             this.menuBtn = menuBtn;
             this.overlay = overlay;
             this.paletteIcon = paletteIcon;
@@ -152,6 +257,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // CSS アニメーション追加
             this.addAnimations();
+            
+            // 保存されたテーマを読み込み
+            this.loadSavedTheme();
         }
 
         addAnimations() {
@@ -161,15 +269,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     from { opacity: 0; }
                     to { opacity: 1; }
                 }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
                 @keyframes slideIn {
                     from { 
                         opacity: 0;
-                        transform: translateX(-50%) translateY(-20px);
+                        transform: translateX(-50%) translateY(-30px);
                     }
                     to { 
                         opacity: 1;
                         transform: translateX(-50%) translateY(0);
                     }
+                }
+                @keyframes slideOut {
+                    from { 
+                        opacity: 1;
+                        transform: translateX(-50%) translateY(0);
+                    }
+                    to { 
+                        opacity: 0;
+                        transform: translateX(-50%) translateY(-30px);
+                    }
+                }
+                #command-palette-overlay.show {
+                    animation: fadeIn 0.2s ease forwards;
+                }
+                #command-palette-overlay.hide {
+                    animation: fadeOut 0.2s ease forwards;
+                }
+                #command-palette-div.show {
+                    animation: slideIn 0.2s ease forwards;
+                }
+                #command-palette-div.hide {
+                    animation: slideOut 0.2s ease forwards;
                 }
                 .palette-item {
                     padding: 8px 12px;
@@ -205,64 +339,126 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupEvents(menuBtn, overlay, paletteIcon, closeIcon, inputField, resultsDiv) {
             // メニューボタン
-            menuBtn.onclick = () => this.togglePalette(overlay, menuBtn, paletteIcon, closeIcon, inputField);
+            menuBtn.onclick = () => this.togglePalette();
 
             // キーボードショートカット (Ctrl+Shift+P または /)
             document.addEventListener('keydown', e => {
                 if (((e.ctrlKey && e.shiftKey && e.key === 'P') || 
                      (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey)) &&
-                    overlay.style.display !== 'block' &&
+                    !this.isVisible() &&
                     !(document.activeElement.tagName.match(/INPUT|TEXTAREA/) || document.activeElement.isContentEditable)) {
                     e.preventDefault();
-                    this.showPalette(overlay, menuBtn, closeIcon, inputField);
-                } else if (e.key === 'Escape' && overlay.style.display === 'block') {
-                    this.hidePalette(overlay, menuBtn, paletteIcon);
+                    this.showPalette();
+                } else if (e.key === 'Escape' && this.isVisible()) {
+                    this.hidePalette();
                 }
             });
 
             // 入力フィールドのイベント
             inputField.addEventListener('input', e => this.filterCommands(e.target.value, resultsDiv));
-            inputField.addEventListener('keydown', e => this.handleKeyNavigation(e, resultsDiv, overlay, menuBtn, paletteIcon));
+            inputField.addEventListener('keydown', e => this.handleKeyNavigation(e));
 
             // オーバーレイクリックで閉じる
             overlay.addEventListener('click', e => {
                 if (e.target === overlay) {
-                    this.hidePalette(overlay, menuBtn, paletteIcon);
+                    this.hidePalette();
                 }
             });
         }
 
-        togglePalette(overlay, menuBtn, paletteIcon, closeIcon, inputField) {
-            if (overlay.style.display === 'block') {
+        togglePalette() {
+            if (this.isVisible()) {
                 this.hidePalette();
             } else {
                 this.showPalette();
             }
         }
 
+        isVisible() {
+            return this.overlay.style.display === 'block';
+        }
+
         showPalette() {
+            if (this.isAnimating) return;
+            this.isAnimating = true;
+            
+            // 要素を表示
             this.overlay.style.display = 'block';
+            
+            // アニメーションクラスをリセット
+            this.overlay.className = '';
+            document.getElementById('command-palette-div').className = '';
+            
+            // 次のフレームでアニメーション開始
+            requestAnimationFrame(() => {
+                this.overlay.classList.add('show');
+                document.getElementById('command-palette-div').classList.add('show');
+            });
+            
+            // ボタンアイコン変更
             this.menuBtn.innerHTML = '';
             this.menuBtn.appendChild(this.closeIcon);
+            
+            // フォーカスとコマンド表示
             setTimeout(() => {
                 this.inputField.focus();
                 this.filterCommands('', this.resultsDiv);
+                this.isAnimating = false;
             }, 100);
         }
 
         hidePalette() {
-            this.overlay.style.display = 'none';
+            if (this.isAnimating) return;
+            this.isAnimating = true;
+            
+            // アニメーションクラスをリセット
+            this.overlay.className = '';
+            document.getElementById('command-palette-div').className = '';
+            
+            // 次のフレームでアニメーション開始
+            requestAnimationFrame(() => {
+                this.overlay.classList.add('hide');
+                document.getElementById('command-palette-div').classList.add('hide');
+            });
+            
+            // ボタンアイコン変更
             this.menuBtn.innerHTML = '';
             this.menuBtn.appendChild(this.paletteIcon);
+            
+            // 入力フィールドクリア
             this.inputField.value = '';
             this.selectedIndex = -1;
+            
+            // アニメーション完了後に非表示
+            setTimeout(() => {
+                this.overlay.style.display = 'none';
+                this.overlay.className = '';
+                document.getElementById('command-palette-div').className = '';
+                this.isAnimating = false;
+            }, 200);
         }
 
         filterCommands(query, resultsDiv) {
-            this.filteredCommands = this.commandTree.filter(cmd => 
-                cmd.cmd.toLowerCase().includes(query.toLowerCase()) ||
-                cmd.desc.toLowerCase().includes(query.toLowerCase())
-            );
+            const parts = query.trim().split(/\s+/);
+            const baseCmd = parts[0] || '';
+            const arg = parts[1] || '';
+
+            // テーマコマンドの特別処理
+            if (baseCmd.toLowerCase() === 'theme' && parts.length === 2) {
+                this.filteredCommands = Object.keys(this.themes)
+                    .filter(theme => theme.toLowerCase().includes(arg.toLowerCase()))
+                    .map(theme => ({
+                        cmd: `Theme ${theme}`,
+                        desc: `Change to ${theme} theme`,
+                        action: () => this.changeTheme([theme])
+                    }));
+            } else {
+                this.filteredCommands = this.commandTree.filter(cmd => 
+                    cmd.cmd.toLowerCase().includes(query.toLowerCase()) ||
+                    cmd.desc.toLowerCase().includes(query.toLowerCase())
+                );
+            }
+            
             this.selectedIndex = this.filteredCommands.length > 0 ? 0 : -1;
             this.renderResults(resultsDiv);
         }
@@ -294,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        handleKeyNavigation(e, resultsDiv, overlay, menuBtn, paletteIcon) {
+        handleKeyNavigation(e) {
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredCommands.length - 1);
@@ -303,6 +499,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
                 this.renderResults(this.resultsDiv);
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                if (this.selectedIndex >= 0 && this.filteredCommands[this.selectedIndex]) {
+                    this.inputField.value = this.filteredCommands[this.selectedIndex].cmd;
+                    this.filterCommands(this.inputField.value, this.resultsDiv);
+                    setTimeout(() => {
+                        this.inputField.setSelectionRange(this.inputField.value.length, this.inputField.value.length);
+                    }, 0);
+                }
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (this.selectedIndex >= 0) {
@@ -315,8 +520,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
         executeCommand(index) {
             if (this.filteredCommands[index] && this.filteredCommands[index].action) {
-                this.filteredCommands[index].action();
+                // コマンドライン引数の解析
+                const cmdParts = this.inputField.value.trim().split(/\s+/);
+                const args = cmdParts.slice(1);
+                
+                this.filteredCommands[index].action(args);
                 this.hidePalette();
+            }
+        }
+
+        changeTheme(args) {
+            const themeName = args && args[0] ? args[0].toLowerCase() : null;
+            
+            if (!themeName) {
+                console.log('Usage: Theme <white|dark|coffee|ocean|forest|sunset|kawaii|mono-dark|mono-white|paper>');
+                return;
+            }
+            
+            if (!this.themes[themeName]) {
+                console.log(`Unknown theme: ${themeName}. Available themes: ${Object.keys(this.themes).join(', ')}`);
+                return;
+            }
+            
+            const theme = this.themes[themeName];
+            const root = document.documentElement;
+            
+            // CSS変数を設定
+            Object.entries(theme).forEach(([property, value]) => {
+                root.style.setProperty(property, value);
+            });
+            
+            // ローカルストレージに保存
+            localStorage.setItem('selectedTheme', themeName);
+            console.log(`Theme changed to: ${themeName}`);
+        }
+
+        // ページ読み込み時にテーマを復元
+        loadSavedTheme() {
+            const savedTheme = localStorage.getItem('selectedTheme');
+            if (savedTheme && this.themes[savedTheme]) {
+                this.changeTheme([savedTheme]);
+            } else {
+                // デフォルトはdarkテーマ
+                this.changeTheme(['dark']);
             }
         }
     }

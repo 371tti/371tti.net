@@ -20,16 +20,15 @@
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background: rgba(0, 0, 0, 0.6);
-        border-left: 1px solid #232323;
+        background: var(--color-bg-0);
+        border-left: 1px solid var(--color-bg-1);
         padding: 20px 12px 12px 12px;
         z-index: 9999;
         font-family: Consolas, Monaco, 'Andale Mono', monospace;
         font-size: 11px;
-        color: #ffffff;
+        color: var(--color-text-1);
         min-width: 220px;
         max-width: 300px;
-        transition: opacity 200ms ease-out;
     `;
 
     // ×ボタンを作成
@@ -39,7 +38,7 @@
         position: absolute;
         top: 6px;
         right: 8px;
-        color: #aaaaaa;
+        color: var(--color-text-0);
         cursor: pointer;
         font-size: 14px;
         line-height: 1;
@@ -52,10 +51,10 @@
     
     // ×ボタンのホバー効果
     closeButton.addEventListener('mouseenter', () => {
-        closeButton.style.color = '#ffffff';
+        closeButton.style.color = 'var(--color-text-1)';
     });
     closeButton.addEventListener('mouseleave', () => {
-        closeButton.style.color = '#aaaaaa';
+        closeButton.style.color = 'var(--color-text-0)';
     });
     
     // ×ボタンのクリックイベント
@@ -70,22 +69,22 @@
 
     // 各デバッグ情報の要素を作成
     const domState = document.createElement('div');
-    domState.style.cssText = `color: #e8af7f; margin-bottom: 4px;`;
+    domState.style.cssText = `color: var(--color-accent-1); margin-bottom: 4px;`;
     
     const loadTime = document.createElement('div');
-    loadTime.style.cssText = `color: #aaaaaa; margin-bottom: 4px;`;
+    loadTime.style.cssText = `color: var(--color-text-0); margin-bottom: 4px;`;
     
     const resourceInfo = document.createElement('div');
-    resourceInfo.style.cssText = `color: #815a44; margin-bottom: 4px;`;
+    resourceInfo.style.cssText = `color: var(--color-accent-0); margin-bottom: 4px;`;
     
     const performanceInfo = document.createElement('div');
-    performanceInfo.style.cssText = `color: #aaaaaa; margin-bottom: 4px;`;
+    performanceInfo.style.cssText = `color: var(--color-text-0); margin-bottom: 4px;`;
     
     const navigationInfo = document.createElement('div');
-    navigationInfo.style.cssText = `color: #e8af7f; margin-bottom: 4px;`;
+    navigationInfo.style.cssText = `color: var(--color-accent-1); margin-bottom: 4px;`;
 
     const scriptInfo = document.createElement('div');
-    scriptInfo.style.cssText = `color: #aaaaaa; font-size: 10px;`;
+    scriptInfo.style.cssText = `color: var(--color-text-0); font-size: 10px;`;
 
     // DOM要素が利用可能になったら実行
     waitForDOM(() => {
@@ -167,7 +166,7 @@
                     debugScreen.parentNode.removeChild(debugScreen);
                 }
             }, 200);
-        }, 2000);
+        }, 4000);
     });
 
     // ページが既に読み込まれている場合の処理

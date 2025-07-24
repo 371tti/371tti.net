@@ -33,8 +33,8 @@
 /* 基本のタグスタイル */
 .tag {
     display: inline-block;
-    background-color: var(--color-dark-gray); /* デフォルト背景色 */
-    color: var(--color-gray); /* デフォルト文字色 */
+    background-color: var(--color-bg-1); /* デフォルト背景色 */
+    color: var(--color-text-1); /* デフォルト文字色 */
     padding: 0.2em 0.6em;
     border-radius: 0.3em;
     text-decoration: none;

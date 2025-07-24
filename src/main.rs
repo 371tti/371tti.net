@@ -43,6 +43,11 @@ fn main() {
         c
     });
 
+    kurosabi.get("/release", |mut c| async move {
+        c.res.html(include_str!("../data/pages/index/release/index.html"));
+        c
+    });
+
     kurosabi.get("/index.html", |mut c| async move {
         c.res.html(include_str!("../data/pages/index/index.html"));
         c

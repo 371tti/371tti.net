@@ -14,6 +14,10 @@ version: 0.4.1
     --color-text-1: #ffffff;
     --color-accent-0: #815a44;
     --color-accent-1: #e8af7f;
+    
+    /* アニメーション設定 */
+    --transition-duration: 0.5s;
+    --transition-timing: ease-in-out;
 }
 
 * {
@@ -38,6 +42,17 @@ version: 0.4.1
         color: var(--color-text-1);
         /* 文字色 */
     }
+
+    /* 全ての色関連プロパティにトランジションを適用 */
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        border-color var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing),
+        fill var(--transition-duration) var(--transition-timing),
+        stroke var(--transition-duration) var(--transition-timing),
+        outline-color var(--transition-duration) var(--transition-timing),
+        text-shadow var(--transition-duration) var(--transition-timing);
 }
 
 ::-webkit-scrollbar {
@@ -211,6 +226,12 @@ input[type="email"] {
     border-radius: 0;
     padding: 3mm 2mm 2mm 2mm;
     margin: 5mm 0 0 0;
+
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        border-color var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing);
 }
 
 /* ボタンのスタイル */
@@ -223,7 +244,11 @@ input[type="email"] {
     padding: 2mm 5mm; /* 内側余白 */
     text-decoration: none; /* テキスト装飾を削除 */
     cursor: pointer; /* カーソルをポインターに変更 */
-    transition: all 0.4s; /* ホバー時のトランジション */
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        border-color var(--transition-duration) var(--transition-timing),
+        transform 0.2s var(--transition-timing);
     margin: 2mm 2mm 0 0; /* 外側余白 */
 }
 
@@ -241,7 +266,9 @@ a:not(.button):not(.tag):not(.link_anime) {
     text-decoration: none; /* テキスト装飾を削除 */
     color: var(--color-accent-1); /* リンクの色 */
     position: relative; /* 擬似要素の位置調整に必要 */
-    transition: color 0.2s; /* 色変更時のトランジション */
+    transition: 
+        color var(--transition-duration) var(--transition-timing),
+        text-shadow var(--transition-duration) var(--transition-timing);
     display: inline-flex; /* フレキシブルな表示 */
     background-color: transparent; /* 背景を透明に */
     margin: 0; /* 外側余白をリセット */
