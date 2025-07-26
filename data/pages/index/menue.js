@@ -1,3 +1,25 @@
+// 共通テーマ定義
+const THEMES = {
+    white:     { '--color-bg-0':'#ffffff','--color-bg-1':'#e9e9e9','--color-bg-2':'#875e46','--color-text-0':'#3c3c3c','--color-text-1':'#000000','--color-accent-0':'#ffdcc8','--color-accent-1':'#e4873a' },
+    dark:      { '--color-bg-0':'#000000','--color-bg-1':'#232323','--color-bg-2':'#875e46','--color-text-0':'#d1d1d1','--color-text-1':'#ffffff','--color-accent-0':'#815a44','--color-accent-1':'#e8af7f' },
+    coffee:    { '--color-bg-0': '#1a1410','--color-bg-1': '#251e18','--color-bg-2': '#302820','--color-text-0': '#b3b3b3','--color-text-1': '#e6e6e6','--color-accent-0': '#5d4a37','--color-accent-1': '#9b7e64ff' },
+    ocean:     { '--color-bg-0': '#0f1419','--color-bg-1': '#161d24','--color-bg-2': '#1d262f','--color-text-0': '#b3b3b3','--color-text-1': '#e6e6e6','--color-accent-0': '#2f567eff','--color-accent-1': '#739dc6ff' },
+    forest:    { '--color-bg-0': '#0f1510','--color-bg-1': '#151d18','--color-bg-2': '#1b2520','--color-text-0': '#b3b3b3','--color-text-1': '#e6e6e6','--color-accent-0': '#3a4a3a','--color-accent-1': '#6f8e6fff' },
+    sunset:    { '--color-bg-0': '#1a1218','--color-bg-1': '#251820','--color-bg-2': '#301e28','--color-text-0': '#b3b3b3','--color-text-1': '#e6e6e6','--color-accent-0': '#5a3a5a','--color-accent-1': '#8c648cff' },
+    kawaii:    { '--color-bg-0': '#fff0f5','--color-bg-1': '#ffe4e1','--color-bg-2': '#ffb6c1','--color-text-0': '#c95995ff','--color-text-1': '#ff7cc2ff','--color-accent-0': '#ff69b4','--color-accent-1': '#ff7cc2ff' },
+    'mono-dark':  { '--color-bg-0': '#0a0a0a','--color-bg-1': '#1a1a1a','--color-bg-2': '#333333','--color-text-0': '#999999','--color-text-1': '#cccccc','--color-accent-0': '#666666','--color-accent-1': '#aaaaaa' },
+    'mono-white': { '--color-bg-0': '#fafafa','--color-bg-1': '#f0f0f0','--color-bg-2': '#cccccc','--color-text-0': '#666666','--color-text-1': '#333333','--color-accent-0': '#999999','--color-accent-1': '#555555' },
+    paper:     { '--color-bg-0': '#f7f5f3','--color-bg-1': '#e8e5e0','--color-bg-2': '#d4c5a9','--color-text-0': '#5d5347','--color-text-1': '#2d2520','--color-accent-0': '#a67c52','--color-accent-1': '#8b5a3c' }
+};
+
+// DOM構築前に即テーマを適用
+;(function(){
+    const name = (localStorage.getItem('selectedTheme')||'dark').toLowerCase();
+    const theme = THEMES[name] || THEMES.dark;
+    Object.entries(theme).forEach(([prop,val]) => document.documentElement.style.setProperty(prop,val));
+    console.log(`Applied theme: ${name}`);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     class ConsoleEmulator {
         constructor() {
@@ -21,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             menuBtn.style.alignItems = 'center';
             menuBtn.style.justifyContent = 'center';
             menuBtn.style.transition = 'all 0.2s ease';
+
+            // アクセシビリティ: 操作説明用ラベルを設定
+            menuBtn.setAttribute('aria-label', 'Open command palette');
 
             // 普通のハンバーガーメニューアイコン
             const paletteIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -126,10 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 { cmd: "Go: License", desc: "Navigate to license page", action: () => location.href = "/license" },
                 { cmd: "Go: Tools", desc: "Navigate to tools page", action: () => location.href = "/tools" },
                 { cmd: "Go: Release", desc: "Navigate to release page", action: () => location.href = "/release" },
+                { cmd: "Scroll", desc: "Scroll to top (0%) or to specified percent", action: (args) => this.scrollPercent(args) },
                 { cmd: "Browser: Back", desc: "Go back in browser history", action: () => history.back() },
                 { cmd: "Browser: Forward", desc: "Go forward in browser history", action: () => history.forward() },
                 { cmd: "Browser: Reload", desc: "Reload current page", action: () => location.reload() },
-                { cmd: "Theme", desc: "Change theme (white/dark/coffee/ocean/forest/sunset/kawaii/mono-dark/mono-white/paper)", action: (args) => this.changeTheme(args) },
+                { cmd: "Theme", desc: "Change theme (white/dark(default)/coffee/ocean/forest/sunset/kawaii/mono-dark/mono-white/paper)", action: (args) => this.changeTheme(args) },
                 { cmd: "Theme white", desc: "Change to white theme", action: () => this.changeTheme(['white']) },
                 { cmd: "Theme dark", desc: "Change to dark theme", action: () => this.changeTheme(['dark']) },
                 { cmd: "Theme coffee", desc: "Change to coffee theme", action: () => this.changeTheme(['coffee']) },
@@ -142,99 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 { cmd: "Theme paper", desc: "Change to paper theme", action: () => this.changeTheme(['paper']) },
             ];
 
-            // テーマ設定
-            this.themes = {
-                white: {
-                    '--color-bg-0': '#ffffff',
-                    '--color-bg-1': '#e9e9e9',
-                    '--color-bg-2': '#875e46',
-                    '--color-text-0': '#3c3c3c',
-                    '--color-text-1': '#000000',
-                    '--color-accent-0': '#ffdcc8',
-                    '--color-accent-1': '#e4873a'
-                },
-                dark: {
-                    '--color-bg-0': '#000000',
-                    '--color-bg-1': '#232323',
-                    '--color-bg-2': '#875e46',
-                    '--color-text-0': '#d1d1d1',
-                    '--color-text-1': '#ffffff',
-                    '--color-accent-0': '#815a44',
-                    '--color-accent-1': '#e8af7f'
-                },
-                coffee: {
-                    '--color-bg-0': '#1a1410',
-                    '--color-bg-1': '#251e18',
-                    '--color-bg-2': '#302820',
-                    '--color-text-0': '#b3b3b3',
-                    '--color-text-1': '#e6e6e6',
-                    '--color-accent-0': '#5d4a37',
-                    '--color-accent-1': '#9b7e64ff'
-                },
-                ocean: {
-                    '--color-bg-0': '#0f1419',
-                    '--color-bg-1': '#161d24',
-                    '--color-bg-2': '#1d262f',
-                    '--color-text-0': '#b3b3b3',
-                    '--color-text-1': '#e6e6e6',
-                    '--color-accent-0': '#5b6e81ff',
-                    '--color-accent-1': '#4a5a6a'
-                },
-                forest: {
-                    '--color-bg-0': '#0f1510',
-                    '--color-bg-1': '#151d18',
-                    '--color-bg-2': '#1b2520',
-                    '--color-text-0': '#b3b3b3',
-                    '--color-text-1': '#e6e6e6',
-                    '--color-accent-0': '#3a4a3a',
-                    '--color-accent-1': '#6f8e6fff'
-                },
-                sunset: {
-                    '--color-bg-0': '#1a1218',
-                    '--color-bg-1': '#251820',
-                    '--color-bg-2': '#301e28',
-                    '--color-text-0': '#b3b3b3',
-                    '--color-text-1': '#e6e6e6',
-                    '--color-accent-0': '#5a3a5a',
-                    '--color-accent-1': '#8c648cff'
-                },
-                kawaii: {
-                    '--color-bg-0': '#fff0f5',
-                    '--color-bg-1': '#ffe4e1',
-                    '--color-bg-2': '#ffb6c1',
-                    '--color-text-0': '#c95995ff',
-                    '--color-text-1': '#ff7cc2ff',
-                    '--color-accent-0': '#ff69b4',
-                    '--color-accent-1': '#ff7cc2ff'
-                },
-                'mono-dark': {
-                    '--color-bg-0': '#0a0a0a',
-                    '--color-bg-1': '#1a1a1a',
-                    '--color-bg-2': '#333333',
-                    '--color-text-0': '#999999',
-                    '--color-text-1': '#cccccc',
-                    '--color-accent-0': '#666666',
-                    '--color-accent-1': '#aaaaaa'
-                },
-                'mono-white': {
-                    '--color-bg-0': '#fafafa',
-                    '--color-bg-1': '#f0f0f0',
-                    '--color-bg-2': '#cccccc',
-                    '--color-text-0': '#666666',
-                    '--color-text-1': '#333333',
-                    '--color-accent-0': '#999999',
-                    '--color-accent-1': '#555555'
-                },
-                paper: {
-                    '--color-bg-0': '#f7f5f3',
-                    '--color-bg-1': '#e8e5e0',
-                    '--color-bg-2': '#d4c5a9',
-                    '--color-text-0': '#5d5347',
-                    '--color-text-1': '#2d2520',
-                    '--color-accent-0': '#a67c52',
-                    '--color-accent-1': '#8b5a3c'
-                }
-            };
+            // テーマ設定を共通定義に置き換え
+            this.themes = THEMES;
 
             // 初期化
             this.selectedIndex = -1;
@@ -257,9 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // CSS アニメーション追加
             this.addAnimations();
-            
-            // 保存されたテーマを読み込み
-            this.loadSavedTheme();
         }
 
         addAnimations() {
@@ -399,6 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.menuBtn.innerHTML = '';
             this.menuBtn.appendChild(this.closeIcon);
             
+            // 開いたらラベルを更新
+            this.menuBtn.setAttribute('aria-label', 'Close command palette');
+
             // フォーカスとコマンド表示
             setTimeout(() => {
                 this.inputField.focus();
@@ -425,6 +360,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.menuBtn.innerHTML = '';
             this.menuBtn.appendChild(this.paletteIcon);
             
+            // 閉じたらラベルを戻す
+            this.menuBtn.setAttribute('aria-label', 'Open command palette');
+
             // 入力フィールドクリア
             this.inputField.value = '';
             this.selectedIndex = -1;
@@ -443,8 +381,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const baseCmd = parts[0] || '';
             const arg = parts[1] || '';
 
-            // テーマコマンドの特別処理
-            if (baseCmd.toLowerCase() === 'theme' && parts.length === 2) {
+            // Scroll コマンド（引数付き）を常に候補に出す
+            if (baseCmd.toLowerCase() === 'scroll') {
+                this.filteredCommands = [{
+                    cmd: `Scroll ${arg}`,
+                    desc: `Scroll to ${arg || 0}%`,
+                    action: () => this.scrollPercent([arg])
+                }];
+            }
+            // Theme コマンドの特別処理
+            else if (baseCmd.toLowerCase() === 'theme' && parts.length === 2) {
                 this.filteredCommands = Object.keys(this.themes)
                     .filter(theme => theme.toLowerCase().includes(arg.toLowerCase()))
                     .map(theme => ({
@@ -453,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         action: () => this.changeTheme([theme])
                     }));
             } else {
-                this.filteredCommands = this.commandTree.filter(cmd => 
+                this.filteredCommands = this.commandTree.filter(cmd =>
                     cmd.cmd.toLowerCase().includes(query.toLowerCase()) ||
                     cmd.desc.toLowerCase().includes(query.toLowerCase())
                 );
@@ -469,17 +415,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            resultsDiv.innerHTML = this.filteredCommands.map((cmd, idx) => `
-                <div class="palette-item ${idx === this.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
-                    <svg class="palette-item-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <div>
-                        <div class="palette-item-title">${cmd.cmd}</div>
-                        <div class="palette-item-desc">${cmd.desc}</div>
+            resultsDiv.innerHTML = this.filteredCommands.map((cmd, idx) => {
+                // コマンドの種類に応じたアイコンを選択
+                let iconPath = '';
+                if (cmd.cmd.startsWith('Go:')) {
+                    // ナビゲーションアイコン
+                    iconPath = 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z';
+                } else if (cmd.cmd.startsWith('Browser:')) {
+                    // ブラウザアイコン
+                    iconPath = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z';
+                } else if (cmd.cmd.startsWith('Theme')) {
+                    // パレット/テーマアイコン
+                    iconPath = 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zM6.5 12c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z';
+                } else if (cmd.cmd.startsWith('Scroll')) {
+                    // スクロールアイコン
+                    iconPath = 'M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z';
+                } else {
+                    // デフォルトのコマンドアイコン
+                    iconPath = 'M2 3h20v2H2V3zm0 6h20v2H2V9zm0 6h20v2H2v-2z';
+                }
+
+                return `
+                    <div class="palette-item ${idx === this.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
+                        <svg class="palette-item-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="${iconPath}"/>
+                        </svg>
+                        <div>
+                            <div class="palette-item-title">${cmd.cmd}</div>
+                            <div class="palette-item-desc">${cmd.desc}</div>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             // クリックイベント
             resultsDiv.querySelectorAll('.palette-item').forEach(item => {
@@ -488,6 +455,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.executeCommand(idx);
                 });
             });
+
+            // 選択項目が見えるようにスクロール
+            const selected = resultsDiv.querySelector('.palette-item.selected');
+            if (selected) {
+                selected.scrollIntoView({ block: 'nearest' });
+            }
         }
 
         handleKeyNavigation(e) {
@@ -510,8 +483,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (this.selectedIndex >= 0) {
+                const input = this.inputField.value.trim();
+                if (this.selectedIndex >= 0 && this.filteredCommands[this.selectedIndex]) {
                     this.executeCommand(this.selectedIndex);
+                } else {
+                    // 未定義コマンドのフォールバック
+                    console.log(`[Error] Unknown command: '${input}'`);
+                    this.hidePalette();
                 }
             } else if (e.key === 'Escape') {
                 this.hidePalette();
@@ -530,13 +508,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         changeTheme(args) {
-            const themeName = args && args[0] ? args[0].toLowerCase() : null;
-            
-            if (!themeName) {
-                console.log('Usage: Theme <white|dark|coffee|ocean|forest|sunset|kawaii|mono-dark|mono-white|paper>');
-                return;
-            }
-            
+            // 引数が空なら dark をデフォルトに
+            const themeName = args && args[0] ? args[0].toLowerCase() : 'dark';
+
             if (!this.themes[themeName]) {
                 console.log(`Unknown theme: ${themeName}. Available themes: ${Object.keys(this.themes).join(', ')}`);
                 return;
@@ -563,6 +537,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // デフォルトはdarkテーマ
                 this.changeTheme(['dark']);
+            }
+        }
+
+        // ページをN%の位置までスムーズにスクロール
+        scrollPercent(args) {
+            // デバッグ: コマンド受信メッセージ
+            const input = args[0] || "0";
+            console.log(`[Debug] Scroll command received: ${input}%`);
+            // 引数が数字であれば0～100に、なければ0
+            const p = Math.min(Math.max(parseFloat(input), 0), 100);
+
+            const mainElement = document.querySelector('.main');
+            
+            if (mainElement) {
+                const maxScroll = mainElement.scrollHeight - mainElement.clientHeight;
+                const target = maxScroll * (p / 100);
+                mainElement.scrollTo({ top: target, behavior: 'smooth' });
+            } else {
+                // .mainが見つからない場合はwindowにフォールバック
+                const doc = document.documentElement;
+                const maxScroll = doc.scrollHeight - window.innerHeight;
+                const target = maxScroll * (p / 100);
+                window.scrollTo({ top: target, behavior: 'smooth' });
             }
         }
     }

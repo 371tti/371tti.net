@@ -42,21 +42,27 @@ document.querySelectorAll('.box').forEach(hideBoxAndAllChildren);
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            // 左から右に覆いを取るようなフェードインスタイルを適用
             const box = entry.target;
             const elements = [box, ...Array.from(box.querySelectorAll('*'))];
             
             elements.forEach((el, index) => {
-                // 段階的に表示するための遅延
-                const delay = index * 0; // 16msずつ遅延
-
+                const delay = index * 0;
                 setTimeout(() => {
                     el.style.opacity = '1';
                     el.style.transform = 'translateX(0)';
                 }, delay);
             });
 
-            observer.unobserve(entry.target); // 一度監視したら解除
+            observer.unobserve(entry.target);
+
+            // アニメーション完了後にインラインスタイルをクリーンアップ
+            setTimeout(() => {
+                elements.forEach(el => {
+                    el.style.removeProperty('opacity');
+                    el.style.removeProperty('transform');
+                    el.style.removeProperty('transition');
+                });
+            }, 600);
         }
     });
 }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
@@ -90,48 +96,3 @@ const fullScreenStyle = {
 
 // 元のスタイルを保持するためのマップ
 const originalStyles = new Map();
-
-// イベントリスナーを追加
-document.addEventListener("click", function (event) {
-    console.log(event);
-    // Ctrlキーを押しているか確認
-    if (event.ctrlKey && event.target.classList.contains("box")) {
-        const box = event.target;
-
-        // 元のスタイルを保存（初回のみ）
-        if (!originalStyles.has(box)) {
-            originalStyles.set(box, {
-                position: box.style.position || "static",
-                top: box.style.top || "",
-                left: box.style.left || "",
-                width: box.style.width || "",
-                height: box.style.height || "",
-                zIndex: box.style.zIndex || "",
-            });
-        }
-
-        // 画面全体に表示するスタイルを適用
-        Object.assign(box.style, fullScreenStyle);
-
-        // もう一度クリックすると元に戻す
-        box.addEventListener(
-            "click",
-            function restoreOriginal(event) {
-                event.stopPropagation(); // イベントのバブリングを防止
-
-                // 元のスタイルを復元
-                const original = originalStyles.get(box);
-                if (original) {
-                    Object.assign(box.style, original);
-                }
-
-                // 復元後、このイベントリスナーを削除
-                box.removeEventListener("click", restoreOriginal);
-
-                // 元のスタイルを削除（必要なら）
-                originalStyles.delete(box);
-            },
-            { once: true } // 一度だけ実行されるリスナー
-        );
-    }
-});

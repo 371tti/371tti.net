@@ -16,6 +16,8 @@ impl AuthManager {
     const USER_SESSION_TIMEOUT: u64 = 60 * 60 * 24; // ユーザーセッションのタイムアウト時間（秒）
     const SESSION_TIMEOUT: u64 = 60 * 60 * 24; // セッションのタイムアウト時間（秒）
 
+    /// 新しい AuthManager を生成します。
+    /// 内部に空のユーザー情報マップとセッションマップを持ちます。
     pub fn new() -> Self {
         Self {
             data: DashMap::new(),
@@ -23,11 +25,14 @@ impl AuthManager {
         }
     }
 
+    /// 指定したユーザー名とパスワードで新しいユーザーを追加します。
     pub fn add_user(&self, user_name: String, password: String) {
         let auth_info = AuthInfo::new(password.clone());
         self.data.insert(user_name.clone(), auth_info);
     }
 
+    /// 指定したユーザー名に紐づくすべてのセッションからログアウトし、
+    /// セッション情報をクリアします。
     pub fn all_session_logout(&self, user_name: &str) {
         if let Some(user) = self.data.get(user_name) {
             for session_id in user.sessions.iter() {
@@ -39,6 +44,8 @@ impl AuthManager {
         }
     }
 
+    /// セッションIDに対応するセッションの状態を取得し、
+    /// アカウントごとのステータスとセッション情報を返します。
     pub fn api_session_status(&self, session_id: &str) -> Option<SessionStatusAPI> {
         if let Some(session) = self.sessions.get(session_id) {
             let mut accounts = Vec::new();
@@ -67,6 +74,8 @@ impl AuthManager {
         }
     }
 
+    /// 有効期限を超過したセッションを破棄し、
+    /// 関連ユーザー情報からもセッションIDを削除します。
     pub fn drop_useless_session(&self) {
         let now_time = chrono::Utc::now().timestamp() as u64;
         for entry in self.sessions.iter_mut() {
@@ -83,7 +92,9 @@ impl AuthManager {
         }
     }
 
-    pub fn check_session(&self, req: &Req, res: &mut Res) -> (Option<String>, String){
+    /// リクエストからセッションを取得または生成し、アクセス時刻を更新してクッキーを設定します。
+    /// 戻り値は (現在のユーザーID, セッションID) のタプルです。
+    pub fn check_session(&self, req: &Req, res: &mut Res) -> (Option<String>, String) {
         let now_time = chrono::Utc::now().timestamp() as u64;
         let mut session_id: String = req.header.get_cookie("session_id").unwrap_or("").to_string();
         // 有効なセッションを確保
@@ -122,6 +133,8 @@ impl AuthManager {
         return (session.now_user.clone(), session_id); // Return the now_user as an Option<String> and the session_id
     }
 
+    /// 指定したユーザー名とパスワードで認証を行い、成功時には現在のセッションにユーザーを紐づけます。
+    /// 認証に成功した場合は true を返し、失敗時は false を返します。
     pub fn auth(&self, res: Req, user_name: String, password: String) -> bool {
         if let Some(mut auth_info) = self.data.get_mut(&user_name) {
             if auth_info.password == password {
@@ -148,6 +161,8 @@ impl AuthManager {
         false
     }
 
+    /// 一意な長さ SESSION_ID_LENGTH のセッションIDを生成します。
+    /// 既存のIDと衝突した場合は再帰的に再生成します。
     pub fn generate_session_id(&self) -> String {
         let mut bytes = [0u8; Self::SESSION_ID_LENGTH];
         let mut rng = OsRng;
