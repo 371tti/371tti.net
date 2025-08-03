@@ -27,11 +27,6 @@ fn main() {
         c
     });
 
-    kurosabi.get("/game/speed_runner", |mut c| async move {
-        c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html"));
-        c
-    });
-
     kurosabi.get("/tool/clock", |mut c| async move {
         c.res.html(include_str!("../data/pages/index/tools/clock.html"));
         c
@@ -39,6 +34,11 @@ fn main() {
 
     kurosabi.get("/tool/string_converter", |mut c| async move {
         c.res.html(include_str!("../data/pages/index/tools/string_converter.html"));
+        c
+    });
+
+    kurosabi.get("/game/speed_runner", |mut c| async move {
+        c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html"));
         c
     });
 
