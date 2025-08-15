@@ -1,25 +1,191 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="371tti.net login page">
-    <meta property="og:description" content="371tti.net login">
-    <meta property="og:title" content="371tti.net">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="/license">
-    <title>License - 371tti.net</title>
-    <link rel="stylesheet" href="/style.css">
-    <script src="/menue.js"></script>
-</head>
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Vector Paint</title>
+<style>
+html,body{margin:0;padding:0;height:100%;overflow:hidden;font:12px/1.4 system-ui,Segoe UI,Arial,sans-serif;background:#2b2d30;color:#ddd;-webkit-font-smoothing:antialiased}
+#workspace{position:relative;width:100%;height:100%;}
+canvas#main{position:absolute;left:0;top:0;width:100%;height:100%;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 0/24px 24px;}
+/* left tool bar */
+#toolBar{position:absolute;left:4px;top:4px;width:48px;display:flex;flex-direction:column;gap:6px;z-index:60}
+#toolBar button{width:48px;height:48px;border:1px solid #3a3d42;background:#44484d;color:#e2e5e9;border-radius:0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+#toolBar button.active{outline:2px solid #1d6ae5;background:#3d5a92}
+#toolBar button:hover{background:#555a60}
+/* panels */
+.panel{position:absolute;top:60px;left:70px;min-width:200px;background:#3a3d42;border:1px solid #4a4d52;border-radius:0;display:flex;flex-direction:column;box-shadow:0 8px 24px -8px rgba(0,0,0,.6);user-select:none}
+.panel-header{height:26px;padding:0 8px;font:12px/26px system-ui;background:#45494f;border-bottom:1px solid #4f545a;border-radius:0;cursor:move;display:flex;align-items:center;gap:6px}
+.panel-header .title{flex:1}
+.panel-body{padding:8px;display:flex;flex-direction:column;gap:6px;user-select:text}
+input[type=range]{cursor:pointer}
+section.group{display:flex;flex-direction:column;gap:4px}
+.row{display:flex;align-items:center;gap:6px}
+.row.wrap{flex-wrap:wrap}
+label.inline{display:flex;align-items:center;gap:4px}
+button.small{font-size:11px;padding:2px 6px;border:1px solid #565a60;background:#555a60;color:#fff;border-radius:0;cursor:pointer}
+button.small:hover{background:#666d75}
+/* color picker */
+#cpWheel{position:absolute;left:0;top:0}
+#cpSV{position:absolute;left:44px;top:44px;border:1px solid #222;border-radius:0;cursor:crosshair}
+.cp-container{position:relative;width:220px;height:220px}
+.cp-sv-cursor,.cp-hue-cursor{position:absolute;width:14px;height:14px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000;pointer-events:none;transform:translate(-7px,-7px)}
+#colorPreviewBox{width:46px;height:46px;border:1px solid #555;border-radius:0;background:#c33;cursor:pointer}
+/* layers */
+#layerList{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto}
+.layer-item{display:flex;gap:6px;background:#44484d;border:1px solid #54585d;border-radius:0;padding:4px;position:relative}
+.layer-item.active{outline:2px solid #1d6ae5}
+.layer-thumb{width:56px;height:56px;background:#222;border:1px solid #666;border-radius:0;flex:0 0 auto;position:relative;cursor:grab;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:10px;color:#777}
+.layer-meta{display:flex;flex-direction:column;gap:4px;flex:1}
+.layer-meta input.name{background:#555;border:1px solid #666;color:#fff;font-size:11px;border-radius:0;padding:2px 4px;width:100%}
+.layer-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.vis-toggle{cursor:pointer;font-size:14px;width:22px;text-align:center}
+select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;font-size:11px;padding:2px}
+/* history */
+#historyList{max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+#historyList button{background:#555;color:#ddd;border:1px solid #666;border-radius:0;font-size:11px;padding:2px 4px;text-align:left;cursor:pointer}
+#historyList button.active{background:#1d6ae5;color:#fff}
+/* selection info */
+#statusBar{position:absolute;left:0;right:0;bottom:0;height:22px;background:#1e1f22;color:#ccc;font:11px/22px ui-monospace,monospace;padding:0 10px;display:flex;gap:14px;align-items:center;border-top:1px solid #2b2c31;z-index:80}
+/* generic */
+.divider{height:1px;background:#4d5054;margin:4px 0}
+.panel-body::-webkit-scrollbar{width:10px}
+.panel-body::-webkit-scrollbar-thumb{background:#555;border-radius:0}
+/* help overlay */
+#helpOverlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:200;font-size:12px}
+#helpOverlay .box{background:#2f3135;border:1px solid #555;padding:14px 18px;max-width:520px;line-height:1.5;font:12px/1.5 system-ui;color:#ddd;box-shadow:0 8px 32px -8px #000}
+#helpOverlay h3{margin:0 0 8px;font-size:14px;color:#fff;font-weight:600}
+#helpOverlay code{background:#444;padding:1px 4px}
+#helpOverlay button.close{position:absolute;top:8px;right:8px;background:#555;color:#fff;border:1px solid #666;padding:2px 8px;cursor:pointer;border-radius:0}
+</style></head>
 <body>
+<div id="workspace">
+    <canvas id="main" tabindex="0"></canvas>
+    <div id="toolBar">
+        <button data-tool="select" title="選択 (V)">🖱</button>
+        <button data-tool="select-rect" title="矩形選択 (W)">▭</button>
+        <button data-tool="select-lasso" title="自由選択 (L)">✂</button>
+        <button data-tool="draw" title="ペン (P)">✒</button>
+        <button data-tool="bucket" title="バケツ (G)">🪣</button>
+        <button data-tool="rect" title="矩形 (M)">⬚</button>
+        <button data-tool="pan" title="パン (Space)">✥</button>
+    </div>
+    <!-- hidden legacy inputs for logic reuse -->
+    <select id="tool" style="display:none">
+        <option value="select">select</option>
+        <option value="select-rect">select-rect</option>
+        <option value="select-lasso">select-lasso</option>
+        <option value="draw">draw</option>
+        <option value="bucket">bucket</option>
+        <option value="rect">rect</option>
+        <option value="pan">pan</option>
+    </select>
+    <input type="color" id="color" value="#c33" style="display:none" />
+    <input type="number" id="width" value="3" min="1" style="display:none" />
 
+    <!-- Color Panel -->
+    <div class="panel" id="panelColor" style="top:8px;left:60px;width:260px;">
+        <div class="panel-header"><span class="title">カラー</span></div>
+        <div class="panel-body">
+            <div class="cp-container">
+                <canvas id="cpWheel" width="220" height="220"></canvas>
+                <canvas id="cpSV" width="140" height="140"></canvas>
+                <div id="cpSVCursor" class="cp-sv-cursor"></div>
+                <div id="cpHueCursor" class="cp-hue-cursor"></div>
+            </div>
+            <div class="row"><div id="colorPreviewBox"></div>
+                <input type="text" id="colorHex" value="#c33" maxlength="9" style="flex:1;background:#555;border:1px solid #666;color:#fff;border-radius:4px;padding:4px;font-size:11px" spellcheck="false">
+            </div>
+            <label class="row" style="gap:8px;">Alpha <input type="range" id="cpAlpha" min="0" max="1" step="0.01" value="1" style="flex:1"></label>
+        </div>
+    </div>
+    <!-- Brush Panel -->
+    <div class="panel" id="panelBrush" style="top:8px;left:340px;width:210px;">
+        <div class="panel-header"><span class="title">ブラシ</span></div>
+        <div class="panel-body">
+            <label class="inline">太さ <input type="range" id="brushWidthRange" min="1" max="128" value="3" style="flex:1"><span id="brushWidthLabel">3</span></label>
+            <label class="inline">不透明度 <input type="range" id="brushOpacity" min="0" max="1" step="0.01" value="1" style="flex:1"><span id="brushOpacityLabel">1.00</span></label>
+            <section class="group">
+                <div class="row wrap">
+                    <label class="inline"><input type="radio" name="brushShape" value="round" checked>丸</label>
+                    <label class="inline"><input type="radio" name="brushShape" value="square">角</label>
+                    <label class="inline"><input type="radio" name="brushShape" value="dotted">ドット</label>
+                </div>
+            </section>
+        </div>
+    </div>
+    <!-- Layers Panel -->
+    <div class="panel" id="panelLayers" style="top:8px;left:560px;width:280px;">
+        <div class="panel-header"><span class="title">レイヤー</span><button id="btnLayerNew" class="small">＋</button><button id="btnLayerDel" class="small">－</button><button id="btnLayerDup" class="small">複製</button></div>
+        <div class="panel-body" style="max-height:420px;overflow:auto;">
+            <div id="layerList"></div>
+            <div class="divider"></div>
+            <div class="row wrap"><button id="btnLayerUp" class="small">▲</button><button id="btnLayerDown" class="small">▼</button><button id="btnLayerCopy" class="small">Copy</button><button id="btnLayerPaste" class="small">Paste</button></div>
+        </div>
+    </div>
+    <!-- History Panel -->
+    <div class="panel" id="panelHistory" style="top:250px;left:340px;width:180px;">
+        <div class="panel-header"><span class="title">履歴</span><button id="undo" class="small" disabled>Undo</button><button id="redo" class="small" disabled>Redo</button></div>
+        <div class="panel-body" style="max-height:300px;overflow:auto"><div id="historyList"></div></div>
+    </div>
+    <!-- Selection Panel -->
+    <div class="panel" id="panelSelection" style="top:250px;left:60px;width:220px;">
+        <div class="panel-header"><span class="title">選択</span></div>
+        <div class="panel-body">
+            <div>選択数: <span id="selCount">0</span></div>
+            <div class="row wrap"><button id="btnSelectAll" class="small">全選択</button><button id="btnDeselect" class="small">解除</button><button id="btnInvertSel" class="small">反転</button><button id="btnClearRegions" class="small">領域クリア</button><button id="deleteEl" class="small">削除</button></div>
+        </div>
+    </div>
+    <!-- Export Panel -->
+    <div class="panel" id="panelExport" style="top:8px;right:8px;width:200px;">
+        <div class="panel-header"><span class="title">書き出し</span><button id="doExport" class="small">出力</button></div>
+        <div class="panel-body">
+            <label class="inline">形式 <select id="exportFormat" style="flex:1;background:#555;color:#fff;border:1px solid #666;border-radius:4px"><option value="svg">SVG</option></select></label>
+            <label class="inline">倍率 <input type="number" id="exportScale" value="1" step="0.1" min="0.1" style="flex:1;background:#555;color:#fff;border:1px solid #666;border-radius:4px"></label>
+            <label class="inline">背景 <input type="color" id="exportBg" value="#ffffff" style="flex:1"><input type="checkbox" id="exportTransparent" checked>透明</label>
+            <label class="inline"><input type="checkbox" id="exportUseCrop" checked>領域/要素で切取</label>
+            <label class="inline"><input type="checkbox" id="exportIncludeView" checked>ビュー反映</label>
+        </div>
+    </div>
 
-<script src="/box-load-anime.js"></script>
-
-
-
-</body>
-</html>
+    <div id="statusBar"><button id="helpToggle" class="small" style="margin-right:6px;">Help</button><span data-k="coords">(0,0)</span><span data-k="sel">sel:0</span><span data-k="objs">obj:0</span><span data-k="layers">layers:1</span><span data-k="zoom">100%</span><span data-k="fps">fps:0</span><span data-k="ms">ms:0</span><span data-k="mem">mem:-</span></div>
+    <div id="helpOverlay"><div class="box"><button class="close">×</button><h3>ショートカット</h3>
+        <div style="columns:2;column-gap:24px;">
+            <div><strong>基本</strong><br>
+            <code>V</code> 選択<br><code>W</code> 矩形選択<br><code>L</code> ラッソ<br><code>P/B</code> ペン<br><code>G</code> バケツ<br><code>M</code> 矩形<br><code>Space</code> パン</div>
+            <div><strong>編集</strong><br>
+            <code>Ctrl+Z</code> 戻る / <code>Ctrl+Y</code> 進む<br><code>Ctrl+A</code> 全選択<br><code>Del</code> 削除 / <code>Esc</code> 解除<br><code>Ctrl+C/X/V</code> コピー/切取/貼付</div>
+            <div style="break-inside:avoid"><strong>ブラシ</strong><br><code>1/2/3</code> ブラシ形状</div>
+            <div style="break-inside:avoid"><strong>その他</strong><br>ドラッグでパネル移動<br><code>Alt+ドラッグ</code> レイヤー移動 (選択ツール)</div>
+        </div>
+        <p style="margin-top:12px;font-size:11px;color:#aaa;">Help を再度押すか Esc で閉じる</p>
+    </div></div>
+</div>
+<script src="./paint/paint_app.js"></script>
+<script>
+// Panel drag logic
+(()=>{ let drag=null; document.querySelectorAll('.panel .panel-header').forEach(h=>{ h.addEventListener('pointerdown',e=>{ const p=h.parentElement; drag={p,ox:e.clientX-p.offsetLeft,oy:e.clientY-p.offsetTop}; p.style.transition='none'; p.style.zIndex=90; }); }); window.addEventListener('pointermove',e=>{ if(!drag) return; drag.p.style.left=(e.clientX-drag.ox)+"px"; drag.p.style.top=(e.clientY-drag.oy)+"px"; }); window.addEventListener('pointerup',()=>{ drag=null; });})();
+// Tool buttons
+(()=>{ const hidden=document.getElementById('tool'); const buttons=[...document.querySelectorAll('#toolBar button')]; function applyActive(){ const val=hidden.value; buttons.forEach(b=>b.classList.toggle('active',b.dataset.tool===val)); }
+ function setTool(t){ if(!t) return; hidden.value=t; hidden.dispatchEvent(new Event('change')); if(window.VP && window.VP.setTool) window.VP.setTool(t); else applyActive(); }
+ hidden.addEventListener('change',applyActive); buttons.forEach(b=> b.addEventListener('click',()=>setTool(b.dataset.tool))); setTool('draw');})();
+// Brush controls
+(()=>{ const wR=document.getElementById('brushWidthRange'), wL=document.getElementById('brushWidthLabel'); const op=document.getElementById('brushOpacity'), opL=document.getElementById('brushOpacityLabel'); const widthHidden=document.getElementById('width'); wR.addEventListener('input',()=>{ widthHidden.value=wR.value; wL.textContent=wR.value; window.VP && window.VP.applyStrokePropsToSelection && window.VP.applyStrokePropsToSelection(); }); op.addEventListener('input',()=>{ opL.textContent=Number(op.value).toFixed(2); window.VP && window.VP.setBrushOpacity(Number(op.value)); window.VP && window.VP.applyStrokePropsToSelection && window.VP.applyStrokePropsToSelection(); }); document.querySelectorAll('input[name=brushShape]').forEach(r=> r.addEventListener('change',e=>{ if(e.target.checked) window.VP && (window.VP.currentBrushShape=e.target.value); }));})();
+// Selection actions
+(()=>{ const invert=document.getElementById('btnInvertSel'); const clearR=document.getElementById('btnClearRegions'); const allBtn=document.getElementById('btnSelectAll'); const noneBtn=document.getElementById('btnDeselect'); invert.addEventListener('click',()=>{ if(!window.VP) return; const all=window.VP.allElementIds(); const cur=window.VP.getSelection(); const ns=new Set(all.filter(id=>!cur.has(id))); window.VP.setSelection(ns,true); }); clearR.addEventListener('click',()=> window.VP && window.VP.clearSelectionRegions()); allBtn.addEventListener('click',()=>{ if(!window.VP) return; const all=window.VP.allElementIds(); window.VP.setSelection(new Set(all),true); }); noneBtn.addEventListener('click',()=>{ window.VP && window.VP.setSelection(new Set(),true); });})();
+// Color picker setup
+(()=>{ const colorMain=document.getElementById('color'); const colorHex=document.getElementById('colorHex'); const preview=document.getElementById('colorPreviewBox'); const wheel=document.getElementById('cpWheel'); const svCanvas=document.getElementById('cpSV'); const hueCursor=document.getElementById('cpHueCursor'); const svCursor=document.getElementById('cpSVCursor'); const alphaInput=document.getElementById('cpAlpha'); const wctx=wheel.getContext('2d'); const svctx=svCanvas.getContext('2d'); let hue=0,sat=1,val=0.8,alp=1; function hsv2rgb(h,s,v){ const f=n=>{ const k=(n+h/60)%6; return v - v*s*Math.max(Math.min(k,4-k,1),0); }; return {r:Math.round(f(5)*255),g:Math.round(f(3)*255),b:Math.round(f(1)*255)};} function rgbToHex(r,g,b,a=1){ const hx=n=>n.toString(16).padStart(2,'0'); const ah=Math.round(a*255); return '#'+hx(r)+hx(g)+hx(b)+(ah<255?hx(ah):''); } function setHidden(hex){ colorMain.value=hex; if(window.VP && window.VP.applyStrokePropsToSelection) window.VP.applyStrokePropsToSelection(); }
+ function drawWheel(){ wctx.clearRect(0,0,wheel.width,wheel.height); const cx=110,cy=110,outer=105,inner=75; for(let a=0;a<360;a+=1){ const start=(a-1)*Math.PI/180,end=(a+1)*Math.PI/180; wctx.beginPath(); wctx.strokeStyle=`hsl(${a} 100% 50%)`; wctx.lineWidth=outer-inner; wctx.arc(cx,cy,(outer+inner)/2,start,end); wctx.stroke(); } const rad=hue*Math.PI/180; hueCursor.style.left=(cx+((outer+inner)/2)*Math.cos(rad))+'px'; hueCursor.style.top=(cy+((outer+inner)/2)*Math.sin(rad))+'px'; }
+ function drawSV(){ const w=svCanvas.width,h=svCanvas.height; const img=svctx.createImageData(w,h); for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const s=x/(w-1); const v=1-y/(h-1); const {r,g,b}=hsv2rgb(hue,s,v); const idx=(y*w+x)*4; img.data[idx]=r; img.data[idx+1]=g; img.data[idx+2]=b; img.data[idx+3]=255; } } svctx.putImageData(img,0,0); const sx=sat*(w-1), sy=(1-val)*(h-1); svCursor.style.left=(svCanvas.offsetLeft+sx)+'px'; svCursor.style.top=(svCanvas.offsetTop+sy)+'px'; }
+ function applyCol(){ const {r,g,b}=hsv2rgb(hue,sat,val); const hex=rgbToHex(r,g,b,alp); colorHex.value=hex; preview.style.background=hex; setHidden(hex); }
+ function wheelPick(ev){ const rect=wheel.getBoundingClientRect(); const x=ev.clientX-rect.left-110,y=ev.clientY-rect.top-110; hue=(Math.atan2(y,x)*180/Math.PI+360)%360; drawWheel(); drawSV(); applyCol(); }
+ function svPick(ev){ const rect=svCanvas.getBoundingClientRect(); const x=Math.min(Math.max(0,ev.clientX-rect.left),rect.width); const y=Math.min(Math.max(0,ev.clientY-rect.top),rect.height); sat=x/(rect.width-1); val=1-y/(rect.height-1); drawSV(); applyCol(); }
+ wheel.addEventListener('pointerdown',e=>{ wheelPick(e); const mv=e2=>wheelPick(e2); const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}; window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up); });
+ svCanvas.addEventListener('pointerdown',e=>{ svPick(e); const mv=e2=>svPick(e2); const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);} ; window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up); });
+ alphaInput.addEventListener('input',()=>{ alp=Number(alphaInput.value); applyCol(); });
+ colorHex.addEventListener('change',e=>{ const v=e.target.value.startsWith('#')?e.target.value:'#'+e.target.value; if(!/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)) return; const hex=v.slice(1); const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16); alp=hex.length===8?parseInt(hex.slice(6,8),16)/255:1; const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min; val=max/255; sat=max? d/max:0; let hCalc=0; if(d){ if(max===r) hCalc=((g-b)/d)%6; else if(max===g) hCalc=(b-r)/d+2; else hCalc=(r-g)/d+4; hCalc*=60; if(hCalc<0) hCalc+=360;} hue=hCalc; drawWheel(); drawSV(); applyCol(); });
+ drawWheel(); drawSV(); applyCol();})();
+// Keyboard mapping additions for bucket
+window.addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='g'){ document.querySelector('#toolBar button[data-tool="bucket"]').click(); }});
+// Extra tool key bindings (mirror legacy)
+window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA' || e.metaKey||e.ctrlKey) return; const k=e.key.toLowerCase(); const map={v:'select',w:'select-rect',l:'select-lasso',p:'draw',b:'draw',m:'rect'}; if(map[k]){ document.querySelector(`#toolBar button[data-tool="${map[k]}"]`).click(); }});
+// Help overlay toggle
+(()=>{ const overlay=document.getElementById('helpOverlay'); const toggle=document.getElementById('helpToggle'); const close=overlay.querySelector('button.close'); function hide(){ overlay.style.display='none'; } function show(){ overlay.style.display='flex'; }
+ toggle.addEventListener('click',()=>{ overlay.style.display==='flex'?hide():show(); }); close.addEventListener('click',hide); window.addEventListener('keydown',e=>{ if(e.key==='Escape' && overlay.style.display==='flex') hide(); }); })();
+</script>
+</body></html>

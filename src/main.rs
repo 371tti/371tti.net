@@ -42,6 +42,11 @@ fn main() {
         c
     });
 
+    kurosabi.get("/tool/paint/paint_app.js", |mut c| async move {
+        c.res.js(include_str!("../data/pages/index/tools/paint/paint_app.js"));
+        c
+    });
+
     kurosabi.get("/game/speed_runner", |mut c| async move {
         c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html"));
         c
