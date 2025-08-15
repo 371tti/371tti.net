@@ -1,0 +1,72 @@
+
+@supports (display: grid) {
+/* 基本スタイル */
+.modern-border {
+    position: relative;
+    display: inline-block; /* 幅と高さを適切に調整 */
+    --border-color: rgba(255, 255, 255, 0.8);
+    --mask-color: rgba(255, 255, 255, 0.1);
+    --border-style: solid;
+    --border-width: 3px;
+}
+
+.modern-border .border-mask,
+.modern-border .content-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* ボーダーのスタイル */
+.modern-border .border-mask {
+    box-sizing: border-box;
+    border-width: var(--border-width);
+    border-style: var(--border-style);
+    border-color: var(--border-color);
+    mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.6) 100px,
+        rgba(0, 0, 0, 0) 150px);
+    mask-repeat: no-repeat;
+}
+
+/* マスクのスタイル */
+.modern-border .content-mask {
+    background-color: var(--mask-color);
+    mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.6) 50px,
+        rgba(0, 0, 0, 0) 100px);
+    mask-repeat: no-repeat;
+}
+
+/* プリセットスタイル */
+.modern-border.warning {
+    --border-color: rgba(255, 145, 0, 0.8);
+    --mask-color: rgba(255, 170, 0, 0.1);
+    --border-style: dashed;
+}
+
+.modern-border.info {
+    --border-color: rgba(0, 0, 255, 0.8);
+    --mask-color: rgba(0, 0, 255, 0.1);
+    --border-style: solid;
+}
+
+.modern-border.success {
+    --border-color: rgba(0, 255, 0, 0.8);
+    --mask-color: rgba(0, 255, 0, 0.1);
+    --border-style: dotted;
+}
+
+.modern-border.error {
+    --border-color: rgba(255, 0, 0, 0.8);
+    --mask-color: rgba(255, 0, 0, 0.1);
+    --border-style: solid;
+}
+}

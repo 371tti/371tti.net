@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="371tti.net login page">
+    <meta property="og:description" content="371tti.net login">
+    <meta property="og:title" content="371tti.net">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/license">
+    <title>License - 371tti.net</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/menue.js"></script>
+</head>
+<body>
+
+
+<script src="/box-load-anime.js"></script>
+
+<div class="full center center-middle" style="background: linear-gradient(to bottom, var(--color-accent-0) -107% -77%, transparent 88%);">
+<div class="main card" id="content">
+<div id="clock" style="font-size:2em; text-align:center; margin:20px 0;"></div>
+<div id="date" style="font-size:0.9em; text-align:center; color: var(--text-color-0);"></div>
+<script>
+let is24Hour = true;
+let showJapaneseDay = false;
+
+function getDayString(dayIndex) {
+    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const daysJa = ['日', '月', '火', '水', '木', '金', '土'];
+    return showJapaneseDay ? daysJa[dayIndex] : daysEn[dayIndex];
+}
+
+function updateClock() {
+    const now = new Date();
+    let h = now.getHours();
+    let displayHour = h;
+    let ampm = '';
+    if (!is24Hour) {
+        ampm = h >= 12 ? ' PM' : ' AM';
+        displayHour = h % 12;
+        displayHour = displayHour === 0 ? 12 : displayHour;
+        displayHour = String(displayHour).padStart(2, '0');
+    } else {
+        displayHour = String(h).padStart(2, '0');
+    }
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${displayHour}:${m}:${s}${ampm}`;
+    const y = now.getFullYear();
+    const mon = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const dayStr = getDayString(now.getDay());
+    document.getElementById('date').textContent = `${y}/${mon}/${d} (${dayStr})`;
+}
+
+document.getElementById('clock').onclick = function() {
+    is24Hour = !is24Hour;
+    updateClock();
+};
+document.getElementById('date').onclick = function() {
+    showJapaneseDay = !showJapaneseDay;
+    updateClock();
+};
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+</div>
+</div>
+
+<p class="center">© 2024~ 371tti</p>
+<p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
+</body>
+</html>

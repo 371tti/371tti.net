@@ -1,0 +1,454 @@
+/* 
+LinerCSS
+author: 371tti,
+license: MIT
+version: 0.4.1
+*/
+
+:root {
+    /* カラー変数 */
+    --color-bg-0: #000000;
+    --color-bg-1: #232323;
+    --color-bg-2: #875e46;
+    --color-text-0: #d1d1d1;
+    --color-text-1: #ffffff;
+    --color-accent-0: #815a44;
+    --color-accent-1: #e8af7f;
+    
+    /* アニメーション設定 */
+    --transition-duration: 0.5s;
+    --transition-timing: ease-in-out;
+}
+
+* {
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+JP:wght@200..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', 'Noto Sans JP', sans-serif, monospace;
+    box-sizing: border-box;
+    position: relative;
+    overflow-wrap: break-word;
+    text-indent: 0;
+
+    ::selection {
+        background-color: var(--color-bg-1);
+        /* 背景色 */
+        color: var(--color-text-1);
+        /* 文字色 */
+    }
+
+    /* Firefox用 */
+    ::-moz-selection {
+        background-color: var(--color-bg-1);
+        /* 背景色 */
+        color: var(--color-text-1);
+        /* 文字色 */
+    }
+
+    /* 全ての色関連プロパティにトランジションを適用 */
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        border-color var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing),
+        fill var(--transition-duration) var(--transition-timing),
+        stroke var(--transition-duration) var(--transition-timing),
+        outline-color var(--transition-duration) var(--transition-timing),
+        text-shadow var(--transition-duration) var(--transition-timing);
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100svw;
+    background-color: var(--color-bg-0);
+    color: var(--color-text-0);
+    height: 100svh
+}
+
+.main {
+    padding: 10mm 10mm;
+    overflow-y: auto;
+    height: 100svh;
+    max-width: 300mm;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+}
+
+.center-middle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    height: fit-content;
+    width: fit-content;
+    padding: 10mm;
+}
+
+.full {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: auto;
+}
+
+h1 {
+    font-size: 2.5em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    color: var(--color-text-1);
+    display: inline-block;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    margin: 0 5mm 0 0;
+    color: var(--color-text-1);
+}
+
+p {
+    margin: 0;
+    padding: 0;
+}
+
+.h::before {
+    content: "#";
+    color: var(--color-text-0);
+    font-size: 1.5em;
+    margin-right: 0.2em;
+    /* テキストとの余白をつけたい場合 */
+    margin-left: 0.2em;
+    /* テキストとの余白をつけたい場合 */
+    font-weight: lighter;
+}
+
+.i {
+    margin: 0mm 0 0 10mm;
+    border-left: solid 1px var(--color-text-0);
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+}
+
+img, image {
+    border-radius: 1mm;
+}
+
+@supports (display: flex) {
+    .flex {
+        display: flex;
+    }
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.block {
+    display: block;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.subtitle {
+    padding: 3mm 0 0 3mm;
+}
+
+.box {
+    width: 100%;
+    width: calc(100%);
+    padding: 0 0 5mm 0;
+    margin: 5mm 0 0 0;
+}
+
+.grid .box {
+    margin: 0;
+}
+.indent {
+    padding: 0 5mm 0 5mm;
+    margin: 0 0 0 5mm;
+    border-left: solid 1px var(--color-text-1);
+}
+
+.indent + .indent {
+    margin-top: 5mm;
+    margin-right: 5mm;
+}
+
+input[type="password"]::-webkit-textfield-decoration-container {
+    color: var(--color-text-1);
+    background-color: var(--color-text-1);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    background-color: var(--color-bg-0);
+    color: var(--color-text-0);
+    border: none;
+    border-bottom: var(--color-text-1) solid 1px;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 3mm 2mm 2mm 2mm;
+    margin: 5mm 0 0 0;
+
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        border-color var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing);
+}
+
+/* ボタンのスタイル */
+.button {
+    display: inline-block;
+    background-color: var(--color-bg-1); /* ボタンの背景色 */
+    color: var(--color-text-0); /* テキスト色 */
+    border-left: 1mm solid var(--color-text-0); /* ボーダー色 */
+    font-size: 1em; /* フォントサイズ */
+    padding: 2mm 5mm; /* 内側余白 */
+    text-decoration: none; /* テキスト装飾を削除 */
+    cursor: pointer; /* カーソルをポインターに変更 */
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        border-color var(--transition-duration) var(--transition-timing),
+        transform 0.2s var(--transition-timing);
+    margin: 2mm 2mm 0 0; /* 外側余白 */
+}
+
+.button:hover {
+    background-color: var(--color-accent-0); /* ホバー時の背景色 */
+}
+@supports (display: grid) {
+    .button:hover {
+        border-left: 1mm solid var(--color-text-1); /* ホバー時のボーダー色 */
+    }
+}
+
+/* 通常のリンクのスタイル (ボタン以外) */
+a:not(.button):not(.tag):not(.link_anime) {
+    text-decoration: none; /* テキスト装飾を削除 */
+    color: var(--color-accent-1); /* リンクの色 */
+    position: relative; /* 擬似要素の位置調整に必要 */
+    transition: 
+        color var(--transition-duration) var(--transition-timing),
+        text-shadow var(--transition-duration) var(--transition-timing);
+    display: inline-flex; /* フレキシブルな表示 */
+    background-color: transparent; /* 背景を透明に */
+    margin: 0; /* 外側余白をリセット */
+    padding: 0; /* 内側余白をリセット */
+}
+
+a:hover:not(.button):not(.tag):not(.link_anime) {
+    color: var(--color-accent-0); /* ホバー時のリンク色 */
+}
+
+/* リンクの下線のアニメーション */
+a:not(.button):not(.tag):not(.link_anime)::after {
+    content: ""; /* 擬似要素の内容を空に設定 */
+    position: absolute; /* 擬似要素を絶対配置 */
+    width: 100%; /* 擬似要素の幅を親要素に合わせる */
+    height: 0.2em; /* 擬似要素の高さ */
+    background-color: var(--color-accent-0); /* 下線の色 */
+    bottom: 0; /* 擬似要素を下部に配置 */
+    left: 0; /* 左端に配置 */
+    transform: scaleX(0); /* 初期状態で下線を非表示 */
+    transform-origin: bottom right; /* 拡大の基準点を右端に設定 */
+    transition: transform 0.3s; /* アニメーションのトランジション */
+}
+
+a:hover:not(.button):not(.tag):not(.link_anime)::after {
+    transform: scaleX(1); /* ホバー時に下線を表示 */
+    transform-origin: bottom left; /* 拡大の基準点を左端に変更 */
+}
+
+.index {
+    flex-direction: column;
+    display: flex;
+}
+
+hr {
+    margin: 5mm 0mm;
+    border: none;
+    height: 1px;
+    background-color: var(--color-text-0);
+}
+
+li {
+    text-indent: -2em;
+    padding-left: 2em;
+}
+
+.ll {
+    width: 60mm;
+}
+
+b {
+    color: var(--color-text-1);
+}
+
+.pd {
+    height: 6mm;
+}
+
+.user-icon {
+    clip-path: circle(50% at 50% 50%);
+    background-color: var(--color-bg-1);
+}
+
+@supports (display: grid) {
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120mm, 1fr));
+        /* デフォルトは3列 */
+        gap: 3mm;
+        /* グリッドアイテム間のギャップ */
+    }
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 60mm);
+        /* デフォルトは3列 */
+        gap: 0;
+        /* グリッドアイテム間のギャップ */
+    }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(80mm, 1fr));
+        gap: 3mm;
+    }
+    @media (max-width: 160mm) {
+        .main {
+            padding: 6mm;
+        }
+    }
+    
+    @media (max-width: 160mm) {
+        .grid {
+            grid-template-columns: repeat(auto-fill, minmax(80mm, 1fr));
+        }
+    
+        h1 {
+            width: 70mm;
+        }
+    
+        .box {
+            margin: 5mm 0 0 0;
+        }
+    
+        .grid-2 {
+            grid-template-columns: minmax(80mm, 1fr);
+        }
+    }
+    
+    /* 行をまたぐクラス */
+    .r2 {
+        grid-row: span 2;
+    }
+    
+    .r3 {
+        grid-row: span 3;
+    }
+    
+    .r4 {
+        grid-row: span 4;
+    }
+    
+    .r5 {
+        grid-row: span 5;
+    }
+    
+    .r6 {
+        grid-row: span 6;
+    }
+    
+    .r7 {
+        grid-row: span 7;
+    }
+    
+    .r8 {
+        grid-row: span 8;
+    }
+    
+    .r9 {
+        grid-row: span 9;
+    }
+    
+    .r10 {
+        grid-row: span 10;
+    }
+    
+    /* 列をまたぐクラス */
+    .c2 {
+        grid-column: span 2;
+    }
+    
+    .c3 {
+        grid-column: span 3;
+    }
+    
+    .c4 {
+        grid-column: span 4;
+    }
+    
+    .c5 {
+        grid-column: span 5;
+    }
+    
+    .c6 {
+        grid-column: span 6;
+    }
+    
+    .c7 {
+        grid-column: span 7;
+    }
+    
+    .c8 {
+        grid-column: span 8;
+    }
+    
+    .c9 {
+        grid-column: span 9;
+    }
+    
+    .c10 {
+        grid-column: span 10;
+    }
+    
+    
+}

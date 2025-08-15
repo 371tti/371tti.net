@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>String Converter</title>
+<style>
+:root{
+  --bg:#0e1117; --panel:#161b22; --fg:#e6edf3;
+  --accent:#3b82f6; --border:#2e343d; --radius:8px;
+}
+*{box-sizing:border-box;font-family:ui-sans-serif,system-ui,sans-serif}
+html,body{margin:5mm;background:var(--bg);color:var(--fg);}
+h1{margin:.8rem 0;color:var(--accent);font-size:1.5rem;font-weight:600}
+.container{width:100%;flex:1;display:flex;flex-direction:column;gap:1rem;padding:1rem 0}
+/* 横並びデザイン: 幅が十分なときだけ横並び */
+.area{
+  display:flex;
+  gap:1rem;
+  width:100%;
+  flex-direction:column;
+}
+@media (min-width: 900px) {
+  .area {
+    flex-direction:row;
+    flex-wrap:nowrap;
+    align-items:stretch;
+  }
+  .box {
+    min-width: 0;
+  }
+}
+.box{flex:1 1 0;display:flex;flex-direction:column;gap:.5rem;min-width:260px;}
+textarea{flex:1;padding:1rem;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);color:var(--fg);resize:vertical;min-height:200px}
+.fmt-btn, button{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);color:var(--fg);cursor:pointer;font-size:1rem;transition:.15s}
+.fmt-btn.active, button:hover, .item:hover{background:var(--accent);color:#fff}
+.btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;padding:1rem 0}
+/* Modal */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
+#modal{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:90%;max-width:800px;height:70%;display:flex;overflow:hidden}
+.tabs{display:flex;flex-direction:column;border-right:1px solid var(--border);min-width:140px;overflow-y:auto}
+.tabs button{all:unset;padding:.8rem 1rem;cursor:pointer;color:var(--fg);border-left:4px solid transparent;transition:.1s}
+.tabs button.active{background:var(--panel);color:var(--accent);border-left-color:var(--accent)}
+.list{flex:1;padding:1rem;overflow-y:auto;display:block;gap:.5rem;}
+.item{
+  padding:.5rem 1rem;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:var(--panel);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.1s;
+  line-height:1.8;
+  display:flex;
+  align-items:center;
+  flex:unset;
+  margin-bottom:.5rem;
+}
+#closeModal{position:absolute;bottom:1rem;right:1rem;padding:.3rem .6rem;border:1px solid var(--border);background:none;color:var(--fg);font-size:1rem;cursor:pointer}
+#closeModal:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<h1>String Converter</h1>
+<div class="container">
+  <div class="area">
+    <div class="box">
+      <div class="fmt-btn active" id="fromBtn">From:<span id="fromLabel"> Plain</span></div>
+      <textarea id="input" placeholder="ここに入力…"></textarea>
+    </div>
+    <div class="box">
+      <div class="fmt-btn" id="toBtn">To:<span id="toLabel"> Plain</span></div>
+      <textarea id="output" placeholder="変換結果" readonly></textarea>
+    </div>
+  </div>
+  <div class="btns">
+    <button id="convert">Convert ▶</button>
+    <button id="swap">Swap ↔</button>
+    <button id="copy">Copy</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="overlay">
+  <div id="modal">
+    <div class="tabs" id="categoryTabs"></div>
+    <div class="list" id="formatList"></div>
+    <button id="closeModal">Close</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.0.0/encoding.min.js"></script>
+<script>
+/* ===== ユーティリティ ===== */
+const $=s=>document.querySelector(s);
+const enc=new TextEncoder(), dec=new TextDecoder();
+const hex=b=>Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('');
+const hexBytes=h=>Uint8Array.from(h.replace(/\s+/g,'').match(/../g)||[],x=>parseInt(x,16));
+const b64={enc:b=>btoa(String.fromCharCode(...b)), dec:s=>Uint8Array.from(atob(s.replace(/\s+/g,'')),c=>c.charCodeAt(0))};
+const b64url={enc:b=>b64.enc(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''), dec:s=>b64.dec((s+'===').slice(0, s.length+(s.length%4?4-s.length%4:0)).replace(/-/g,'+').replace(/_/g,'/'))};
+const sjEnc=s=>new Uint8Array(Encoding.convert(Encoding.stringToCode(s),'SJIS','UNICODE'));
+const sjDec=b=>Encoding.codeToString(Encoding.convert([...b],'UNICODE','SJIS'));
+const digest=alg=>async s=>hex(new Uint8Array(await crypto.subtle.digest(alg,enc.encode(s))));
+const rot13=s=>s.replace(/[A-Za-z]/g,c=>String.fromCharCode((c<='Z'?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26));
+const atbash=s=>s.replace(/[A-Za-z]/g,c=>String.fromCharCode((c<='Z'?155:219)-c.charCodeAt(0)));
+const zen2han=s=>s.replace(/[\uFF01-\uFF5E]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/\u3000/g,' ');
+const han2zen=s=>s.replace(/[!-~]/g,c=>String.fromCharCode(c.charCodeAt(0)+0xFEE0)).replace(/ /g,'\u3000');
+const base32={enc:s=>{const bytes=enc.encode(s);let bits='',o='';bytes.forEach(b=>bits+=b.toString(2).padStart(8,'0'));for(let i=0;i<bits.length;i+=5)o+= "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"[parseInt(bits.slice(i,i+5).padEnd(5,'0'),2)];return o;},
+               dec:s=>{let bits='';for(const ch of s)bits+="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(ch).toString(2).padStart(5,'0');const by=bits.match(/.{8}/g).map(b=>parseInt(b,2));return dec.decode(Uint8Array.from(by));}};
+const base58={enc:s=>{let n=BigInt('0x'+hex(enc.encode(s)));if(n===0n)return'1';let r='';while(n>0n){r="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"[Number(n%58n)]+r;n/=58n;}return r;},
+               dec:s=>{let n=0n;for(const ch of s)n=n*58n+BigInt("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".indexOf(ch));let h=n.toString(16);if(h.length%2)h='0'+h;return dec.decode(hexBytes(h));}};
+const ascii85={enc:s=>{const d=enc.encode(s),pad=(4-d.length%4)%4,a=[...d,...Array(pad).fill(0)],o=[];for(let i=0;i<a.length;i+=4){const v=(a[i]<<24)|(a[i+1]<<16)|(a[i+2]<<8)|a[i+3];if(v===0&&pad===0){o.push('z');continue;}let blk='';for(let j=0,t=v;j<5;j++){blk=String.fromCharCode(t%85+33)+blk;t=Math.floor(t/85);}o.push(blk);}return o.join('');},
+                 dec:s=>{s=s.replace(/\s+/g,'').replace(/z/g,'!!!!!');let bytes=[];for(let i=0;i<s.length;i+=5){const c=s.slice(i,i+5).padEnd(5,'u');let v=0;for(const ch of c)v=v*85+(ch.charCodeAt(0)-33);bytes.push((v>>24)&255,(v>>16)&255,(v>>8)&255,v&255);}return dec.decode(Uint8Array.from(bytes));}};
+const classify=t=>{
+  const m=t.trim();
+  return /^(?:0x[0-9a-z]+|0b[01]+|0o[0-7]+|[0-9]+)$/i.test(m)?'num':
+         /^[A-Za-z0-9]+$/.test(m)?'alpha':
+         /^[\x20-\x7E]+$/.test(m)?'sym':'other';
+};
+
+/* ===== フォーマット定義 (カテゴリ分類あり) ===== */
+const CATS={ Base:['base64','base64url','base32','base58','ascii85'], Text:['plain','hexBytes','url','htmlEnt','uniEsc','shiftjis'], Cipher:['rot13','atbash','upper','lower','zen','han'], Number:['dec','hexNum','binNum','octNum','base36'], Hash:['sha1','sha256','sha384','sha512'] };
+const F={};
+// ヘルパー登録関数
+function add(id, name, toCF, fromCF){
+  F[id]={n:name,toCF,fromCF};
+}
+// Base
+add('plain','Plain',s=>({txt:s,state:classify(s)}),cf=>cf.txt);
+add('base64','Base64',s=>{const t=dec.decode(b64.dec(s));return{txt:t,state:classify(t)}},cf=>b64.enc(enc.encode(cf.txt)));
+add('base64url','Base64URL',s=>{const t=dec.decode(b64url.dec(s));return{txt:t,state:classify(t)}},cf=>b64url.enc(enc.encode(cf.txt)));
+add('base32','Base32',s=>{const t=base32.dec(s);return{txt:t,state:classify(t)}},cf=>base32.enc(cf.txt));
+add('base58','Base58',s=>{const t=base58.dec(s);return{txt:t,state:classify(t)}},cf=>base58.enc(cf.txt));
+add('ascii85','Ascii85',s=>{const t=ascii85.dec(s);return{txt:t,state:classify(t)}},cf=>ascii85.enc(cf.txt));
+// Text
+add('hexBytes','Hex bytes',s=>{const t=dec.decode(hexBytes(s));return{txt:t,state:classify(t)}},cf=>hex(enc.encode(cf.txt)));
+add('url','URL Encoded',s=>{const t=decodeURIComponent(s);return{txt:t,state:classify(t)}},cf=>encodeURIComponent(cf.txt));
+add('htmlEnt','HTML Entities',s=>{const ta=document.createElement('textarea');ta.innerHTML=s;const t=ta.value;return{txt:t,state:classify(t)}},cf=>cf.txt.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])));
+add('uniEsc','\\uXXXX Escape',s=>{const t=s.replace(/\\u([0-9a-f]{4})/gi,(_,h)=>String.fromCharCode(parseInt(h,16)));return{txt:t,state:classify(t)}},cf=>[...cf.txt].map(c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join(''));
+add('shiftjis','Shift-JIS (hex)',s=>{const t=sjDec(hexBytes(s));return{txt:t,state:classify(t)}},cf=>hex(sjEnc(cf.txt)));
+// Cipher
+add('rot13','ROT13',s=>({txt:s,state:classify(s)}),cf=>rot13(cf.txt));
+add('atbash','Atbash',s=>({txt:s,state:classify(s)}),cf=>atbash(cf.txt));
+add('upper','UPPER',s=>({txt:s,state:classify(s)}),cf=>cf.txt.toUpperCase());
+add('lower','lower',s=>({txt:s,state:classify(s)}),cf=>cf.txt.toLowerCase());
+add('zen','全角',s=>({txt:s,state:classify(s)}),cf=>han2zen(cf.txt));
+add('han','半角',s=>({txt:s,state:classify(s)}),cf=>zen2han(cf.txt));
+// Number
+function toDec(s){return BigInt(s.trim()).toString();}
+add('dec','Decimal',s=>({txt:toDec(s),state:'num'}),cf=>{if(cf.state!=='num')throw new Error('num');return cf.txt});
+add('hexNum','0x…',s=>({txt:toDec(s),state:'num'}),cf=>{if(cf.state!=='num')throw new Error('num');return '0x'+BigInt(cf.txt).toString(16)});
+add('binNum','0b…',s=>({txt:toDec(s),state:'num'}),cf=>{if(cf.state!=='num')throw new Error('num');return '0b'+BigInt(cf.txt).toString(2)});
+add('octNum','0o…',s=>({txt:toDec(s),state:'num'}),cf=>{if(cf.state!=='num')throw new Error('num');return '0o'+BigInt(cf.txt).toString(8)});
+add('base36','0z…',s=>({txt:toDec(s),state:'num'}),cf=>{if(cf.state!=='num')throw new Error('num');return '0z'+BigInt(cf.txt).toString(36)});
+// Hash (片道)
+add('sha1','SHA-1',null,async cf=>digest('SHA-1')(cf.txt));
+add('sha256','SHA-256',null,async cf=>digest('SHA-256')(cf.txt));
+add('sha384','SHA-384',null,async cf=>digest('SHA-384')(cf.txt));
+add('sha512','SHA-512',null,async cf=>digest('SHA-512')(cf.txt));
+
+/* ===== 変換マトリクス ===== */
+const can={};
+for(const a in F){
+  if(!F[a].toCF) continue;
+  can[a]={};
+  for(const b in F){
+    if(!F[b].fromCF) continue;
+    can[a][b]=true;
+  }
+}
+
+/* ===== UI 操作 ===== */
+let selecting='from'; // 'from' or 'to'
+const fromBtn=$('#fromBtn'), toBtn=$('#toBtn'), overlay=$('#overlay'), modal=$('#modal');
+const tabs=$('#categoryTabs'), list=$('#formatList'), fromLabel=$('#fromLabel'), toLabel=$('#toLabel');
+const input=$('#input'), output=$('#output');
+const closeBtn = $('#closeModal'); // ← これを追加
+
+// --- 追加: Toフォーマットの保存・復元 ---
+const TO_FORMAT_KEY = 'convert_to_format';
+
+// 保存
+function saveToFormat(id) {
+  try { localStorage.setItem(TO_FORMAT_KEY, id); } catch {}
+}
+// 復元
+function loadToFormat() {
+  try { return localStorage.getItem(TO_FORMAT_KEY); } catch { return null; }
+}
+
+/* helper: can this format parse the raw input? */
+function canParse(id, raw) {
+  if (!F[id].toCF) return false;
+  try {
+    F[id].toCF(raw);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/* build the modal UI */
+function openModal(which) {
+  selecting = which;
+  overlay.style.display = 'flex';
+  buildTabs();
+  selectTab(Object.keys(CATS)[0]);
+  // フォーカス移動
+  tabs.querySelector('button').focus();
+}
+
+function buildTabs() {
+  tabs.innerHTML = '';
+  for (const cat of Object.keys(CATS)) {
+    const btn = document.createElement('button');
+    btn.textContent = cat;
+    btn.dataset.cat = cat;
+    btn.onclick = () => selectTab(cat);
+    tabs.appendChild(btn);
+  }
+}
+
+/* populate the list for the given category */
+function selectTab(cat) {
+  tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+  list.innerHTML = '';
+  const raw = input.value.trim();
+  let source;
+  if (selecting === 'from') {
+    // "from"選択時: 入力値をパースできるものだけ
+    source = Object.keys(F).filter(id => {
+      if (!F[id].toCF) return false;
+      try {
+        F[id].toCF(raw);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  } else {
+    // "to"選択時: 現在のfromから変換可能なものだけ（fromのtoCFが失敗しない場合のみ）
+    const src = fromBtn.dataset.id;
+    let cf;
+    try {
+      cf = F[src].toCF(raw);
+    } catch {
+      cf = null;
+    }
+    source = Object.keys(F).filter(id => {
+      if (!can[src]?.[id]) return false;
+      if (!cf) return false;
+      try {
+        // fromCFが例外を投げる場合は除外
+        F[id].fromCF(cf);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+  for (const id of CATS[cat]) {
+    if (!source.includes(id)) continue;
+    const it = document.createElement('div');
+    it.className = 'item';
+    it.textContent = F[id].n;
+    it.onclick = () => {
+      if (selecting === 'from') {
+        fromBtn.dataset.id = id; fromLabel.textContent = ' ' + F[id].n;
+        fromBtn.classList.add('active');
+        toBtn.classList.remove('active');
+      } else {
+        toBtn.dataset.id = id; toLabel.textContent = ' ' + F[id].n;
+        toBtn.classList.add('active');
+        fromBtn.classList.remove('active');
+        saveToFormat(id); // ← 追加: To選択時に保存
+      }
+      closeModal();
+      rebuildTo();
+    };
+    list.appendChild(it);
+  }
+}
+
+function closeModal() {
+  overlay.style.display = 'none';
+}
+
+fromBtn.onclick = ()=>openModal('from');
+toBtn.onclick   = ()=>openModal('to');
+closeBtn.onclick= closeModal;
+overlay.onclick = e=>{ if(e.target===overlay) closeModal(); };
+
+function rebuildTo() {
+  const src = fromBtn.dataset.id, tgt = toBtn.dataset.id;
+  if (!can[src]?.[tgt]) {
+    toBtn.dataset.id = src;
+    toLabel.textContent = ' '+F[src].n;
+  }
+}
+
+// 初期設定
+fromBtn.dataset.id='plain';
+// Toフォーマットの復元
+const savedTo = loadToFormat();
+if(savedTo && F[savedTo] && F[savedTo].fromCF){
+  toBtn.dataset.id = savedTo;
+  toLabel.textContent = ' ' + F[savedTo].n;
+} else {
+  toBtn.dataset.id='plain';
+  toLabel.textContent = ' ' + F.plain.n;
+}
+fromBtn.classList.add('active');
+
+input.addEventListener('input',()=>{
+  const raw=input.value.trim(), fid = fromBtn.dataset.id;
+  if (fid && F[fid].toCF && !canParse(fid,raw)) {
+    fromBtn.dataset.id='plain';
+    fromLabel.textContent=' '+F.plain.n;
+  }
+});
+
+document.getElementById('convert').onclick = async()=>{
+  const a=fromBtn.dataset.id, b=toBtn.dataset.id, raw=input.value;
+  let res;
+  try{
+    const cf = F[a].toCF(raw);
+    res = await F[b].fromCF(cf);
+  }catch(e){ res='[Error] '+e; }
+  output.value=res;
+};
+document.getElementById('swap').onclick=()=>{
+  [input.value,output.value] = [output.value,input.value];
+  const tmp = fromBtn.dataset.id;
+  fromBtn.dataset.id = toBtn.dataset.id; fromLabel.textContent=' '+F[fromBtn.dataset.id].n;
+  toBtn.dataset.id   = tmp; toLabel.textContent=' '+F[toBtn.dataset.id].n;
+  fromBtn.classList.toggle('active');
+  toBtn.classList.toggle('active');
+};
+document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(output.value);
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speed Runner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:system-ui,sans-serif;user-select:none;cursor:pointer}
+    #info,#menu{position:absolute;left:50%;transform:translateX(-50%);z-index:20;text-align:center;pointer-events:none}
+    #info{top:10px;font-size:1.1rem}
+    #menu{top:40%;color:#0ff;font-size:1.2rem;line-height:2.2rem;pointer-events:auto}
+    button{margin-top:1rem;padding:.5rem 1.5rem;font-size:1rem;border:none;border-radius:6px;background:#0ff;color:#000;cursor:pointer}
+    #pad{position:absolute;border:2px solid #0ff;pointer-events:auto;z-index:10;cursor:crosshair}
+    #sliderWrap{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:30;color:#0ff;font-size:.9rem;pointer-events:auto;text-align:center}
+    #replaySliderWrap{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);z-index:30;color:#0ff;font-size:.9rem;display:none;pointer-events:auto;text-align:center}
+    input[type=range]{width:260px}
+  </style>
+</head>
+<body>
+  <div id="info">Score: <span id="score">0</span> | Speed: <span id="speed">0</span></div>
+  <div id="menu"></div>
+  <div id="pad"></div>
+  <div id="sliderWrap">入力パッドサイズ<br><input type="range" id="padSlider" min="200" max="800" step="50" value="400"></div>
+  <div id="replaySliderWrap">リプレイ位置<br><input type="range" id="replaySlider" min="0" max="0" step="1" value="0"></div>
+
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+    import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js?module";
+
+    const $ = s=>document.querySelector(s);
+    const menuEl=$('#menu'); const padEl=$('#pad'); const padSlider=$('#padSlider');
+    const sliderWrap=$('#sliderWrap'); const replaySliderWrap=$('#replaySliderWrap'); const replaySlider=$('#replaySlider');
+
+    /* ---------- Audio ---------- */
+    const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const playBwoon=speed=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sawtooth';o.frequency.value=55*(1+speed*2);g.gain.setValueAtTime(.6,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.4);o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.4);} ;
+
+    /* ---------- Input Pad ---------- */
+    let padSize=+padSlider.value; let padPos={x:innerWidth/2,y:innerHeight/2};
+    const updatePad=()=>{padEl.style.cssText=`width:${padSize}px;height:${padSize}px;left:${padPos.x}px;top:${padPos.y}px;transform:translate(-50%,-50%)`;};
+    // 拡大率調整: パッドが画面の80%を超えないようにする
+    function adjustPadScale() {
+      const maxScale = 0.8;
+      const scale = Math.min(1, Math.min(innerWidth, innerHeight) * maxScale / padSize);
+      padEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    }
+    padSlider.oninput = () => { padSize = +padSlider.value; updatePad(); adjustPadScale(); };
+    updatePad(); adjustPadScale();
+    let dragging=false,dragOff={};
+    let dragMode = false; // true: padドラッグ, false: 移動操作
+    // ポインタ（マウス/ペン）操作
+    padEl.onpointerdown=e=>{
+      const r = padEl.getBoundingClientRect();
+      const edge = 10; // 端10pxのみドラッグ
+      if (
+        e.clientX < r.left + edge || e.clientX > r.right - edge ||
+        e.clientY < r.top + edge || e.clientY > r.bottom - edge
+      ) {
+        dragging=true; dragMode=true;
+        dragOff.x=padPos.x-e.clientX; dragOff.y=padPos.y-e.clientY;
+        padEl.setPointerCapture(e.pointerId);
+      } else {
+        dragMode=false;
+      }
+    };
+    padEl.onpointermove=e=>{
+      if(!dragging||!dragMode)return;
+      padPos.x=e.clientX+dragOff.x; padPos.y=e.clientY+dragOff.y; updatePad();
+    };
+    padEl.onpointerup=e=>{dragging=false; dragMode=false; padEl.releasePointerCapture(e.pointerId);};
+    // タッチ操作（パッドのドラッグ/移動分離）
+    padEl.ontouchstart = e => {
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const r = padEl.getBoundingClientRect();
+      const edge = 10;
+      if (
+        touch.clientX < r.left + edge || touch.clientX > r.right - edge ||
+        touch.clientY < r.top + edge || touch.clientY > r.bottom - edge
+      ) {
+        dragging = true; dragMode = true;
+        dragOff.x = padPos.x - touch.clientX;
+        dragOff.y = padPos.y - touch.clientY;
+        e.preventDefault();
+      } else {
+        dragMode = false;
+      }
+    };
+    padEl.ontouchmove = e => {
+      if (!dragging || !dragMode || e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      padPos.x = touch.clientX + dragOff.x;
+      padPos.y = touch.clientY + dragOff.y;
+      updatePad();
+      e.preventDefault();
+    };
+    padEl.ontouchend = e => { dragging = false; dragMode = false; e.preventDefault(); };
+
+    /* ---------- Scene ---------- */
+    const scene=new THREE.Scene(); scene.fog=new THREE.Fog(0x000000,10,150);
+    const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,500);
+    const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth,innerHeight); document.body.appendChild(renderer.domElement);
+    scene.add(new THREE.HemisphereLight(0xffffff,0x202020,.9)); scene.add(new THREE.DirectionalLight(0xffffff,.8));
+
+    /* ---------- Player ---------- */
+    const cubeGeo=new THREE.BoxGeometry(1,1,1);
+    const player=new THREE.Group(); player.add(new THREE.Mesh(cubeGeo,new THREE.MeshBasicMaterial({visible:false}))); player.add(new THREE.LineSegments(new THREE.EdgesGeometry(cubeGeo),new THREE.LineBasicMaterial({color:0x00ff00}))); scene.add(player);
+
+    /* ---------- Geometry ---------- */
+    const frameGeo=new THREE.BoxGeometry(11,11,.2), frameMat=new THREE.MeshBasicMaterial({color:0x0044ff,wireframe:true});
+    const obsGeo=new THREE.BoxGeometry(1,1,1), obsMat=new THREE.MeshStandardMaterial({color:0xff0000});
+
+    /* ---------- Frames & Obstacles ---------- */
+    const frameCnt=40,frameGap=15,frames=[]; for(let i=0;i<frameCnt;i++){const m=new THREE.Mesh(frameGeo,frameMat.clone());m.position.z=-i*frameGap;m.userData.rotDir=i%2?-1:1;scene.add(m);frames.push(m);}    
+    const obstacles=[]; const laneX=[-4.5,-2.5,0,2.5,4.5],laneY=[-3.5,-1.5,1.5,3.5];
+    const spawnObs=z=>{const o=new THREE.Mesh(obsGeo,obsMat); if(Math.random()<.1){o.position.set(player.position.x,player.position.y,z);}else{o.position.set(laneX[Math.random()*laneX.length|0],laneY[Math.random()*laneY.length|0],z);} scene.add(o); obstacles.push(o);}    
+
+    /* ---------- State ---------- */
+    let tX=0,tY=0,spd=.15,acc=.0005,score=0,spTimer=0,spGap=35;
+    let running=false,inReplay=false; let last=performance.now();
+    const record=[]; let replayIdx=0; const replayObstacles=[];
+    let offsetZ=6; let baseTarget={x:0,y:0}; let framePassed=false;
+
+    /* ---------- UI ---------- */
+    const scoreEl=$('#score'),speedEl=$('#speed');
+    const showStart=()=>{menuEl.innerHTML='<p><strong>Simple 3D Runner</strong></p><p>パッド内で移動 (ドラッグ可)</p><button id="startBtn">スタート</button>'; $('#startBtn').onclick=startGame; menuEl.style.display='block';}; showStart();
+
+    /* ---------- Reset ---------- */
+    function reset(){spd=.15;score=0;spTimer=0;spGap=35;tX=tY=0;offsetZ=6;player.position.set(0,0,0);
+      obstacles.forEach(o=>scene.remove(o));obstacles.length=0; frames.forEach((f,i)=>{f.position.z=-i*frameGap;f.rotation.z=0;}); camera.position.set(0,0,6); record.length=0;}
+
+    /* ---------- Controls ---------- */
+    function startGame(){audioCtx.resume(); reset(); running=true; inReplay=false; menuEl.style.display='none'; padEl.style.display='block'; sliderWrap.style.display='none'; replaySliderWrap.style.display='none'; orbit.enabled=false; last=performance.now(); }
+
+    function startReplay(){ if(!record.length) return; running=false; inReplay=true; padEl.style.display='none'; sliderWrap.style.display='none'; menuEl.style.display='none'; orbit.enabled=true; offsetZ=Math.max(2,offsetZ); replayIdx=0; replaySlider.max=record.length-1; replaySlider.value=0; replaySliderWrap.style.display='block';
+      syncReplayObstacles(record[0].obs.length);
+      const p0=record[0]; baseTarget.x=p0.p.x; baseTarget.y=p0.p.y; updateCameraForReplay(p0.p.z);
+      setReplayFrame.forceCameraUpdate = false;
+      setReplayFrame(0);
+    }
+
+    function gameOver(){running=false;orbit.enabled=false; menuEl.innerHTML=`<p>Game Over!<br/>Score: ${score}</p><button id="restartBtn">リスタート</button> <button id="replayBtn">リプレイ</button>`; $('#restartBtn').onclick=startGame; $('#replayBtn').onclick=startReplay; menuEl.style.display='block';}
+
+    /* ---------- Helpers ---------- */
+    const syncReplayObstacles=count=>{ while(replayObstacles.length<count){const m=new THREE.Mesh(obsGeo,obsMat);scene.add(m); replayObstacles.push(m);} while(replayObstacles.length>count){scene.remove(replayObstacles.pop());} };
+    const updateCameraForReplay=z=>{ orbit.target.set(baseTarget.x,baseTarget.y,z); camera.position.x=baseTarget.x; camera.position.y=baseTarget.y; camera.position.z=z+offsetZ; orbit.update(); };
+
+    /* ---------- Input ---------- */
+    addEventListener('mousemove',e=>{ if(!running) return; const r=padEl.getBoundingClientRect(); const dx=Math.max(-r.width/2,Math.min(r.width/2,e.clientX-(r.left+r.width/2))); const dy=Math.max(-r.height/2,Math.min(r.height/2,e.clientY-(r.top+r.height/2))); tX=(dx/(r.width/2))*5; tY=(-dy/(r.height/2))*4; });
+    // タッチ操作（パッド内での移動）
+    padEl.addEventListener('touchmove', e => {
+      if (!running || dragMode || e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const r = padEl.getBoundingClientRect();
+      const dx = Math.max(-r.width/2, Math.min(r.width/2, touch.clientX - (r.left + r.width/2)));
+      const dy = Math.max(-r.height/2, Math.min(r.height/2, touch.clientY - (r.top + r.height/2)));
+      tX = (dx/(r.width/2))*5;
+      tY = (-dy/(r.height/2))*4;
+      e.preventDefault();
+    }, {passive:false});
+    addEventListener('wheel',e=>{ if(!inReplay) return; offsetZ=Math.max(2,Math.min(30,offsetZ+e.deltaY*0.01)); updateCameraForReplay(orbit.target.z); });
+
+    /* ---------- Gameplay Tick ---------- */
+    function gameplayTick(dt){ framePassed=false; spd+=acc*dt; player.position.z-=spd*dt;
+      player.position.x=THREE.MathUtils.lerp(player.position.x,THREE.MathUtils.clamp(tX,-4.5,4.5),.12);
+      player.position.y=THREE.MathUtils.lerp(player.position.y,THREE.MathUtils.clamp(tY,-3.5,3.5),.12);
+      if (!inReplay) {
+        camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y,player.position.z+offsetZ),.144); camera.lookAt(player.position.x,player.position.y,player.position.z-10);
+      }
+      frames.forEach(f=>{f.rotation.z+=f.userData.rotDir*.01*dt; if(f.position.z-player.position.z>5){ score++; framePassed=true; f.position.z-=frameGap*frameCnt; }});
+      if(framePassed) playBwoon(spd);
+      spTimer+=spd*dt; if(spTimer>spGap){ spawnObs(player.position.z-120); spTimer=0; spGap=Math.max(15,35-spd*10);}    
+      for(let i=obstacles.length-1;i>=0;i--){ const o=obstacles[i]; if(o.position.z-player.position.z>5){ scene.remove(o); obstacles.splice(i,1); continue;} const dx=Math.abs(player.position.x-o.position.x), dy=Math.abs(player.position.y-o.position.y), dz=Math.abs(player.position.z-o.position.z); if(dx<.8&&dy<.8&&dz<.6){ gameOver(); return; } }
+      scoreEl.textContent=score; speedEl.textContent=(spd*60).toFixed(2);
+      record.push({ p:{x:player.position.x,y:player.position.y,z:player.position.z}, obs:obstacles.map(o=>({x:o.position.x,y:o.position.y,z:o.position.z})), frames:frames.map(f=>({z:f.position.z,rot:f.rotation.z})), score, spd, sound:framePassed }); }
+
+    /* ---------- Replay helpers ---------- */
+    function setReplayFrame(idx){
+      if(idx<0||idx>=record.length) return;
+      const s=record[idx]; replayIdx=idx; replaySlider.value=idx; player.position.set(s.p.x,s.p.y,s.p.z);
+      syncReplayObstacles(s.obs.length); s.obs.forEach((o,i)=>{replayObstacles[i].position.set(o.x,o.y,o.z);}); s.frames.forEach((fr,i)=>{frames[i].position.z=fr.z;frames[i].rotation.z=fr.rot;}); scoreEl.textContent=s.score; speedEl.textContent=(s.spd*60).toFixed(2); if(s.sound) playBwoon(s.spd);
+      // スライダー操作時のみカメラ位置・targetを更新
+      if (setReplayFrame.forceCameraUpdate) {
+        updateCameraForReplay(s.p.z);
+      }
+    }
+    replaySlider.oninput=()=>{ if(!inReplay) return; setReplayFrame.forceCameraUpdate = true; setReplayFrame(parseInt(replaySlider.value)); setReplayFrame.forceCameraUpdate = false; };
+
+    function replayTick(){ if(replayIdx>=record.length-1){ menuEl.innerHTML='<button id="replayAgain">もう一度リプレイ</button> <button id="restartBtn2">リスタート</button>'; $('#replayAgain').onclick=startReplay; $('#restartBtn2').onclick=startGame; menuEl.style.display='block'; replaySliderWrap.style.display='none'; inReplay=false; return; } setReplayFrame(replayIdx+1);
+      // 奥行き方向（z）はspeedにあわせてカメラ追従
+      const s = record[replayIdx];
+      if (s) {
+        // カメラのx,yはユーザー操作優先、zのみ追従
+        camera.position.set(camera.position.x, camera.position.y, s.p.z + offsetZ);
+        orbit.target.set(orbit.target.x, orbit.target.y, s.p.z);
+        orbit.update();
+      }
+    }  
+
+    /* ---------- Orbit ---------- */
+    const orbit=new OrbitControls(camera,renderer.domElement); orbit.enablePan=true; orbit.enableDamping=true; orbit.enabled=false;
+
+    /* ---------- Main Loop ---------- */
+    function loop(){ requestAnimationFrame(loop); const dt=(performance.now()-last)/16.67; last=performance.now(); if(running) gameplayTick(dt); else if(inReplay) replayTick(); renderer.render(scene,camera);} loop();
+
+    /* ---------- Resize ---------- */
+    addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+  </script>
+</body>
+</html>
