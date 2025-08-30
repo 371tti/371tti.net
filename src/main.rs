@@ -8,7 +8,11 @@ fn main() {
     let mut kurosabi = Kurosabi::with_context(context);
 
     kurosabi.get("/", |mut c| async move {
-        c.res.html(include_str!("../data/pages/index/index.html"));
+        if c.req.header.get_user_agent().map_or(false, |ua| ua.contains("curl")) {
+            c.res.text(include_str!("../data/pages/index/index.curl.txt"));
+        } else {
+            c.res.html(include_str!("../data/pages/index/index.html"));
+        }
         c
     });
 
@@ -43,7 +47,6 @@ fn main() {
     });
 
     kurosabi.get("/login", |mut c| async move {
-        c.c.init(&mut c.req, &mut c.res);
         c.res.html(include_str!("../data/pages/index/login/index.html"));
         c
     });
@@ -63,8 +66,8 @@ fn main() {
         c
     });
 
-    kurosabi.get("/menue.js", |mut c| async move {
-        c.res.js(include_str!("../data/pages/index/menue.js"));
+    kurosabi.get("/menu.js", |mut c| async move {
+        c.res.js(include_str!("../data/pages/index/menu.js"));
         c.res.header.set("Access-Control-Allow-Origin", "*");
         c
     });
@@ -133,6 +136,19 @@ fn main() {
         c
     });
 
+    kurosabi.get("/cat", |mut c| async move {
+        c.res.text(
+r#"
+   /\_/\
+  ( o.o )
+   > ^ <
+
+love cat♡
+"#,
+    );
+        c
+    });
+
     kurosabi.not_found_handler(|mut c| async move {
         c.res.code = 404;
         c.res.html(&c.c.ssr.err_page.generate_status_page(&c));
@@ -141,7 +157,7 @@ fn main() {
 
     // kurosabi.get("/api/session-status", |mut c| async move {
     //     c.c.init(&mut c.req, &mut c.res);
-    //     let session_status = c.c.aurth_manager.api_session_status(&c.c.session_id).unwrap();
+    //     let session_status = c.c.auth_manager.api_session_status(&c.c.session_id).unwrap();
     //     c.res.json_value(&serde_json::json!(session_status));
     //     c
     // });

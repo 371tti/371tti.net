@@ -1,0 +1,57 @@
+title: "371tti.net curl page"
+banner: |
+  ██████  ██████      ██    ██      ██      ██        ████  ██████    ██    
+  ░░░░██  ░░░░██      ██  ██████  ██████    ░░      ██░░██  ██░░░░  ██████  
+  ██████      ██      ██  ░░██░░  ░░██░░    ██      ██  ██  ██████  ░░██░░  
+  ░░░░██      ██      ██    ██      ██      ██      ██  ██  ██░░░░    ██    
+  ██████      ██      ██    ████    ████    ██  ██  ██  ██  ██████    ████  
+  ░░░░░░      ░░      ░░    ░░░░    ░░░░    ░░  ░░  ░░  ░░  ░░░░░░    ░░░░  
+info:
+  message_en: "thank you for using 371tti.net with curl command!"
+  message_ja: "curlでアクセスしてくれてありがとう。"
+  note_en: "However, you cannot view all pages with curl."
+  note_ja: "残念だけど全ページをcurlで見ることはできません。"
+introduction:
+  message_ja: "学生の開発者です。物を生み出すのが好きです。よろしくね。"
+status:
+  age: 17
+  nickname: "371tti"
+  location: "Japan"
+  occupation: "Student"
+  interests: "Programming"
+skills:
+  languages:
+    - Python
+    - C
+    - C++
+    - JavaScript
+    - Rust
+    - Java
+    - HTML
+    - CSS
+  frameworks:
+    - Flask
+    - Actix-Web
+  tools:
+    - Git
+    - VS Code
+    - IntelliJ IDEA
+    - Docker
+    - LXC
+    - Conda
+sns:
+  twitter: "https://twitter.com/371tti"
+  github: "https://github.com/371tti"
+  discord: "371tti"
+  mcid: "371tti"
+  website: "https://371tti.net/"
+links:
+  - "https://tako"
+  - "https://info.takos.jp/"
+  - "https://sakana11.org/"
+  - "https://t3tra.dev/"
+  - "https://akku1139.github.io/"
+terms:
+  - "https://371tti.net/terms"
+  - "https://371tti.net/license"
+copyright: "Copyright (c) 2024~ 371tti.net All rights reserved."
