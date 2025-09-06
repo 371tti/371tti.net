@@ -30,8 +30,8 @@
     border-color: var(--border-color);
     mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
         rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.6) 100px,
-        rgba(0, 0, 0, 0) 150px);
+        rgba(0, 0, 0, 0.6) 200px,
+        rgba(0, 0, 0, 0) 300px);
     mask-repeat: no-repeat;
 }
 
@@ -40,8 +40,8 @@
     background-color: var(--mask-color);
     mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
         rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0.6) 50px,
-        rgba(0, 0, 0, 0) 100px);
+        rgba(0, 0, 0, 0.6) 0px,
+        rgba(0, 0, 0, 0) 0px);
     mask-repeat: no-repeat;
 }
 

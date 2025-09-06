@@ -128,15 +128,19 @@ h6 {
     color: var(--color-text-1);
 }
 
+h3 {
+    margin-bottom: 0.2em;
+}
+
 p {
     margin: 0;
     padding: 0;
 }
 
 .h::before {
-    content: "#";
+    content: "◆";
     color: var(--color-text-0);
-    font-size: 1.5em;
+    font-size: 1.2em;
     margin-right: 0.2em;
     /* テキストとの余白をつけたい場合 */
     margin-left: 0.2em;
