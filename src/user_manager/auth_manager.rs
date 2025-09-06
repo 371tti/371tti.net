@@ -11,3 +11,8 @@ impl AuthManager {
 
     // Add methods for authentication management
 }
+
+pub struct Sessions {
+    
+}
+

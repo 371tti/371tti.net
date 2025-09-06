@@ -1,3 +1,4 @@
 {
-    "liveServer.settings.port": 80
+    "liveServer.settings.port": 80,
+    "jpLsp.applyAllLanguages": false
 }

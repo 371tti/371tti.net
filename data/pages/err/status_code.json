@@ -103,6 +103,14 @@
     "No further action needed"
     ]
   },
+  "218": {
+    "color": "#00ff00bb",
+    "message": "This is fine",
+    "suggest": [
+    "Everything is okay",
+    "No action needed"
+    ]
+  },
   "226": {
     "color": "#00ff00bb",
     "message": "IM Used",
@@ -510,6 +518,14 @@
     "suggest": [
     "Authenticate to access network",
     "Check network credentials"
+    ]
+  },
+  "777": {
+    "color": "#ff00ffff",
+    "message": "Good Luck",
+    "suggest": [
+    "Everything is up to you",
+    "The Lucky Number"
     ]
   }
 }
