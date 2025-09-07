@@ -1,8 +1,11 @@
+use argon2::password_hash;
 use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
 use std::time::SystemTime;
 
 use crate::user_manager::auth_manager::{Account, AccountData, AccountID, Accounts, SessionKey};
+
+use crate::user_manager::auth_manager::ACCOUNT_DATA_VERSION;
 
 impl Accounts {
     pub fn new() -> Self {
@@ -21,8 +24,8 @@ impl Accounts {
         self.pool.get_mut(id)
     }
 
-    pub fn add_account(&self, account: &Account, password_hash: &[u8; 32]) {
-        let account_data = AccountData::new(account, password_hash);
+    pub fn add_account(&self, account: &Account, password_hash: &[u8; 32], password_salt: &[u8; 16]) {
+        let account_data = AccountData::new(account, password_hash, password_salt);
         self.pool.insert(account.id().clone(), account_data);
     }
 
@@ -32,12 +35,14 @@ impl Accounts {
 }
 
 impl AccountData {
-    pub fn new(account: &Account, password_hash: &[u8; 32]) -> Self {
+    pub fn new(account: &Account, password_hash: &[u8; 32], password_salt: &[u8; 16]) -> Self {
         Self {
             account: account.clone(),
             password_hash: *password_hash,
+            password_salt: *password_salt,
             session_ids: Vec::new(),
             created_at: SystemTime::now(),
+            version: ACCOUNT_DATA_VERSION,
         }
     }
 

@@ -1,5 +1,5 @@
 use dashmap::DashMap;
-use sha2::{Digest, Sha256};
+use argon2::Argon2;
 use std::time::{Duration, SystemTime};
 
 
@@ -17,28 +17,53 @@ use std::time::{Duration, SystemTime};
 pub struct AuthManager {
     pub sessions: Sessions,
     pub accounts: Accounts,
-    pub hash_salt: [u8; 16],
-    pub hash_stretching: u8,
     pub session_timeout: Duration,
+    pub password_pepper: [u8; 16],
+    pub password_hasher: Argon2<'static>,
 }
+
+/// configuration for password hashing
+pub struct HashConfig {
+    pub pepper: [u8; 16],
+    pub memory_kib: u32,
+    pub time_cost: u32,
+    pub lanes: u32,
+}
+
+/// length of password hash
+/// 32 bytes (256 bits)
+pub const HASH_LEN: usize = 32;
+
+///  account data version
+/// for future
+pub const ACCOUNT_DATA_VERSION: u32 = 1;
 
 impl AuthManager {
     /// new instance of AuthManager
     /// hash_salt: 16bytes random
     /// hash_stretching: number of iterations for password hashing
-    pub fn new( session_timeout: Duration, hash_salt: [u8; 16], hash_stretching: u8 ) -> Self {
+    pub fn new( session_timeout: Duration, hash_config: HashConfig) -> Self {
         Self {
             sessions: Sessions::new(),
             accounts: Accounts::new(),
-            hash_salt,
-            hash_stretching,
             session_timeout,
+            password_pepper: hash_config.pepper,
+            password_hasher: Argon2::new(
+                argon2::Algorithm::Argon2id,
+                argon2::Version::V0x13,
+                argon2::Params::new(
+                    hash_config.memory_kib,
+                    hash_config.time_cost,
+                    hash_config.lanes,
+                    Some(HASH_LEN)
+                ).expect("argon2 hash params")
+            )
         }
     }
     /// verify account
     fn verify_account(&self, id: &AccountID, password: &str) -> VerifyResult {
         self.accounts.get(id).map(|account_data| {
-            let password_hash = self.password_hasher(password);
+            let password_hash = self.hash_password(password, &account_data.password_salt);
             if account_data.verify_password_hash(&password_hash) {
                 VerifyResult::Success
             } else {
@@ -53,8 +78,8 @@ impl AuthManager {
     }
 
     /// add_new_account
-    fn add_new_account(&self, account: &Account, password_hash: &[u8; 32]) {
-        self.accounts.add_account(account, password_hash);
+    fn add_new_account(&self, account: &Account, password_hash: &[u8; HASH_LEN], password_salt: &[u8; 16]) {
+        self.accounts.add_account(account, password_hash, password_salt);
     }
 
     
@@ -64,15 +89,15 @@ impl AuthManager {
         key
     }
 
-    fn password_hasher(&self, password: &str) -> [u8; 32] {
-        let mut hasher = Sha256::new();
-        hasher.update(&self.hash_salt);
-        hasher.update(password);
-        for _i in 0..self.hash_stretching {
-            let hash_result = hasher.finalize_reset();
-            hasher.update(&hash_result);
-        }
-        hasher.finalize().into()
+    fn hash_password(&self, password: &str, salt: &[u8; 16]) -> [u8; HASH_LEN] {
+        // Use Argon2 to derive a fixed-length raw hash (32 bytes)
+        let mut out = [0u8; HASH_LEN];
+        let mut adv = [0u8; 32];
+        adv[..16].copy_from_slice(salt);
+        adv[16..].copy_from_slice(&self.password_pepper);
+
+        self.password_hasher.hash_password_into(password.as_bytes(), &adv, &mut out).expect("argon2 hash");
+        out
     }
 }
 
@@ -145,7 +170,9 @@ pub struct AccountData {
     pub account: Account,
     /// sha256 hash
     pub password_hash: [u8; 32],
+    pub password_salt: [u8; 16],
     pub session_ids: Vec<SessionKey>,
     pub created_at: SystemTime,
+    pub version: u32, // for future
 }
 

@@ -15,6 +15,7 @@ rand = "0.8.0" # 0.9はだめ
 base64 = "0.22.1"
 tf-idf-vectorizer = "0.3.1"
 sha2 = "0.10.9"
+argon2 = "0.5.3"
 
 
 
