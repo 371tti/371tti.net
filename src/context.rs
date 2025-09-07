@@ -1,18 +1,56 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::{Arc, Mutex}, time::{Duration, SystemTime}};
 
-use kurosabi::{request::Req, response::Res};
 
-use crate::page_generator::PageGenerator;
+use kurosabi::{context::ContextMiddleware, kurosabi::Context};
+use log::info;
+
+use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth_manager::{AuthManager, SessionKey}};
 
 #[derive(Clone)]
 pub struct SiteContext {
     pub ssr: Arc<PageGenerator>,
+    pub auth: Arc<AuthManager>,
+    pub main_config: Arc<Mutex<MainConfig>>,
 }
 
 impl SiteContext {
-    pub fn new() -> Self {
+    pub fn new(config: PathBuf) -> Self {
+        info!("Loading config from {:?}", config);
+        let config = MainConfig::load_from_file(&config);
+        info!("Config loaded");
         let ssr = Arc::new(PageGenerator::new()); // Assuming PageGenerator has a new() method
-        Self { ssr }
+        let auth = Arc::new(AuthManager::new(
+            Duration::from_secs(config.session_timeout),
+            config.hash_config.clone(),
+        ));
+        Self { ssr, auth, main_config: Arc::new(Mutex::new(config)) }
     }
-
 }
+
+pub const SESSION_COOKIE_KEY: &str = "session_key";
+
+#[async_trait::async_trait]
+impl ContextMiddleware<Context<SiteContext>> for SiteContext {
+    async fn before_handle(mut ctx: Context<SiteContext>) -> Context<SiteContext> {
+        let mut needs_new_session = true;
+
+        if let Some(cookie) = ctx.req.header.get_cookie(SESSION_COOKIE_KEY) {
+            if let Some(key) = SessionKey::from_str(cookie) {
+                if let Some(mut session) = ctx.c.auth.check_session(&key) {
+                    session.last_accessed_at = SystemTime::now();
+                    needs_new_session = false;
+                }
+            }
+        }
+
+        if needs_new_session {
+            let session_key = ctx.c.auth.create_session();
+            ctx.res
+                .header
+                .set_cookie(SESSION_COOKIE_KEY, &session_key.as_base64());
+        }
+
+        ctx
+    }
+}
+

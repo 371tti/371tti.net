@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 env_logger = "0.11.8"
 chrono = "0.4.41"
-kurosabi = "0.3.14"
+kurosabi = "0.4.1"
 tokio = { version = "1.46.1", features = ["full"] }
 serde_json = "1.0.141"
 serde = { version = "1.0.219", features = ["derive"] }
@@ -16,6 +16,10 @@ base64 = "0.22.1"
 tf-idf-vectorizer = "0.3.1"
 sha2 = "0.10.9"
 argon2 = "0.5.3"
+toml = "0.9.5"
+log = "0.4.28"
+async-trait = "0.1.89"
+
 
 
 

@@ -1,4 +1,4 @@
-use dashmap::DashMap;
+use dashmap::{mapref::one::RefMut, DashMap};
 use argon2::Argon2;
 use std::time::{Duration, SystemTime};
 
@@ -18,17 +18,11 @@ pub struct AuthManager {
     pub sessions: Sessions,
     pub accounts: Accounts,
     pub session_timeout: Duration,
-    pub password_pepper: [u8; 16],
+    pub password_pepper: String,
     pub password_hasher: Argon2<'static>,
 }
 
-/// configuration for password hashing
-pub struct HashConfig {
-    pub pepper: [u8; 16],
-    pub memory_kib: u32,
-    pub time_cost: u32,
-    pub lanes: u32,
-}
+use crate::user_manager::hash_config::HashConfig;
 
 /// length of password hash
 /// 32 bytes (256 bits)
@@ -61,7 +55,7 @@ impl AuthManager {
         }
     }
     /// verify account
-    fn verify_account(&self, id: &AccountID, password: &str) -> VerifyResult {
+    pub fn verify_account(&self, id: &AccountID, password: &str) -> VerifyResult {
         self.accounts.get(id).map(|account_data| {
             let password_hash = self.hash_password(password, &account_data.password_salt);
             if account_data.verify_password_hash(&password_hash) {
@@ -73,18 +67,18 @@ impl AuthManager {
     }
 
     /// check session
-    fn check_session(&self, session: &SessionKey) -> bool {
-       todo!()
+    pub fn check_session(&self, session: &SessionKey) -> Option<RefMut<'_, SessionKey, SessionsData>> {
+        self.sessions.get_mut(session)
     }
 
     /// add_new_account
-    fn add_new_account(&self, account: &Account, password_hash: &[u8; HASH_LEN], password_salt: &[u8; 16]) {
+    pub fn add_new_account(&self, account: &Account, password_hash: &[u8; HASH_LEN], password_salt: &[u8; 16]) {
         self.accounts.add_account(account, password_hash, password_salt);
     }
 
     
     /// create new session
-    fn create_session(&self) -> SessionKey {
+    pub fn create_session(&self) -> SessionKey {
         let key = self.sessions.add_session();
         key
     }
@@ -92,9 +86,11 @@ impl AuthManager {
     fn hash_password(&self, password: &str, salt: &[u8; 16]) -> [u8; HASH_LEN] {
         // Use Argon2 to derive a fixed-length raw hash (32 bytes)
         let mut out = [0u8; HASH_LEN];
-        let mut adv = [0u8; 32];
-        adv[..16].copy_from_slice(salt);
-        adv[16..].copy_from_slice(&self.password_pepper);
+        // combine salt and pepper
+        // salt: 16bytes
+        let mut adv = Vec::new();
+        adv.extend_from_slice(salt);
+        adv.extend_from_slice(self.password_pepper.as_bytes());
 
         self.password_hasher.hash_password_into(password.as_bytes(), &adv, &mut out).expect("argon2 hash");
         out

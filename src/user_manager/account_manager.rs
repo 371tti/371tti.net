@@ -1,4 +1,3 @@
-use argon2::password_hash;
 use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
 use std::time::SystemTime;

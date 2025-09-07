@@ -2,6 +2,7 @@ use std::time::SystemTime;
 
 use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
+use base64::{Engine, engine::general_purpose};
 
 use crate::user_manager::auth_manager::{SessionKey, Sessions, SessionsData};
 use rand::RngCore;
@@ -35,6 +36,21 @@ impl SessionKey {
         let mut key = [0u8; 32];
         rng.fill_bytes(&mut key);
         SessionKey(key)
+    }
+
+    pub fn from_str(s: &str) -> Option<Self> {
+        match general_purpose::STANDARD.decode(s) {
+            Ok(bytes) if bytes.len() == 32 => {
+                let mut key = [0u8; 32];
+                key.copy_from_slice(&bytes);
+                Some(SessionKey(key))
+            },
+            _ => None,
+        }
+    }
+
+    pub fn as_base64(&self) -> String {
+        general_purpose::STANDARD.encode(&self.0)
     }
 }
 

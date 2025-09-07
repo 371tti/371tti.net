@@ -2,9 +2,11 @@
 use kurosabi::Kurosabi;
 use wk_371tti_net::context::SiteContext;
 
+pub const CONFIG_PATH: &str = "config.toml";
+
 fn main() {
     env_logger::try_init_from_env(env_logger::Env::default().default_filter_or("debug")).unwrap_or_else(|_| ());
-    let context = SiteContext::new();
+    let context = SiteContext::new(CONFIG_PATH.into());
     let mut kurosabi = Kurosabi::with_context(context);
 
     kurosabi.get("/", |mut c| async move {
