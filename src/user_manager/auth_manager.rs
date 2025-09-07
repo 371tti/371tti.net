@@ -67,8 +67,25 @@ impl AuthManager {
     }
 
     /// check session
-    pub fn check_session(&self, session: &SessionKey) -> Option<RefMut<'_, SessionKey, SessionsData>> {
-        self.sessions.get_mut(session)
+    pub fn check_session(&self, session_key: &SessionKey) -> Option<RefMut<'_, SessionKey, SessionsData>> {
+        let session = self.sessions.get_mut(session_key);
+        session.and_then(|mut s| {
+            let now = SystemTime::now();
+            if now.duration_since(s.last_accessed_at).unwrap_or(Duration::from_secs(0)) <= self.session_timeout {
+                s.last_accessed_at = now;
+                Some(s)
+            } else {
+                // unlink session from accounts
+                s.accounts.iter().for_each(|acc_session| {
+                    let account_id = acc_session.account.id();
+                    if let Some(mut account_data) = self.accounts.get_mut(account_id) {
+                        account_data.remove_session(&session_key);
+                    }
+                });
+                // session expired
+                None
+            }
+        })
     }
 
     /// add_new_account

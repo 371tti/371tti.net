@@ -28,6 +28,11 @@ impl Sessions {
         self.pool.insert(key.clone(), session);
         key
     }
+
+    pub fn remove_session(&self, key: &SessionKey,) {
+        let session = self.pool.get(key);
+        self.pool.remove(key);
+    }
 }
 
 impl SessionKey {
