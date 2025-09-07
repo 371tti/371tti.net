@@ -27,10 +27,15 @@ impl SiteContext {
     }
 }
 
+/// Cookie key for session management
 pub const SESSION_COOKIE_KEY: &str = "session_key";
+/// Cookie max age in seconds
+/// 1 year
+pub const SESSION_COOKIE_MAX_AGE: i64 = 60 * 60 * 24 * 365;
 
 #[async_trait::async_trait]
 impl ContextMiddleware<Context<SiteContext>> for SiteContext {
+    /// セッション管理用
     async fn before_handle(mut ctx: Context<SiteContext>) -> Context<SiteContext> {
         let mut needs_new_session = true;
 
@@ -47,7 +52,18 @@ impl ContextMiddleware<Context<SiteContext>> for SiteContext {
             let session_key = ctx.c.auth.create_session();
             ctx.res
                 .header
-                .set_cookie(SESSION_COOKIE_KEY, &session_key.as_base64());
+                .set_cookie_with_params(
+                    SESSION_COOKIE_KEY, 
+                    &session_key.as_base64(),
+                    true,
+                    true,
+                    Some("/"),
+                    Some("Lax"),
+                    Some(SESSION_COOKIE_MAX_AGE),
+                    None,
+                    None,
+                    None,
+                );
         }
 
         ctx

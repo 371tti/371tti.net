@@ -619,9 +619,9 @@ dependencies = [
 
 [[package]]
 name = "kurosabi"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fa3a3f1b1796abc48a542c84cb38d414ec8df4425a8f31add51422a885e6f80"
+checksum = "4f10e9335c7ebad9b9bb308c03a87cc52d3c13c2a3769519845fc458a4d07748"
 dependencies = [
  "ahash",
  "async-compression",

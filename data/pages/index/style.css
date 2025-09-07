@@ -140,7 +140,7 @@ p {
 .h::before {
     content: "◆";
     color: var(--color-text-0);
-    font-size: 1.2em;
+    font-size: 1.15em;
     margin-right: 0.2em;
     /* テキストとの余白をつけたい場合 */
     margin-left: 0.2em;
