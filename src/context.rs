@@ -8,9 +8,14 @@ use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::aut
 
 #[derive(Clone)]
 pub struct SiteContext {
+    /// Server-Side Rendering engine
     pub ssr: Arc<PageGenerator>,
+    /// Authentication manager
     pub auth: Arc<AuthManager>,
+    /// Main configuration
     pub main_config: Arc<Mutex<MainConfig>>,
+    /// Current session key, if any
+    pub session_key: Option<SessionKey>,
 }
 
 impl SiteContext {
@@ -23,7 +28,12 @@ impl SiteContext {
             Duration::from_secs(config.session_timeout),
             config.hash_config.clone(),
         ));
-        Self { ssr, auth, main_config: Arc::new(Mutex::new(config)) }
+        Self { 
+            ssr, 
+            auth, 
+            main_config: Arc::new(Mutex::new(config)),
+            session_key: None,
+        }
     }
 }
 
@@ -42,6 +52,8 @@ impl ContextMiddleware<Context<SiteContext>> for SiteContext {
         if let Some(cookie) = ctx.req.header.get_cookie(SESSION_COOKIE_KEY) {
             if let Some(key) = SessionKey::from_str(cookie) {
                 if let Some(mut session) = ctx.c.auth.check_session(&key) {
+                    // set context session key
+                    ctx.c.session_key = Some(key.clone());
                     session.last_accessed_at = SystemTime::now();
                     needs_new_session = false;
                 }
@@ -50,6 +62,8 @@ impl ContextMiddleware<Context<SiteContext>> for SiteContext {
 
         if needs_new_session {
             let session_key = ctx.c.auth.create_session();
+            // set context session key
+            ctx.c.session_key = Some(session_key.clone());
             ctx.res
                 .header
                 .set_cookie_with_params(
