@@ -1,16 +1,18 @@
-use std::time::SystemTime;
+use chrono::{DateTime, Utc};
+use serde::Serialize;
 
-use crate::user_manager::auth_manager::Account;
+use crate::user_manager::auth_manager::{AccountID, AccountSession};
 
+#[derive(Clone, Serialize)]
 pub struct SessionState {
     /// Whether the user is logged in
     pub is_logged_in: bool,
     /// The currently logged-in account, if any
-    pub logged_account: Option<Account>,
+    pub logged_account: Option<AccountID>,
     /// All authenticated accounts (for multi-login scenarios)
-    pub authenticated_accounts: Vec<Account>,
+    pub authenticated_accounts: Vec<AccountSession>,
     /// Session creation time
-    pub created_at: SystemTime,
+    pub created_at: DateTime<Utc>,
 }
 
 pub struct LoginReq {

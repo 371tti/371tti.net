@@ -1,7 +1,8 @@
-session_timeout = 604800
+session_timeout = 2592000
+account_timeout = 604800
 
 [hash_config]
-pepper = "7Wfn5W6bG9Y0HiQzMajRfQ=="
-memory_kib = 141879
+pepper = "Vv1ObIxDEh/x/9Fc5MUVzQ=="
+memory_kib = 155775
 time_cost = 3
 lanes = 7

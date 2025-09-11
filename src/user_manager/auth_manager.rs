@@ -1,6 +1,7 @@
 use dashmap::{mapref::one::RefMut, DashMap};
 use argon2::Argon2;
-use std::time::{Duration, SystemTime};
+use chrono::{DateTime, Utc, Duration as ChronoDuration};
+use serde::Serialize;
 
 
 /// 認証マネージャーの実装
@@ -17,7 +18,8 @@ use std::time::{Duration, SystemTime};
 pub struct AuthManager {
     pub sessions: Sessions,
     pub accounts: Accounts,
-    pub session_timeout: Duration,
+    pub session_timeout: ChronoDuration,
+    pub account_timeout: ChronoDuration,
     pub password_pepper: String,
     pub password_hasher: Argon2<'static>,
 }
@@ -36,11 +38,12 @@ impl AuthManager {
     /// new instance of AuthManager
     /// hash_salt: 16bytes random
     /// hash_stretching: number of iterations for password hashing
-    pub fn new( session_timeout: Duration, hash_config: HashConfig) -> Self {
+    pub fn new( session_timeout: ChronoDuration, account_timeout: ChronoDuration, hash_config: HashConfig) -> Self {
         Self {
             sessions: Sessions::new(),
             accounts: Accounts::new(),
             session_timeout,
+            account_timeout,
             password_pepper: hash_config.pepper,
             password_hasher: Argon2::new(
                 argon2::Algorithm::Argon2id,
@@ -67,14 +70,37 @@ impl AuthManager {
     }
 
     /// check session
+    /// セッションの有効性を確認します。無効なら削除してNoneを返す。
+    /// これが実行された直後のセッションデータは有効性が保証される。
     pub fn check_session(&self, session_key: &SessionKey) -> Option<RefMut<'_, SessionKey, SessionsData>> {
         let session = self.sessions.get_mut(session_key);
         session.and_then(|mut s| {
-            let now = SystemTime::now();
-            if now.duration_since(s.last_accessed_at).unwrap_or(Duration::from_secs(0)) <= self.session_timeout {
+            let now: DateTime<Utc> = Utc::now();
+            if now.signed_duration_since(s.last_accessed_at) <= self.session_timeout {
+                // アクセス時間更新
                 s.last_accessed_at = now;
+                s.now_account_index.map(|idx| {
+                    if let Some(account_session) = s.accounts.get_mut(idx) {
+                        if let Some(time) = account_session.get_time() {
+                            if now.signed_duration_since(time) <= self.account_timeout {
+                                // アクセス時間更新
+                                account_session.set_time(now);
+                            } else {
+                                // timeout
+                                s.now_account_index = None;
+                            }
+                        } else {
+                            // account is logout
+                            s.now_account_index = None;
+                        }
+                    } else {
+                        // index out of range
+                        s.now_account_index = None;
+                    }
+                });
                 Some(s)
             } else {
+                // del session
                 // unlink session from accounts
                 s.accounts.iter().for_each(|acc_session| {
                     let account_id = acc_session.account.id();
@@ -87,12 +113,6 @@ impl AuthManager {
             }
         })
     }
-
-    /// add_new_account
-    pub fn add_new_account(&self, account: &Account, password_hash: &[u8; HASH_LEN], password_salt: &[u8; 16]) {
-        self.accounts.add_account(account, password_hash, password_salt);
-    }
-
     
     /// create new session
     pub fn create_session(&self) -> SessionKey {
@@ -139,10 +159,10 @@ pub struct SessionKey(pub [u8; 32]);
 
 /// account id
 /// only ascii
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Serialize)]
 pub struct AccountID(pub String);
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Serialize)]
 pub enum Account {
     Admin(AccountID),
     Normal(AccountID),
@@ -163,18 +183,20 @@ pub struct SessionsData {
     pub accounts: Vec<AccountSession>,
     /// 現在操作しているアカウントのインデックス
     pub now_account_index: Option<usize>,
-    pub created_at: SystemTime,
-    pub last_accessed_at: SystemTime,
+    pub created_at: DateTime<Utc>,
+    pub last_accessed_at: DateTime<Utc>,
 }
 
+#[derive(Clone, Serialize)]
 pub struct AccountSession {
     pub account: Account,
     pub status: AccountSessionStatus,
 }
 
+#[derive(Clone, Serialize)]
 pub enum AccountSessionStatus {
     /// 時間によっては有効なアカウント
-    Enable(SystemTime), // 最終ログイン時間
+    Enable(DateTime<Utc>), // 最終ログイン時間
     /// 無効なアカウント
     Logout,
 }
@@ -185,7 +207,7 @@ pub struct AccountData {
     pub password_hash: [u8; 32],
     pub password_salt: [u8; 16],
     pub session_ids: Vec<SessionKey>,
-    pub created_at: SystemTime,
+    pub created_at: DateTime<Utc>,
     pub version: u32, // for future
 }
 

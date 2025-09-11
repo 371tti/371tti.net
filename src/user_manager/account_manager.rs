@@ -1,8 +1,8 @@
 use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
-use std::time::SystemTime;
+use chrono::{DateTime, Utc};
 
-use crate::user_manager::auth_manager::{Account, AccountData, AccountID, Accounts, SessionKey};
+use crate::user_manager::auth_manager::{Account, AccountData, AccountID, AccountSession, AccountSessionStatus, Accounts, SessionKey};
 
 use crate::user_manager::auth_manager::ACCOUNT_DATA_VERSION;
 
@@ -40,7 +40,7 @@ impl AccountData {
             password_hash: *password_hash,
             password_salt: *password_salt,
             session_ids: Vec::new(),
-            created_at: SystemTime::now(),
+            created_at: Utc::now(),
             version: ACCOUNT_DATA_VERSION,
         }
     }
@@ -63,5 +63,22 @@ impl AccountData {
     /// list all sessions of this account
     pub fn list_sessions(&self) -> &Vec<SessionKey> {
         &self.session_ids
+    }
+}
+
+impl AccountSession {
+    pub fn get_time(&self) -> Option<DateTime<Utc>> {
+        match &self.status {
+        AccountSessionStatus::Enable(t) => Some(*t),
+            AccountSessionStatus::Logout => None,
+        }
+    }
+
+    pub fn set_time(&mut self, t: DateTime<Utc>) {
+        self.status = AccountSessionStatus::Enable(t);
+    }
+
+    pub fn get_account_id(&self) -> &AccountID {
+        self.account.id()
     }
 }

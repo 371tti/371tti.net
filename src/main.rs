@@ -59,6 +59,17 @@ love cat
         c
     });
 
+    kurosabi.get("/api/session", |mut c| async move {
+        if let Some(session_state) = c.c.req_session_state() {
+            let serded_state = serde_json::to_value(&session_state).unwrap_or(serde_json::json!({"error": "Failed to serialize session state"}));
+            c.res.json_value(&serded_state);
+        } else {
+            c.res.set_status(401);
+            c.res.json_value(&serde_json::json!({"error": "No valid session"}));
+        }
+        c
+    });
+
 
     kurosabi.not_found_handler(|mut c| async move {
         c.res.code = 404;

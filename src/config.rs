@@ -10,6 +10,7 @@ pub struct MainConfig {
     /// session timeout in seconds
     /// min 0, Max u64::MAX
     pub session_timeout: u64,
+    pub account_timeout: u64,
     pub hash_config: HashConfig,
 }
 
@@ -35,11 +36,9 @@ impl MainConfig {
         info!("No config file found, creating a new one at {:?}", path);
         // create default config
         // with benchmarked hash config
+        let mut config = MainConfig::default();
         let hash_config = HashConfig::benchmark();
-        let config = Self {
-            session_timeout: 604800,
-            hash_config,
-        };
+        config.hash_config = hash_config;
         // save to file
         config.save_to_file(&path);
         info!("Default config file created. Please edit it and restart the server.");
@@ -51,7 +50,9 @@ impl Default for MainConfig {
     fn default() -> Self {
         Self {
             // 1 week
-            session_timeout: 604800,
+            account_timeout: 604800,
+            // 1 month
+            session_timeout: 2592000,
             // after set by benchmark
             hash_config: HashConfig {
                 pepper: "default_pepper".to_string(), // Placeholder, will be set by benchmark

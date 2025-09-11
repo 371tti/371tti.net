@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use chrono::Utc;
 
 use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
@@ -63,8 +63,8 @@ impl SessionsData {
         Self {
             accounts: Vec::new(),
             now_account_index: None,
-            created_at: SystemTime::now(),
-            last_accessed_at: SystemTime::now(),
+            created_at: Utc::now(),
+            last_accessed_at: Utc::now(),
         }
     }
 }

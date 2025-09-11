@@ -1,10 +1,12 @@
-use std::{path::PathBuf, sync::{Arc, Mutex}, time::{Duration, SystemTime}};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use chrono::Duration as ChronoDuration;
 
 
 use kurosabi::{context::ContextMiddleware, kurosabi::Context};
 use log::info;
 
-use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth_manager::{AuthManager, SessionKey}};
+use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth_manager::{AccountID, AuthManager, SessionKey}};
 
 #[derive(Clone)]
 pub struct SiteContext {
@@ -16,6 +18,7 @@ pub struct SiteContext {
     pub main_config: Arc<Mutex<MainConfig>>,
     /// Current session key, if any
     pub session_key: Option<SessionKey>,
+    pub user_id: Option<AccountID>,
 }
 
 impl SiteContext {
@@ -25,7 +28,8 @@ impl SiteContext {
         info!("Config loaded");
         let ssr = Arc::new(PageGenerator::new()); // Assuming PageGenerator has a new() method
         let auth = Arc::new(AuthManager::new(
-            Duration::from_secs(config.session_timeout),
+            ChronoDuration::seconds(config.session_timeout as i64),
+            ChronoDuration::seconds(config.account_timeout as i64),
             config.hash_config.clone(),
         ));
         Self { 
@@ -33,6 +37,7 @@ impl SiteContext {
             auth, 
             main_config: Arc::new(Mutex::new(config)),
             session_key: None,
+            user_id: None,
         }
     }
 }
@@ -51,10 +56,15 @@ impl ContextMiddleware<Context<SiteContext>> for SiteContext {
 
         if let Some(cookie) = ctx.req.header.get_cookie(SESSION_COOKIE_KEY) {
             if let Some(key) = SessionKey::from_str(cookie) {
-                if let Some(mut session) = ctx.c.auth.check_session(&key) {
+                if let Some(session) = ctx.c.auth.check_session(&key) {
                     // set context session key
+                    ctx.c.user_id = session
+                        .now_account_index
+                        .and_then(|idx| { 
+                            session.accounts.get(idx)
+                                .map(|acc_sess| acc_sess.get_account_id().clone()) 
+                            });
                     ctx.c.session_key = Some(key.clone());
-                    session.last_accessed_at = SystemTime::now();
                     needs_new_session = false;
                 }
             }
