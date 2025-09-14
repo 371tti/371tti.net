@@ -72,14 +72,21 @@ impl ContextMiddleware<SiteContext> for SiteContext {
 
         if let Some(cookie) = ctx.req.header.get_cookie(SESSION_COOKIE_KEY) {
             if let Some(key) = SessionKey::from_str(cookie) {
+                // check session で大体すべての更新やってくれる
                 if let Some(session) = ctx.c.auth.check_session(&key).await {
                     // set context session key
-                    ctx.c.user_id = session
+                    let account_id= session
                         .now_account_index
                         .and_then(|idx| { 
                             session.accounts.get(idx)
                                 .map(|acc_sess| acc_sess.get_account_id().clone()) 
                             });
+                    if let Some(account_id) = &account_id {
+                        // アカウントの方の最終アクセス時間更新
+                        ctx.c.auth.accounts.update_last_accessed(&account_id).await;
+                    }
+                    ctx.c.user_id = account_id;
+                            
                     ctx.c.session_key = Some(key.clone());
                     needs_new_session = false;
                 }
