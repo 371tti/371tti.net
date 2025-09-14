@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
 use base64::{Engine, engine::general_purpose};
 
-use crate::user_manager::auth_manager::{SessionKey, Sessions, SessionsData};
+use crate::user_manager::auth_manager::{AccountSession, SessionKey, Sessions, SessionsData};
 use rand::RngCore;
 
 impl Sessions {
@@ -24,6 +24,10 @@ impl Sessions {
 
     pub fn add_session(&self) -> SessionKey {
         let key = SessionKey::new();
+        if self.pool.contains_key(&key) {
+            // extremely rare case
+            return self.add_session();
+        }
         let session = SessionsData::new();
         self.pool.insert(key.clone(), session);
         key
@@ -66,5 +70,10 @@ impl SessionsData {
             created_at: Utc::now(),
             last_accessed_at: Utc::now(),
         }
+    }
+
+    pub fn push_account(&mut self, account_session: AccountSession) -> usize {
+        self.accounts.push(account_session);
+        self.accounts.len() - 1
     }
 }

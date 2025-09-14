@@ -363,6 +363,10 @@ b {
     }
     
     @media (max-width: 160mm) {
+        .indent {
+            padding: 0 0 0 5mm;
+        }
+
         .grid {
             grid-template-columns: repeat(auto-fill, minmax(80mm, 1fr));
         }

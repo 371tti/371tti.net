@@ -1,8 +1,10 @@
 session_timeout = 2592000
 account_timeout = 604800
+database_url = "mongodb://192.168.0.48:27017/?replicaSet=rs0"
+db_name = "371tti_net"
 
 [hash_config]
-pepper = "Vv1ObIxDEh/x/9Fc5MUVzQ=="
-memory_kib = 155775
+pepper = "o6uYwqakTmB0WQkyMSOd9Q=="
+memory_kib = 151807
 time_cost = 3
-lanes = 7
+lanes = 2

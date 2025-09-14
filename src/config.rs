@@ -5,12 +5,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::user_manager::hash_config::HashConfig;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MainConfig {
     /// session timeout in seconds
     /// min 0, Max u64::MAX
     pub session_timeout: u64,
     pub account_timeout: u64,
+    pub database_url: String,
+    pub db_name: String,
     pub hash_config: HashConfig,
 }
 
@@ -53,6 +55,8 @@ impl Default for MainConfig {
             account_timeout: 604800,
             // 1 month
             session_timeout: 2592000,
+            database_url: "mongodb://ex".to_string(),
+            db_name: "371tti_net".to_string(),
             // after set by benchmark
             hash_config: HashConfig {
                 pepper: "default_pepper".to_string(), // Placeholder, will be set by benchmark

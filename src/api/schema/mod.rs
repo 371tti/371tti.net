@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::user_manager::auth_manager::{AccountID, AccountSession};
 
@@ -15,9 +15,10 @@ pub struct SessionState {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Deserialize)]
 pub struct LoginReq {
     /// Account ID
-    pub account_id: String,
+    pub account_id: AccountID,
     /// If the requested account is in the session's valid accounts list, the password can be skipped.
     /// just like account switching from user view
     pub skip_password: bool,
@@ -25,6 +26,7 @@ pub struct LoginReq {
     pub password: String,
 }
 
+#[derive(Serialize)]
 pub struct LoginRes {
     pub success: bool,
     pub message: String,

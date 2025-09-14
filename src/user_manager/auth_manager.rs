@@ -1,7 +1,10 @@
+use std::sync::Arc;
+
 use dashmap::{mapref::one::RefMut, DashMap};
 use argon2::Argon2;
 use chrono::{DateTime, Utc, Duration as ChronoDuration};
-use serde::Serialize;
+use rand::RngCore;
+use serde::{Deserialize, Serialize};
 
 
 /// 認証マネージャーの実装
@@ -25,6 +28,9 @@ pub struct AuthManager {
 }
 
 use crate::user_manager::hash_config::HashConfig;
+use serde::{Serializer, Deserializer};
+use base64::{engine::general_purpose, Engine};
+use serde::de::Error as DeError;
 
 /// length of password hash
 /// 32 bytes (256 bits)
@@ -38,10 +44,12 @@ impl AuthManager {
     /// new instance of AuthManager
     /// hash_salt: 16bytes random
     /// hash_stretching: number of iterations for password hashing
-    pub fn new( session_timeout: ChronoDuration, account_timeout: ChronoDuration, hash_config: HashConfig) -> Self {
+    pub async fn new( session_timeout: ChronoDuration, account_timeout: ChronoDuration, hash_config: HashConfig, db_client: Arc<mongodb::Database>) -> Self {
         Self {
             sessions: Sessions::new(),
-            accounts: Accounts::new(),
+            accounts: Accounts::new(
+                db_client
+            ).await,
             session_timeout,
             account_timeout,
             password_pepper: hash_config.pepper,
@@ -54,12 +62,12 @@ impl AuthManager {
                     hash_config.lanes,
                     Some(HASH_LEN)
                 ).expect("argon2 hash params")
-            )
+            ),
         }
     }
     /// verify account
-    pub fn verify_account(&self, id: &AccountID, password: &str) -> VerifyResult {
-        self.accounts.get(id).map(|account_data| {
+    pub async fn verify_account(&self, id: &AccountID, password: &str) -> VerifyResult {
+        self.accounts.get(id).await.map(|account_data| {
             let password_hash = self.hash_password(password, &account_data.password_salt);
             if account_data.verify_password_hash(&password_hash) {
                 VerifyResult::Success
@@ -72,9 +80,9 @@ impl AuthManager {
     /// check session
     /// セッションの有効性を確認します。無効なら削除してNoneを返す。
     /// これが実行された直後のセッションデータは有効性が保証される。
-    pub fn check_session(&self, session_key: &SessionKey) -> Option<RefMut<'_, SessionKey, SessionsData>> {
+    pub async fn check_session(&self, session_key: &SessionKey) -> Option<RefMut<'_, SessionKey, SessionsData>> {
         let session = self.sessions.get_mut(session_key);
-        session.and_then(|mut s| {
+        if let Some(mut s) = session {
             let now: DateTime<Utc> = Utc::now();
             if now.signed_duration_since(s.last_accessed_at) <= self.session_timeout {
                 // アクセス時間更新
@@ -102,16 +110,17 @@ impl AuthManager {
             } else {
                 // del session
                 // unlink session from accounts
-                s.accounts.iter().for_each(|acc_session| {
-                    let account_id = acc_session.account.id();
-                    if let Some(mut account_data) = self.accounts.get_mut(account_id) {
+                for acc_session in s.accounts.iter(){
+                    if let Some(mut account_data) = self.accounts.get_mut(&acc_session.account_id).await {
                         account_data.remove_session(&session_key);
                     }
-                });
+                }
                 // session expired
                 None
             }
-        })
+        } else {
+            None
+        }
     }
     
     /// create new session
@@ -120,7 +129,22 @@ impl AuthManager {
         key
     }
 
-    fn hash_password(&self, password: &str, salt: &[u8; 16]) -> [u8; HASH_LEN] {
+    pub async fn add_account(&self, id: &AccountID, password: &str) -> Option<[u8; 16]> {
+        if self.accounts.contains_account(id) {
+            // already exists
+            return None;
+        }
+        // generate random salt
+        let mut rng = rand::rngs::OsRng;
+        let mut salt = [0u8; 16];
+        rng.fill_bytes(&mut salt);
+        let password_hash = self.hash_password(password, &salt);
+        let account_data = AccountData::new(id, &password_hash, &salt);
+        self.accounts.insert_account(account_data).await;
+        Some(salt)
+    }
+
+    pub fn hash_password(&self, password: &str, salt: &[u8; 16]) -> [u8; HASH_LEN] {
         // Use Argon2 to derive a fixed-length raw hash (32 bytes)
         let mut out = [0u8; HASH_LEN];
         // combine salt and pepper
@@ -142,7 +166,8 @@ pub enum VerifyResult {
 
 /// Account Manager
 pub struct Accounts {
-    pub pool: DashMap<AccountID, AccountData>,
+    pub pool: DashMap<AccountID, Option<AccountData>>,
+    pub db_client: Arc<mongodb::Database>,
 }
 
 /// Session Manager
@@ -156,27 +181,39 @@ pub struct Sessions {
 #[derive(Eq, PartialEq, Hash, Clone)]
 pub struct SessionKey(pub [u8; 32]);
 
+impl Serialize for SessionKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let encoded = general_purpose::STANDARD.encode(&self.0);
+        serializer.serialize_str(&encoded)
+    }
+}
+
+impl<'de> Deserialize<'de> for SessionKey {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let bytes = general_purpose::STANDARD
+            .decode(&s)
+            .map_err(serde::de::Error::custom)?;
+        if bytes.len() != 32 {
+            return Err(serde::de::Error::custom("Invalid SessionKey length"));
+        }
+        let mut arr = [0u8; 32];
+        arr.copy_from_slice(&bytes);
+        Ok(SessionKey(arr))
+    }
+}
+
 
 /// account id
 /// only ascii
-#[derive(Eq, PartialEq, Hash, Clone, Serialize)]
+#[derive(Eq, PartialEq, Hash, Clone, Serialize, Deserialize)]
 pub struct AccountID(pub String);
-
-#[derive(Eq, PartialEq, Hash, Clone, Serialize)]
-pub enum Account {
-    Admin(AccountID),
-    Normal(AccountID),
-}
-
-impl Account {
-    pub fn id(&self) -> &AccountID {
-        match self {
-            Account::Admin(id) => id,
-            Account::Normal(id) => id,
-        }
-    }
-    
-}
 
 pub struct SessionsData {
     /// 複数アカウントログイン対応
@@ -189,7 +226,7 @@ pub struct SessionsData {
 
 #[derive(Clone, Serialize)]
 pub struct AccountSession {
-    pub account: Account,
+    pub account_id: AccountID,
     pub status: AccountSessionStatus,
 }
 
@@ -200,14 +237,48 @@ pub enum AccountSessionStatus {
     /// 無効なアカウント
     Logout,
 }
-
+#[derive(Serialize, Deserialize, Clone)]
 pub struct AccountData {
-    pub account: Account,
-    /// sha256 hash
+    pub account_id: AccountID,
+    #[serde(
+        serialize_with = "as_base64",
+        deserialize_with = "from_base64"
+    )]
     pub password_hash: [u8; 32],
+    #[serde(
+        serialize_with = "as_base64",
+        deserialize_with = "from_base64"
+    )]
     pub password_salt: [u8; 16],
     pub session_ids: Vec<SessionKey>,
     pub created_at: DateTime<Utc>,
     pub version: u32, // for future
+    pub is_saved: bool,
+    pub last_accessed_at: DateTime<Utc>,
 }
 
+// base64 helpers for serde
+
+fn as_base64<S, const N: usize>(bytes: &[u8; N], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let encoded = general_purpose::STANDARD.encode(bytes);
+    serializer.serialize_str(&encoded)
+}
+
+fn from_base64<'de, D, const N: usize>(deserializer: D) -> Result<[u8; N], D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    let decoded = general_purpose::STANDARD
+        .decode(&s)
+        .map_err(DeError::custom)?;
+    if decoded.len() != N {
+        return Err(DeError::custom(format!("Invalid length: expected {}, got {}", N, decoded.len())));
+    }
+    let mut arr = [0u8; N];
+    arr.copy_from_slice(&decoded);
+    Ok(arr)
+}

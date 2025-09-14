@@ -1,12 +1,13 @@
 
 use kurosabi::Kurosabi;
-use wk_371tti_net::context::SiteContext;
+use wk_371tti_net::{api::schema::LoginReq, context::SiteContext};
 
 pub const CONFIG_PATH: &str = "config.toml";
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env_logger::try_init_from_env(env_logger::Env::default().default_filter_or("debug")).unwrap_or_else(|_| ());
-    let context = SiteContext::new(CONFIG_PATH.into());
+    let context = SiteContext::new(CONFIG_PATH.into()).await;
     let mut kurosabi = Kurosabi::with_context(context);
 
     kurosabi.get("/", |mut c| async move {
@@ -70,6 +71,28 @@ love cat
         c
     });
 
+    kurosabi.post("/api/auth", |mut c| async move {
+        match c.req.body_de_struct::<LoginReq>().await {
+            Ok(login_req) => {
+                match c.c.req_login(login_req).await {
+                    Ok(res) => {
+                        c.res.json_value(&serde_json::to_value(&res).unwrap_or(serde_json::json!({"error": "Failed to serialize response"})));
+                    },
+                    Err((res, status)) => {
+                        c.res.set_status(status);
+                        c.res.json_value(&serde_json::to_value(&res).unwrap_or(serde_json::json!({"error": "Failed to serialize response"})));
+                    },
+                }
+                c
+            },
+            Err(e) => {
+                c.res.set_status(400);
+                c.res.json_value(&serde_json::json!({"error": format!("Failed to parse request body: {}", e)}));
+                return c;
+            },
+        }
+    });
+
 
     kurosabi.not_found_handler(|mut c| async move {
         c.res.code = 404;
@@ -77,7 +100,7 @@ love cat
         c
     });
 
-    let mut server = kurosabi.server()
+    let server = kurosabi.server()
         .host([0, 0, 0, 0])
         .accept_threads(1)
         .port(85)
@@ -85,5 +108,5 @@ love cat
         .queue_size(1000)
         .build();
 
-    server.run();
+    server.run_async().await;
 }
