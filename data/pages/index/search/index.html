@@ -5,73 +5,79 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="371tti.net login page">
-    <meta property="og:description" content="371tti.net login">
-    <meta property="og:title" content="371tti.net">
+    <meta name="description" content="371tti.net search engine">
+    <meta property="og:description" content="371tti.net scripts search engine">
+    <meta property="og:title" content="371tti.net search engine">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="/license">
-    <title>License - 371tti.net</title>
+    <meta property="og:url" content="/search">
+    <title>SearchEngine - 371tti.net</title>
     <link rel="stylesheet" href="/style.css">
     <script src="/menu.js"></script>
 </head>
+
 <body>
 
 
-<script src="/box-load-anime.js"></script>
+    <script src="/box-load-anime.js"></script>
 
-<div class="full center center-middle" style="background: linear-gradient(to bottom, var(--color-accent-0) -107% -77%, transparent 88%);">
-<div class="main card" id="content">
-<div id="clock" style="font-size:2em; text-align:center; margin:20px 0;"></div>
-<div id="date" style="font-size:0.9em; text-align:center; color: var(--text-color-0);"></div>
-<script>
-let is24Hour = true;
-let showJapaneseDay = false;
+    <div class="full center center-middle">
+        <div class="main card grid-2" id="content">
+            <div class="box r1">
+                <div class="box">
+                    <div class="flex">
+                        <h1>Search Engine</h1>
+                        <div class="block subtitle">
+                            <h2>371tti.net</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="box">
+                    <p>Index contains <b>3,200,000 pages</b> ... (。-`ω-)</p>
+                    <div class="pd"></div>
+                    <div class="flex-column">
+                        <input type="text" id="query" name="query" placeholder="write query here" required>
+                    </div>
+                    <div class="pd"></div>
+                    <a class="button right" id="search_button" href="#">
+                        <p>Search</p>
+                    </a>
+                </div>
+            </div>
+            <div class="box r1">
+                <div class="flex full">
+                    <div class="flex-column full">
+                        <div class="pd"></div>
+                        <h2>Options</h2>
+                        <div class="pd"></div>
+                        <div >
+                            <label for="algorithm">select algorithm</label>
+                            <select class="right" id="algorithm" name="algorithm">
+                                <option value="default">bm25</option>
+                                <option value="fast">dot</option>
+                                <option value="accurate">cosine similarity</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="top_k">number of results</label>
+                        <input class="right" type="text" id="top_k" name="top_k" placeholder="1..1000" value="10" required>
+                        </div>
+                        <div>
+                            <label for="bm25_k1">bm25 k1</label>
+                            <input class="right" type="text" id="bm25_k1" name="bm25_k1" placeholder="1.2..2.0" value="1.5" required>
+                        </div>
+                        <div>
+                            <label for="bm25_b">bm25 b</label>
+                            <input class="right" type="text" id="bm25_b" name="bm25_b" placeholder="0.75" value="0.75" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-function getDayString(dayIndex) {
-    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const daysJa = ['日', '月', '火', '水', '木', '金', '土'];
-    return showJapaneseDay ? daysJa[dayIndex] : daysEn[dayIndex];
-}
+    </div>
 
-function updateClock() {
-    const now = new Date();
-    let h = now.getHours();
-    let displayHour = h;
-    let ampm = '';
-    if (!is24Hour) {
-        ampm = h >= 12 ? ' PM' : ' AM';
-        displayHour = h % 12;
-        displayHour = displayHour === 0 ? 12 : displayHour;
-        displayHour = String(displayHour).padStart(2, '0');
-    } else {
-        displayHour = String(h).padStart(2, '0');
-    }
-    const m = String(now.getMinutes()).padStart(2, '0');
-    const s = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById('clock').textContent = `${displayHour}:${m}:${s}${ampm}`;
-    const y = now.getFullYear();
-    const mon = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const dayStr = getDayString(now.getDay());
-    document.getElementById('date').textContent = `${y}/${mon}/${d} (${dayStr})`;
-}
-
-document.getElementById('clock').onclick = function() {
-    is24Hour = !is24Hour;
-    updateClock();
-};
-document.getElementById('date').onclick = function() {
-    showJapaneseDay = !showJapaneseDay;
-    updateClock();
-};
-
-setInterval(updateClock, 1000);
-updateClock();
-</script>
-</div>
-</div>
-
-<p class="center">© 2024~ 371tti</p>
-<p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
+    <p class="center">© 2024~ 371tti</p>
+    <p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
 </body>
+
 </html>

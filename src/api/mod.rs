@@ -123,7 +123,7 @@ impl SiteContext {
                     return Ok(LoginRes {
                         success: true,
                         message: "Login successful.".to_string(),
-                        redirect_to: Some(format!("/dashboard/{}", req_json.account_id.as_str())),
+                        redirect_to: Some(format!("/login")),
                     });
                 },
                 VerifyResult::NoSuchAccount => {

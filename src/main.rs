@@ -42,6 +42,7 @@ async fn main() {
     kurosabi.get("/banner.png", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/banner.png"), "image/png"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     kurosabi.get("/favicon.ico", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/favicon.ico"), "image/x-icon"); c });
     kurosabi.get("/robots.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    kurosabi.get("/manifest.json", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/manifest.json"), "application/manifest+json"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     kurosabi.get("/ref", |mut c| async move { c.res.set_status(302); c.res.header.set("Location", "/"); c });
     kurosabi.get("/teapot", |mut c| async move { c.res.set_status(418); c.res.html(&c.c.ssr.err_page.generate_status_page(&c)); c });
     kurosabi.get("/thisisfine", |mut c| async move { c.res.set_status(218); c.res.html(&c.c.ssr.err_page.generate_status_page(&c)); c });
@@ -92,6 +93,8 @@ love cat
             },
         }
     });
+
+    kurosabi.get("/search", |mut c| async move { c.res.html(include_str!("../data/pages/index/search/index.html")); c });
 
 
     kurosabi.not_found_handler(|mut c| async move {

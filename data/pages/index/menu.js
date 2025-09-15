@@ -14,8 +14,8 @@ const THEMES = {
 
 // DOM構築前に即テーマを適用
 ;(function(){
-    const name = (localStorage.getItem('selectedTheme')||'dark').toLowerCase();
-    const theme = THEMES[name] || THEMES.dark;
+    const name = (localStorage.getItem('selectedTheme')||'ocean').toLowerCase();
+    const theme = THEMES[name] || THEMES.ocean;
     Object.entries(theme).forEach(([prop,val]) => document.documentElement.style.setProperty(prop,val));
     console.log(`Applied theme: ${name}`);
 })();
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const inputField = document.createElement('input');
             inputField.type = 'text';
             inputField.id = 'palette-input';
-            inputField.placeholder = 'Type a command...';
+            inputField.placeholder = 'Type a command... (/ to open, ESC to close)';
             inputField.style.flex = '1';
             inputField.style.background = 'transparent';
             inputField.style.border = 'none';
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // キーボードショートカット (Ctrl+Shift+P または /)
             document.addEventListener('keydown', e => {
                 if (((e.ctrlKey && e.shiftKey && e.key === 'P') || 
-                     (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey)) &&
+                    (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey)) &&
                     !this.isVisible() &&
                     !(document.activeElement.tagName.match(/INPUT|TEXTAREA/) || document.activeElement.isContentEditable)) {
                     e.preventDefault();
@@ -508,8 +508,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         changeTheme(args) {
-            // 引数が空なら dark をデフォルトに
-            const themeName = args && args[0] ? args[0].toLowerCase() : 'dark';
+            // 引数が空なら ocean をデフォルトに
+            const themeName = args && args[0] ? args[0].toLowerCase() : 'ocean';
 
             if (!this.themes[themeName]) {
                 console.log(`Unknown theme: ${themeName}. Available themes: ${Object.keys(this.themes).join(', ')}`);

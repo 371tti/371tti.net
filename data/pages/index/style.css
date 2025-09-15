@@ -7,14 +7,13 @@ version: 0.4.1
 
 :root {
     /* カラー変数 */
-    --color-bg-0: #000000;
-    --color-bg-1: #232323;
-    --color-bg-2: #875e46;
-    --color-text-0: #d1d1d1;
-    --color-text-1: #ffffff;
-    --color-accent-0: #815a44;
-    --color-accent-1: #e8af7f;
-    
+    --color-bg-0: #0f1419;
+    --color-bg-1: #161d24;
+    --color-bg-2: #1d262f;
+    --color-text-0: #b3b3b3;
+    --color-text-1: #e6e6e6;
+    --color-accent-0: #2f567e;
+    --color-accent-1: #739dc6;
     /* アニメーション設定 */
     --transition-duration: 0.5s;
     --transition-timing: ease-in-out;
@@ -189,6 +188,10 @@ img, image {
     float: right;
 }
 
+.bottom {
+    align-self: flex-end;
+}
+
 .subtitle {
     padding: 3mm 0 0 3mm;
 }
@@ -219,9 +222,18 @@ input[type="password"]::-webkit-textfield-decoration-container {
     background-color: var(--color-text-1);
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px var(--color-bg-0) inset !important;
+    -webkit-text-fill-color: var(--color-text-0);
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 input[type="text"],
 input[type="password"],
-input[type="email"] {
+input[type="email"],
+select {
     background-color: var(--color-bg-0);
     color: var(--color-text-0);
     border: none;
@@ -229,7 +241,7 @@ input[type="email"] {
     box-shadow: none;
     border-radius: 0;
     padding: 3mm 2mm 2mm 2mm;
-    margin: 5mm 0 0 0;
+    margin: 0 0 5mm 0;
 
     transition: 
         background-color var(--transition-duration) var(--transition-timing),

@@ -1,0 +1,16 @@
+{
+  "name": "371tti.net",
+  "short_name": "371",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#000000",
+  "theme_color": "#cccccc",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/371tti_icon.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}
