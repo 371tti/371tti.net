@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="371tti.net search engine">
+    <meta property="og:description" content="371tti.net scripts search engine">
+    <meta property="og:title" content="371tti.net search engine">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/search">
+    <title>SearchEngine - 371tti.net</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/menu.js"></script>
+</head>
+
+<body>
+
+
+    <script src="/box-load-anime.js"></script>
+
+    <div class="full center center-middle">
+        <div class="main card grid-2" id="content">
+            <div class="box r1">
+                <div class="box">
+                    <div class="flex">
+                        <h1>Search Engine</h1>
+                        <div class="block subtitle">
+                            <h2>371tti.net</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="box">
+                    <p>Index contains <b>{{index_size}} pages</b> ... (。-`ω-)</p>
+                    <div class="pd"></div>
+                    <div class="flex-column">
+                        <input type="search" id="query" name="query" placeholder="write query here" required>
+                    </div>
+                    <div class="pd"></div>
+                    <div >
+                        <h3>Tags</h3>
+                        <div id="tags_box" class="flex wrap" style="gap:4px;">
+                            <input type="button" class="tag-btn" data-tag="wiki" value="wiki" />
+                            <input type="button" class="tag-btn" data-tag="news" value="news" />
+                            <input type="button" class="tag-btn" data-tag="sns" value="sns" />
+                            <input type="button" class="tag-btn" data-tag="blog" value="blog" />
+                            <input type="button" class="tag-btn" data-tag="forum" value="forum" />
+                            <input type="button" class="tag-btn" data-tag="shopping" value="shopping" />
+                            <input type="button" class="tag-btn" data-tag="academic" value="academic" />
+                            <input type="button" class="tag-btn" data-tag="tools" value="tools" />
+                        </div>
+                        <label style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:.7rem;">
+                            <input type="checkbox" id="tag_exclusive"> tag_exclusive
+                        </label>
+                    </div>
+                    <a class="button right" id="search_button" href="#">
+                        <p>Search</p>
+                    </a>
+                </div>
+            </div>
+            <div class="box r1">
+                <div class="flex full">
+                    <div class="flex-column full">
+                        <div class="pd"></div>
+                        <h2>Options</h2>
+                        <div class="pd"></div>
+                        <div>
+                            <label for="algorithm">select algorithm</label>
+                            <select class="right" id="algorithm" name="algorithm">
+                                <option value="BM25">BM25(k1,b)</option>
+                                <option value="BM25plus">BM25plus(k1,b,delta)</option>
+                                <option value="BM25L">BM25L(k1,b)</option>
+                                <option value="BM25CosineFilter">BM25CosineFilter(k1,b)</option>
+                                <option value="BM25CosineNormalizedLinearCombination">BM25CosineNormalizedLinearCombination(k1,b,alpha)</option>
+                                <option value="BM25PrfCosineSimilarity">BM25PrfCosineSimilarity(k1,b,top_n,alpha)</option>
+                                <option value="Dot">Dot</option>
+                                <option value="CosineSimilarity">CosineSimilarity</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="range">result range</label>
+                            <input class="right" type="text" id="range" name="range" placeholder="0..99" value="0..99">
+                        </div>
+                        <!-- Params flattened at same level -->
+                        <div class="param" data-param="k1">
+                            <label for="bm25_k1">bm25 k1</label>
+                            <input class="right" type="text" id="bm25_k1" name="bm25_k1" placeholder="1.2..2.0" value="1.5">
+                        </div>
+                        <div class="param" data-param="b">
+                            <label for="bm25_b">bm25 b</label>
+                            <input class="right" type="text" id="bm25_b" name="bm25_b" placeholder="0.75" value="0.75">
+                        </div>
+                        <div class="param" data-param="delta">
+                            <label for="bm25_delta">bm25 delta</label>
+                            <input class="right" type="text" id="bm25_delta" name="bm25_delta" placeholder="1.0" value="1.0">
+                        </div>
+                        <div class="param" data-param="alpha">
+                            <label for="bm25_alpha">alpha</label>
+                            <input class="right" type="text" id="bm25_alpha" name="bm25_alpha" placeholder="0.5" value="0.5">
+                        </div>
+                        <div class="param" data-param="top_n">
+                            <label for="bm25_top_n">top_n</label>
+                            <input class="right" type="text" id="bm25_top_n" name="bm25_top_n" placeholder="5" value="5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <p class="center">© 2024~ 371tti</p>
+    <p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
+
+    <script>
+    (function(){
+        const $ = (id)=>document.getElementById(id);
+        const input = $("query");
+        const btn = $("search_button");
+        const algoSel = $("algorithm");
+        const rangeInput = $("range");
+        const k1 = $("bm25_k1");
+        const b = $("bm25_b");
+        const delta = $("bm25_delta");
+        const alpha = $("bm25_alpha");
+        const topn = $("bm25_top_n");
+        const tagBox = document.getElementById('tags_box');
+        const tagExclusive = document.getElementById('tag_exclusive');
+        const tagButtons = Array.from(tagBox.querySelectorAll('.tag-btn'));
+        tagButtons.forEach(btn=> btn.addEventListener('click', ()=> btn.classList.toggle('active')));
+
+        const DEFAULT_SEARCH_RESULTS = 100;
+
+        // algorithm -> required params
+        const REQ = {
+            'Dot': [],
+            'CosineSimilarity': [],
+            'BM25': ['k1','b'],
+            'BM25plus': ['k1','b','delta'],
+            'BM25L': ['k1','b'],
+            'BM25CosineFilter': ['k1','b'],
+            'BM25CosineNormalizedLinearCombination': ['k1','b','alpha'],
+            'BM25PrfCosineSimilarity': ['k1','b','top_n','alpha']
+        };
+
+        function showNeededParams(algo){
+            const needed = new Set(REQ[algo] || []);
+            document.querySelectorAll('.param').forEach(div=>{
+                const key = div.getAttribute('data-param');
+                div.style.display = needed.has(key) ? '' : 'none';
+            });
+        }
+
+        function clampInt(n, min, max){
+            const x = Math.floor(Number(n));
+            if (Number.isNaN(x)) return min;
+            return Math.max(min, Math.min(max, x));
+        }
+
+        function buildAlgo(){
+            const a = algoSel.value;
+            switch(a){
+                case 'Dot':
+                case 'CosineSimilarity':
+                    return a; // no params
+                case 'BM25':
+                    return `BM25(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
+                case 'BM25plus':
+                    return `BM25plus(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()},${(delta.value||'1.0').trim()})`;
+                case 'BM25L':
+                    return `BM25L(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
+                case 'BM25CosineFilter':
+                    return `BM25CosineFilter(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
+                case 'BM25CosineNormalizedLinearCombination':
+                    return `BM25CosineNormalizedLinearCombination(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()},${(alpha.value||'0.5').trim()})`;
+                case 'BM25PrfCosineSimilarity':
+                    return `BM25PrfCosineSimilarity(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()},${clampInt(topn.value||'5',1,100).toString()},${(alpha.value||'0.5').trim()})`;
+                default:
+                    return 'BM25(1.2,0.75)';
+            }
+        }
+
+        function parseRange(raw){
+            raw = (raw||'').trim();
+            if(!raw) return `0..${DEFAULT_SEARCH_RESULTS}`;
+            if(raw.includes('..')){
+                const parts = raw.split('..');
+                if(parts.length === 2){
+                    const left = parts[0].trim();
+                    const right = parts[1].trim();
+                    if(left && right){
+                        const a = Math.max(0, parseInt(left,10)||0);
+                        const b = Math.max(a, parseInt(right,10)||a);
+                        return `${a}..${b}`;
+                    } else if(!left && right){
+                        const b = Math.max(0, parseInt(right,10)||DEFAULT_SEARCH_RESULTS);
+                        return `0..${b}`;
+                    } else if(left && !right){
+                        const a = Math.max(0, parseInt(left,10)||0);
+                        return `${a}..${a+DEFAULT_SEARCH_RESULTS}`;
+                    } else {
+                        return `0..${DEFAULT_SEARCH_RESULTS}`;
+                    }
+                }
+            }
+            const v = Math.max(0, parseInt(raw,10)||0);
+            return `${v}..${v+DEFAULT_SEARCH_RESULTS}`;
+        }
+
+        function getSelectedTags(){
+            return tagButtons.filter(b=>b.classList.contains('active')).map(b=>b.dataset.tag);
+        }
+
+        function go(){
+            const q = (input.value || '').trim();
+            if (!q) { input.focus(); return; }
+            const algo = buildAlgo();
+            const rangeStr = parseRange(rangeInput.value);
+            rangeInput.value = rangeStr; // 正規化表示
+            const parts = [];
+            parts.push(`query=${encodeURIComponent(q)}`);
+            parts.push(`range=${encodeURIComponent(rangeStr)}`);
+            parts.push(`algo=${encodeURIComponent(algo)}`);
+            const tags = getSelectedTags();
+            if(tags.length){
+                const tagParam = tags.map(t=>encodeURIComponent(t)).join(','); // カンマはそのまま残す
+                parts.push('tag='+tagParam);
+            }
+            if(tagExclusive.checked){ parts.push('tag_exclusive=true'); }
+            window.location.href = `/search?${parts.join('&')}`;
+        }
+
+        btn?.addEventListener('click', (e)=>{ e.preventDefault(); go(); });
+        input?.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') { e.preventDefault(); go(); } });
+        algoSel?.addEventListener('change', ()=> showNeededParams(algoSel.value));
+
+        // init
+        showNeededParams(algoSel.value);
+    })();
+    </script>
+</body>
+
+</html>

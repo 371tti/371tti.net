@@ -145,16 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // コマンドツリー（テーマコマンド追加）
             this.commandTree = [
-                { cmd: "Go: Home", desc: "Navigate to home page", action: () => location.href = "/" },
-                { cmd: "Go: Login", desc: "Navigate to login page", action: () => location.href = "/login" },
-                { cmd: "Go: Terms", desc: "Navigate to terms page", action: () => location.href = "/terms" },
-                { cmd: "Go: License", desc: "Navigate to license page", action: () => location.href = "/license" },
-                { cmd: "Go: Tools", desc: "Navigate to tools page", action: () => location.href = "/tools" },
-                { cmd: "Go: Release", desc: "Navigate to release page", action: () => location.href = "/release" },
+                { cmd: "Go Home", desc: "Navigate to home page", action: () => location.href = "/" },
+                { cmd: "Go Search", desc: "Navigate to search page", action: () => location.href = "/search" },
+                { cmd: "Go Login", desc: "Navigate to login page", action: () => location.href = "/login" },
+                { cmd: "Go Terms", desc: "Navigate to terms page", action: () => location.href = "/terms" },
+                { cmd: "Go License", desc: "Navigate to license page", action: () => location.href = "/license" },
+                { cmd: "Go Tools", desc: "Navigate to tools page", action: () => location.href = "/tools" },
+                { cmd: "Go Release", desc: "Navigate to release page", action: () => location.href = "/release" },
                 { cmd: "Scroll", desc: "Scroll to top (0%) or to specified percent", action: (args) => this.scrollPercent(args) },
-                { cmd: "Browser: Back", desc: "Go back in browser history", action: () => history.back() },
-                { cmd: "Browser: Forward", desc: "Go forward in browser history", action: () => history.forward() },
-                { cmd: "Browser: Reload", desc: "Reload current page", action: () => location.reload() },
+                { cmd: "Browser Back", desc: "Go back in browser history", action: () => history.back() },
+                { cmd: "Browser Forward", desc: "Go forward in browser history", action: () => history.forward() },
+                { cmd: "Browser Reload", desc: "Reload current page", action: () => location.reload() },
                 { cmd: "Theme", desc: "Change theme (white/dark(default)/coffee/ocean/forest/sunset/kawaii/mono-dark/mono-white/paper)", action: (args) => this.changeTheme(args) },
                 { cmd: "Theme white", desc: "Change to white theme", action: () => this.changeTheme(['white']) },
                 { cmd: "Theme dark", desc: "Change to dark theme", action: () => this.changeTheme(['dark']) },
@@ -418,10 +419,10 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsDiv.innerHTML = this.filteredCommands.map((cmd, idx) => {
                 // コマンドの種類に応じたアイコンを選択
                 let iconPath = '';
-                if (cmd.cmd.startsWith('Go:')) {
+                if (cmd.cmd.startsWith('Go')) {
                     // ナビゲーションアイコン
                     iconPath = 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z';
-                } else if (cmd.cmd.startsWith('Browser:')) {
+                } else if (cmd.cmd.startsWith('Browser')) {
                     // ブラウザアイコン
                     iconPath = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z';
                 } else if (cmd.cmd.startsWith('Theme')) {
