@@ -1,11 +1,14 @@
+use std::time::Duration;
+
 use kurosabi::Kurosabi;
 use log::debug;
+use reqwest::Client;
 use wk_371tti_net::{api::schema::LoginReq, context::SiteContext};
 use wk_371tti_net::api::schema::IndexReq;
 
 pub const CONFIG_PATH: &str = "config.toml";
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread", worker_threads = 32)]
 async fn main() {
     env_logger::try_init_from_env(env_logger::Env::default().default_filter_or("debug")).unwrap_or_else(|_| ());
     let context = SiteContext::new(CONFIG_PATH.into()).await;
@@ -27,6 +30,7 @@ async fn main() {
     kurosabi.get("/tool/color", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/color.html")); c });
     kurosabi.get("/tool/string_converter", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/string_converter.html")); c });
     kurosabi.get("/tool/music_chord", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/music_chord.html")); c });
+    kurosabi.get("/tool/math_synthesizer", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/math_synthesizer.html")); c });
     kurosabi.get("/game/speed_runner", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html")); c });
     kurosabi.get("/login", |mut c| async move { c.res.html(include_str!("../data/pages/index/login/index.html")); c });
     kurosabi.get("/release", |mut c| async move { c.res.html(include_str!("../data/pages/index/release/index.html")); c });
@@ -110,7 +114,13 @@ love cat
             format!("http://127.0.0.1:90/search?{}", qs)
         };
 
-        match reqwest::get(&url).await {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .unwrap();
+
+
+        match client.get(&url).send().await {
             Ok(resp) => {
                 c.res.set_status(resp.status().as_u16());
                 let ct = resp
@@ -144,7 +154,10 @@ love cat
         // Proxy the request to the backend API
         let url = "http://127.0.0.1:90/add";
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(20))
+            .build()
+            .unwrap();
         match client
             .post(url)
             .json(&index_req)
@@ -185,7 +198,7 @@ love cat
         .host([0, 0, 0, 0])
         .accept_threads(1)
         .port(85)
-        .thread(8)
+        .thread(16)
         .queue_size(1000)
         .build();
 

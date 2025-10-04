@@ -54,7 +54,7 @@ html {
     width: 100svw;
     background-color: var(--color-bg-0);
     color: var(--color-text-0);
-    height: 100svh
+    height: 100svh;
 }
 
 .main {
@@ -66,8 +66,10 @@ html {
 
 .center { display: flex; justify-content: center; }
 .center-middle { display: flex; justify-content: center; align-items: center; }
+.center-y { display: flex; align-items: center; height: 100%; max-height: 100svh;}
+.center-x { display: flex; justify-content: center; width: 100%; max-height: 100svh;}
 
-.card { height: fit-content; width: fit-content; padding: 10mm; }
+.card { width: fit-content; padding: 10mm; height: fit-content; max-width: 300mm; }
 
 .full { width: 100%; height: 100%; padding: 0; margin: 0; }
 
@@ -251,6 +253,8 @@ li { text-indent: -2em; padding-left: 2em; }
 
 b { color: var(--color-text-1); }
 
+small { font-size: 0.7em; color: var(--color-text-0); }
+
 .pd { height: 6mm; }
 
 .user-icon { clip-path: circle(50% at 50% 50%); background-color: var(--color-bg-1); }
@@ -259,7 +263,7 @@ b { color: var(--color-text-1); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120mm, 1fr)); gap: 3mm; }
     .button-grid { display: grid; grid-template-columns: repeat(auto-fill, 60mm); gap: 0; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(80mm, 1fr)); gap: 3mm; }
-    @media (max-width: 160mm) { .main { padding: 6mm; } }
+    @media (max-width: 160mm) { .card { padding: 6mm; } }
     @media (max-width: 160mm) {
         .indent { padding: 0 0 0 5mm; }
         .grid { grid-template-columns: repeat(auto-fill, minmax(80mm, 1fr)); }

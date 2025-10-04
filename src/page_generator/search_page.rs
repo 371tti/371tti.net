@@ -1,9 +1,12 @@
 
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time;
+use std::time::Duration;
 
 use kurosabi::html_format;
+use reqwest::Client;
 use kurosabi::kurosabi::Context;
-use mongodb::bson::DateTime;
 
 use crate::context::SiteContext;
 use crate::api::schema::{ResEntry, SearchApiResult};
@@ -28,12 +31,23 @@ pub struct SearchPage {
     /// search API endpoint
     /// eg. "localhost:90"
     pub search_api_endpoint: String,
+    pub counter: Arc<AtomicU64>,
+    client: Client,
 }
 
 impl SearchPage {
     pub fn new(search_api_endpoint: &str) -> Self {
+        // Keep-Alive 有効な再利用クライアント
+        let client = Client::builder()
+            .pool_idle_timeout(Duration::from_secs(90))
+            .tcp_keepalive(Some(Duration::from_secs(60)))
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("build reqwest client");
         Self {
             search_api_endpoint: search_api_endpoint.to_string(),
+            counter: Arc::new(AtomicU64::new(0)),
+            client,
         }
     }
     pub async fn generate_search_page(&self, c: &Context<SiteContext>) -> Result<String, u16> {
@@ -42,21 +56,36 @@ impl SearchPage {
 
         let qs = c.req.path.path.splitn(2, '?').nth(1).unwrap_or("");
         if qs.is_empty() {
-            // No query string: show search UI
-            let index_size = match reqwest::get(format!("{}/status", self.search_api_endpoint)).await {
-                Ok(resp) => resp.json::<serde_json::Value>().await
-                    .ok()
-                    .and_then(|json| json.get("documents").and_then(|v| v.as_u64()))
-                    .map(|n| n.to_string())
-                    .unwrap_or_else(|| "null".to_string()),
-                Err(_) => "null".to_string(),
+            // まず現在保持している値を表示用に取得
+            let snapshot = self.counter.load(Ordering::Relaxed);
+            let index_size_display = if snapshot == 0 {
+                "loading".to_string()
+            } else {
+                snapshot.to_string()
             };
-            let res = html_format!(SEARCH_UI, index_size = index_size);
+
+            // 非同期で最新値を取得して更新（結果は次回アクセス時に反映）
+            {
+                let endpoint = format!("{}/status", self.search_api_endpoint);
+                let counter = Arc::clone(&self.counter);
+                let client = self.client.clone();
+                tokio::spawn(async move {
+                    if let Ok(resp) = client.get(endpoint).send().await {
+                        if let Ok(json) = resp.json::<serde_json::Value>().await {
+                            if let Some(n) = json.get("documents").and_then(|v| v.as_u64()) {
+                                counter.store(n, Ordering::Relaxed);
+                            }
+                        }
+                    }
+                });
+            }
+
+            let res = html_format!(SEARCH_UI, index_size = index_size_display);
             return Ok(res);
         }
 
         let url = format!("{}/search?{}", self.search_api_endpoint, qs);
-        let resp = reqwest::get(&url).await.map_err(|_| 502u16)?;
+        let resp = self.client.get(&url).send().await.map_err(|_| 502u16)?;
         let parsed = resp.json::<SearchApiResult>().await.map_err(|_| 502u16)?;
 
         match parsed {
@@ -91,10 +120,10 @@ impl SearchPage {
         format!(
             r#"<div class="indent">
                 <h3>{favicon}<a href="{url}" target="_blank" rel="noopener noreferrer">{title}</a></h3>
-                <p class="url">{url}</p>
                 <p class="score">score: {score}</p>
-                <p class="debug">length: {length} tokens, point: {point}, id: {id}, index_id: {index_id}</p>
                 <p class="tags">tags: {tags}</p>
+                <p><small class="debug">length: {length} tokens, point: {point}, id: {id}, index_id: {index_id}, time: {time}</small></p>
+                <p><small class="url">{url}</small></p>
                 <div class="pd"></div>
                 {description}
             </div>"#,
@@ -106,7 +135,11 @@ impl SearchPage {
             point = entry.point,
             id = entry.id,
             index_id = entry.index_id,
-            tags = entry.tags.iter().map(|t| escape_html(t)).collect::<Vec<_>>().join(", "),
+            time = entry.time.to_rfc3339(),
+            tags = entry.tags.iter()
+                .map(|t| format!(r#"<span class="tag tag-sm">{}</span>"#, escape_html(t)))
+                .collect::<Vec<_>>()
+                .join(" "),
             description = description,
         )
     }

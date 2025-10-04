@@ -15,19 +15,16 @@
     <script src="/menu.js"></script>
 </head>
 
-<body>
-
-
+<body class="center-y">
     <script src="/box-load-anime.js"></script>
-
-    <div class="full center center-middle">
-        <div class="main card grid-2" id="content">
+    <div class="center-x scroll">
+        <div class="card grid-2" id="content">
             <div class="box r1">
                 <div class="box">
                     <div class="flex">
                         <h1>Search Engine</h1>
                         <div class="block subtitle">
-                            <h2>371tti.net</h2>
+                            <h2><a href="/">371tti.net</a></h2>
                         </div>
                     </div>
                 </div>
@@ -41,14 +38,16 @@
                     <div >
                         <h3>Tags</h3>
                         <div id="tags_box" class="flex wrap" style="gap:4px;">
-                            <input type="button" class="tag-btn" data-tag="wiki" value="wiki" />
-                            <input type="button" class="tag-btn" data-tag="news" value="news" />
-                            <input type="button" class="tag-btn" data-tag="sns" value="sns" />
-                            <input type="button" class="tag-btn" data-tag="blog" value="blog" />
-                            <input type="button" class="tag-btn" data-tag="forum" value="forum" />
-                            <input type="button" class="tag-btn" data-tag="shopping" value="shopping" />
-                            <input type="button" class="tag-btn" data-tag="academic" value="academic" />
-                            <input type="button" class="tag-btn" data-tag="tools" value="tools" />
+                            <p>
+                                <input type="button" class="tag-btn" data-tag="wiki" value="wiki" />
+                                <input type="button" class="tag-btn" data-tag="news" value="news" />
+                                <input type="button" class="tag-btn" data-tag="sns" value="sns" />
+                                <input type="button" class="tag-btn" data-tag="blog" value="blog" />
+                                <input type="button" class="tag-btn" data-tag="forum" value="forum" />
+                                <input type="button" class="tag-btn" data-tag="shopping" value="shopping" />
+                                <input type="button" class="tag-btn" data-tag="academic" value="academic" />
+                                <input type="button" class="tag-btn" data-tag="tools" value="tools" />
+                            </p>
                         </div>
                         <label style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:.7rem;">
                             <input type="checkbox" id="tag_exclusive"> tag_exclusive
@@ -110,8 +109,6 @@
 
     </div>
 
-    <p class="center">© 2024~ 371tti</p>
-    <p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
 
     <script>
     (function(){

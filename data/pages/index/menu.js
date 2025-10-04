@@ -182,6 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
             this.closeIcon = closeIcon;
             this.inputField = inputField;
             this.resultsDiv = resultsDiv;
+            // 追加: サイト検索関連状態
+            this.searchResults = []; // API検索結果（コマンドより下位表示）
+            this.searchTimer = null; // デバウンスタイマー
+            this.lastSearchQuery = ''; // 直近に投げたクエリ
+            this.activeSearchAbort = null; // AbortController
 
             // イベント設定
             this.setupEvents(menuBtn, overlay, paletteIcon, closeIcon, inputField, resultsDiv);
@@ -190,6 +195,29 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(menuBtn);
             document.body.appendChild(overlay);
             overlay.appendChild(paletteDiv);
+
+            // アカウントステータス（パレット内下部）
+            const accountBox = document.createElement('div');
+            accountBox.id = 'account-status';
+            accountBox.textContent = 'Current account: ...';
+            accountBox.style.margin = '0';
+            accountBox.style.padding = '6px 12px 10px 12px';
+            accountBox.style.fontSize = '14px'; // 内部文字への影響はサイズのみ
+            accountBox.style.borderTop = '1px solid var(--color-bg-2)';
+            accountBox.style.background = 'var(--color-bg-0)';
+            accountBox.style.userSelect = 'none';
+            // footerコンテナ
+            const footerWrap = document.createElement('div');
+            footerWrap.style.display = 'flex';
+            footerWrap.style.flexDirection = 'column';
+            footerWrap.style.maxHeight = '28px';
+            footerWrap.appendChild(accountBox);
+            paletteDiv.appendChild(footerWrap);
+
+            this.accountBox = accountBox;
+            this.updateAccountStatus();
+            // 60秒ごとに同期
+            setInterval(()=> this.updateAccountStatus(), 60000);
 
             // CSS アニメーション追加
             this.addAnimations();
@@ -288,7 +316,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // 入力フィールドのイベント
-            inputField.addEventListener('input', e => this.filterCommands(e.target.value, resultsDiv));
+            inputField.addEventListener('input', e => {
+                const val = e.target.value;
+                this.filterCommands(val, resultsDiv);
+                this.scheduleSearch(val);
+            });
             inputField.addEventListener('keydown', e => this.handleKeyNavigation(e));
 
             // オーバーレイクリックで閉じる
@@ -331,6 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // ボタンアイコン変更
             this.menuBtn.innerHTML = '';
             this.menuBtn.appendChild(this.closeIcon);
+            // 開くたびにアカウント情報を最新化
+            this.updateAccountStatus();
             
             // 開いたらラベルを更新
             this.menuBtn.setAttribute('aria-label', 'Close command palette');
@@ -377,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 200);
         }
 
-        filterCommands(query, resultsDiv) {
+    filterCommands(query, resultsDiv) {
             const parts = query.trim().split(/\s+/);
             const baseCmd = parts[0] || '';
             const arg = parts[1] || '';
@@ -406,68 +440,181 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
             }
             
-            this.selectedIndex = this.filteredCommands.length > 0 ? 0 : -1;
+            const hadSelection = this.selectedIndex >= 0;
+            // 再構成
+            this.buildCombined();
+            if(!hadSelection) this.selectedIndex = this.combinedItems.length>0 ? 0 : -1;
             this.renderResults(resultsDiv);
         }
 
         renderResults(resultsDiv) {
-            if (this.filteredCommands.length === 0) {
-                resultsDiv.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--color-text-2);">No commands found</div>';
+            if (this.combinedItems.length === 0) {
+                resultsDiv.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--color-text-2);">No commands</div>';
                 return;
             }
-
-            resultsDiv.innerHTML = this.filteredCommands.map((cmd, idx) => {
-                // コマンドの種類に応じたアイコンを選択
+            // XSS対策用エスケープ関数
+            function escapeHtml(s){
+                return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            }
+            resultsDiv.innerHTML = this.combinedItems.map((item, idx) => {
                 let iconPath = '';
-                if (cmd.cmd.startsWith('Go')) {
-                    // ナビゲーションアイコン
-                    iconPath = 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z';
-                } else if (cmd.cmd.startsWith('Browser')) {
-                    // ブラウザアイコン
-                    iconPath = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z';
-                } else if (cmd.cmd.startsWith('Theme')) {
-                    // パレット/テーマアイコン
-                    iconPath = 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zM6.5 12c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z';
-                } else if (cmd.cmd.startsWith('Scroll')) {
-                    // スクロールアイコン
-                    iconPath = 'M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z';
-                } else {
-                    // デフォルトのコマンドアイコン
-                    iconPath = 'M2 3h20v2H2V3zm0 6h20v2H2V9zm0 6h20v2H2v-2z';
+                if(item.type === 'command'){
+                    const cmd = item;
+                    if (cmd.cmd.startsWith('Go')) {
+                        iconPath = 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z';
+                    } else if (cmd.cmd.startsWith('Browser')) {
+                        iconPath = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9-6 6z';
+                    } else if (cmd.cmd.startsWith('Theme')) {
+                        iconPath = 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zM6.5 12c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z';
+                    } else if (cmd.cmd.startsWith('Scroll')) {
+                        iconPath = 'M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z';
+                    } else {
+                        iconPath = 'M2 3h20v2H2V3zm0 6h20v2H2V9zm0 6h20v2H2v-2z';
+                    }
+                    return `
+                        <div class="palette-item ${idx === this.selectedIndex ? 'selected' : ''}" data-idx="${idx}" data-kind="command">
+                            <svg class="palette-item-icon" viewBox="0 0 24 24" fill="currentColor"><path d="${iconPath}"/></svg>
+                            <div>
+                                <div class="palette-item-title">${escapeHtml(cmd.cmd)}</div>
+                                <div class="palette-item-desc">${escapeHtml(cmd.desc)}</div>
+                            </div>
+                        </div>`;
+                } else { // search result
+                    const r = item;
+                    iconPath = 'M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79L19.49 20 21 18.49l-5.5-5.49z';
+                    const favicon = r.favicon ? `<img src="${escapeHtml(r.favicon)}" style="width:14px;height:14px;object-fit:contain;filter:brightness(0.9);" loading="lazy"/>` : `<svg class="palette-item-icon" viewBox="0 0 24 24" fill="currentColor"><path d="${iconPath}"/></svg>`;
+                    const safeTitle = r.title ? escapeHtml(r.title) : escapeHtml(r.url);
+                    const score = r.score != null ? ` <span style="opacity:0.6;font-size:11px;">${escapeHtml(r.score.toFixed(1))}</span>` : '';
+                    return `
+                        <div class="palette-item ${idx === this.selectedIndex ? 'selected' : ''}" data-idx="${idx}" data-kind="search">
+                            ${favicon}
+                            <div>
+                                <div class="palette-item-title" style="display:flex;gap:4px;align-items:center;">${safeTitle}${score}</div>
+                                <div class="palette-item-desc" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:480px;">${escapeHtml(r.descriptions||'')}</div>
+                            </div>
+                        </div>`;
                 }
-
-                return `
-                    <div class="palette-item ${idx === this.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
-                        <svg class="palette-item-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="${iconPath}"/>
-                        </svg>
-                        <div>
-                            <div class="palette-item-title">${cmd.cmd}</div>
-                            <div class="palette-item-desc">${cmd.desc}</div>
-                        </div>
-                    </div>
-                `;
             }).join('');
 
-            // クリックイベント
             resultsDiv.querySelectorAll('.palette-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const idx = parseInt(item.dataset.idx);
-                    this.executeCommand(idx);
+                    this.executeCombined(idx);
                 });
             });
 
-            // 選択項目が見えるようにスクロール
             const selected = resultsDiv.querySelector('.palette-item.selected');
-            if (selected) {
-                selected.scrollIntoView({ block: 'nearest' });
+            if (selected) selected.scrollIntoView({ block: 'nearest' });
+        }
+
+        buildCombined(){
+            // コマンド + 検索 (検索はそのまま)
+            const searchItems = this.searchResults.map(r => ({...r, type:'search'}));
+            // コマンドは action/desc を保持したまま新しい参照へコピー
+            const commandItems = this.filteredCommands.map((c, i) => ({
+                type: 'command',
+                cmd: c.cmd,
+                desc: c.desc,
+                action: c.action,
+                _origIndex: i,
+            }));
+            this.combinedItems = [...commandItems, ...searchItems];
+        }
+
+        getCombined(){
+            return this.combinedItems || [];
+        }
+
+        executeCombined(idx){
+            const list = this.getCombined();
+            const item = list[idx];
+            if(!item) return;
+            if(item.type === 'command'){
+                if(typeof item.action === 'function'){
+                    const cmdParts = this.inputField.value.trim().split(/\s+/);
+                    const args = cmdParts.slice(1);
+                    try { item.action(args); } catch(e){ console.error('Command action error', e); }
+                    this.hidePalette();
+                }
+            } else if(item.type === 'search'){
+                if(item.url){
+                    try {
+                        window.open(item.url, '_blank', 'noopener');
+                    } catch(e){
+                        // フォールバック
+                        location.href = item.url;
+                    }
+                    this.hidePalette();
+                }
+            }
+        }
+
+        scheduleSearch(raw){
+            const q = raw.trim();
+            if(this.searchTimer){
+                clearTimeout(this.searchTimer);
+                this.searchTimer = null;
+            }
+            if(!q){
+                this.abortActiveSearch();
+                this.searchResults = [];
+                this.buildCombined();
+                this.renderResults(this.resultsDiv);
+                return;
+            }
+            this.searchTimer = setTimeout(()=>{
+                if(q === this.lastSearchQuery) return; // 同一クエリは再利用
+                this.performSearch(q);
+            }, 100); // 1s 停止で実行
+        }
+
+        abortActiveSearch(){
+            if(this.activeSearchAbort){
+                this.activeSearchAbort.abort();
+                this.activeSearchAbort = null;
+            }
+        }
+
+        async performSearch(q){
+            this.abortActiveSearch();
+            const ac = new AbortController();
+            this.activeSearchAbort = ac;
+            this.lastSearchQuery = q;
+            try {
+                const url = `/api/search?query=${encodeURIComponent(q)}&range=0..10`;
+                const resp = await fetch(url, { signal: ac.signal });
+                if(!resp.ok){
+                    if(resp.status === 404){
+                        this.searchResults = [];
+                        this.buildCombined();
+                        this.renderResults(this.resultsDiv);
+                    }
+                    return;
+                }
+                const ct = resp.headers.get('content-type')||'';
+                if(!ct.includes('application/json')) return;
+                const data = await resp.json();
+                if(!data || !Array.isArray(data.results)) return;
+                // 結果正規化
+                this.searchResults = data.results.map(r => ({
+                    title: r.title,
+                    url: r.url,
+                    descriptions: r.descriptions,
+                    favicon: r.favicon,
+                    score: r.score
+                }));
+                this.buildCombined();
+                this.renderResults(this.resultsDiv);
+            } catch(e){
+                if(e.name === 'AbortError') return;
             }
         }
 
         handleKeyNavigation(e) {
+            const list = this.getCombined();
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredCommands.length - 1);
+                this.selectedIndex = Math.min(this.selectedIndex + 1, list.length - 1);
                 this.renderResults(this.resultsDiv);
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
@@ -475,8 +622,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.renderResults(this.resultsDiv);
             } else if (e.key === 'Tab') {
                 e.preventDefault();
-                if (this.selectedIndex >= 0 && this.filteredCommands[this.selectedIndex]) {
-                    this.inputField.value = this.filteredCommands[this.selectedIndex].cmd;
+                const item = list[this.selectedIndex];
+                if (item && item.type === 'command') {
+                    this.inputField.value = item.cmd;
                     this.filterCommands(this.inputField.value, this.resultsDiv);
                     setTimeout(() => {
                         this.inputField.setSelectionRange(this.inputField.value.length, this.inputField.value.length);
@@ -484,13 +632,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                const input = this.inputField.value.trim();
-                if (this.selectedIndex >= 0 && this.filteredCommands[this.selectedIndex]) {
-                    this.executeCommand(this.selectedIndex);
-                } else {
-                    // 未定義コマンドのフォールバック
-                    console.log(`[Error] Unknown command: '${input}'`);
-                    this.hidePalette();
+                if (this.selectedIndex >= 0 && list[this.selectedIndex]) {
+                    this.executeCombined(this.selectedIndex);
                 }
             } else if (e.key === 'Escape') {
                 this.hidePalette();
@@ -549,18 +692,69 @@ document.addEventListener('DOMContentLoaded', () => {
             // 引数が数字であれば0～100に、なければ0
             const p = Math.min(Math.max(parseFloat(input), 0), 100);
 
-            const mainElement = document.querySelector('.main');
+            const mainElement = document.querySelector('.scroll');
             
             if (mainElement) {
                 const maxScroll = mainElement.scrollHeight - mainElement.clientHeight;
                 const target = maxScroll * (p / 100);
                 mainElement.scrollTo({ top: target, behavior: 'smooth' });
             } else {
-                // .mainが見つからない場合はwindowにフォールバック
+                // .scrollが見つからない場合はwindowにフォールバック
                 const doc = document.documentElement;
                 const maxScroll = doc.scrollHeight - window.innerHeight;
                 const target = maxScroll * (p / 100);
                 window.scrollTo({ top: target, behavior: 'smooth' });
+            }
+        }
+
+        async updateAccountStatus(){
+            if(!this.accountBox) return;
+            try {
+                const resp = await fetch('/api/session', { credentials: 'include' });
+                if(resp.status === 401){
+                    this.accountBox.innerHTML = 'Current account: guest (<a href="/login">login</a>)';
+                    this.accountBox.style.opacity = '1';
+                    return;
+                }
+                if(!resp.ok){
+                    this.accountBox.innerHTML = '<p>Current account: *offline*</p>';
+                    this.accountBox.style.opacity = '0.6';
+                    return;
+                }
+                const ct = resp.headers.get('content-type')||'';
+                if(!ct.includes('application/json')){
+                    this.accountBox.innerHTML = '<p>Current account: *invalid*</p>';
+                    this.accountBox.style.opacity = '0.6';
+                    return;
+                }
+                const data = await resp.json();
+
+                // 想定: {
+                //   is_logged_in: bool,
+                //   logged_account: <AccountID> | null,
+                //   authenticated_accounts: [ AccountSession, ... ],
+                //   created_at: ISO8601 string
+                // }
+                if(!data || typeof data !== 'object'){
+                    this.accountBox.innerHTML = 'Current account: guest (<a href="/login">login</a>)';
+                    this.accountBox.style.opacity = '1';
+                    return;
+                }
+
+                if(!data.is_logged_in){
+                    this.accountBox.innerHTML = 'Current account: guest (<a href="/login">login</a>)';
+                    this.accountBox.style.opacity = '1';
+                    return;
+                }
+
+                const acc = data.logged_account ?? 'user';
+                // 文字列以外の場合 toString
+                const name = typeof acc === 'string' ? acc : String(acc);
+                this.accountBox.innerHTML = `<p>Current account: <b>${name}</b></p>`;
+                this.accountBox.style.opacity = '1';
+            } catch(e){
+                this.accountBox.innerHTML = '<p>Current account: *offline*</p>';
+                this.accountBox.style.opacity = '0.55';
             }
         }
     }
