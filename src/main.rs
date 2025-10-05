@@ -32,6 +32,7 @@ async fn main() {
     kurosabi.get("/tool/music_chord", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/music_chord.html")); c });
     kurosabi.get("/tool/math_synthesizer", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/math_synthesizer.html")); c });
     kurosabi.get("/game/speed_runner", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html")); c });
+    kurosabi.get("/library/mandelbrot", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/mandelbrot.html")); c });
     kurosabi.get("/login", |mut c| async move { c.res.html(include_str!("../data/pages/index/login/index.html")); c });
     kurosabi.get("/release", |mut c| async move { c.res.html(include_str!("../data/pages/index/release/index.html")); c });
     kurosabi.get("/index.html", |mut c| async move { c.res.html(include_str!("../data/pages/index/index.html")); c });

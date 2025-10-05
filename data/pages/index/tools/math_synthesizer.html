@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="371tti.net math synthesizer" />
     <meta property="og:title" content="Math Synthesizer - 371tti.net" />
-    <meta property="og:description" content="タイプした数式 f(t) から波形を生成して再生できます" />
+    <meta property="og:description" content="Expr de Generate Wave" />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="/tool/math_synthesizer" />
     <title>Math Synthesizer - 371tti.net</title>
@@ -193,9 +193,9 @@
                 <label>ゲイン<input id="gain" type="number" value="0.9" min="0.1" max="1.5" step="0.1"></label>
             </div>
             <div class="input-row">
-                <input class="button" id="play" type="button" value="Play">
-                <input class="button" id="stop" type="button" value="Stop">
-                <input class="button" id="plot" type="button" value="Plot">
+                <a class="button" id="play" href="#" role="button">Play</a>
+                <a class="button" id="stop" href="#" role="button">Stop</a>
+                <a class="button" id="plot" href="#" role="button">Plot</a>
             </div>
             <div id="message" class="hint"></div>
             <canvas id="wave" width="640" height="200"></canvas>
@@ -212,8 +212,8 @@
                     <label>Tempo(%)<input id="midi-tempo" type="number" value="100" min="25" max="400" step="5"></label>
                 </div>
                 <div class="input-row">
-                    <input class="button" id="midi-play" type="button" value="Play MIDI">
-                    <input class="button" id="midi-stop" type="button" value="Stop MIDI">
+                    <a class="button" id="midi-play" href="#" role="button">Play MIDI</a>
+                    <a class="button" id="midi-stop" href="#" role="button">Stop MIDI</a>
                 </div>
                 <div id="midi-info" class="hint">MIDI: 未読み込み</div>
             </section>
@@ -291,6 +291,8 @@
             };
             const midiSustainState = new Map();
             const midiSustainVoices = new Map();
+            const URL_EXPR_PARAM = 'expr';
+            let lastSyncedExprValue = null;
             const MIDI_FILE_PORT = {
                 id: 'file-playback',
                 name: 'MIDI File',
@@ -306,6 +308,12 @@
             let monitorRefreshRequested = true;
             let lastMonitorUpdate = 0;
             const MONITOR_MAX_FPS = 30;
+
+            const initialExprParam = getExpressionFromUrl();
+            if (initialExprParam !== null && initialExprParam !== exprInput.value) {
+                exprInput.value = initialExprParam;
+            }
+            syncExpressionQueryParam(exprInput.value);
 
             const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
@@ -355,6 +363,41 @@
                 if (!midiInfoEl) return;
                 midiInfoEl.textContent = text;
                 midiInfoEl.style.color = isError ? 'var(--color-accent-1)' : 'var(--color-text-0)';
+            }
+
+            function getExpressionFromUrl() {
+                try {
+                    const url = new URL(window.location.href);
+                    return url.searchParams.get(URL_EXPR_PARAM);
+                } catch (err) {
+                    console.warn('Failed to read expression from URL:', err);
+                    return null;
+                }
+            }
+
+            function syncExpressionQueryParam(value) {
+                const raw = value ?? '';
+                const isEmpty = raw.trim().length === 0;
+                const targetValue = isEmpty ? '' : raw;
+                if (lastSyncedExprValue === targetValue) return;
+                let url;
+                try {
+                    url = new URL(window.location.href);
+                } catch (err) {
+                    console.warn('Failed to construct URL for expression sync:', err);
+                    lastSyncedExprValue = targetValue;
+                    return;
+                }
+                if (isEmpty) {
+                    url.searchParams.delete(URL_EXPR_PARAM);
+                } else {
+                    url.searchParams.set(URL_EXPR_PARAM, raw);
+                }
+                const nextHref = url.toString();
+                if (nextHref !== window.location.href) {
+                    history.replaceState(null, '', nextHref);
+                }
+                lastSyncedExprValue = targetValue;
             }
 
             function parseMidiFile(arrayBuffer) {
@@ -1709,6 +1752,7 @@
                 compiledCache.fn = null;
                 setMessage(`式を読み込みました: ${target.dataset.example}`);
                 updateExpressionPreview();
+                syncExpressionQueryParam(exprInput.value);
                 handleSynthesis(true);
             });
 
@@ -1716,11 +1760,26 @@
                 compiledCache.expr = null;
                 compiledCache.fn = null;
                 updateExpressionPreview();
+                syncExpressionQueryParam(exprInput.value);
             });
 
             window.addEventListener('blur', stopAllVoices);
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) stopAllVoices();
+            });
+
+            window.addEventListener('popstate', () => {
+                const exprFromUrl = getExpressionFromUrl();
+                const currentValue = exprInput.value;
+                const nextValue = exprFromUrl !== null ? exprFromUrl : '';
+                if (nextValue !== currentValue) {
+                    exprInput.value = nextValue;
+                    compiledCache.expr = null;
+                    compiledCache.fn = null;
+                    updateExpressionPreview();
+                    handleSynthesis(true);
+                }
+                syncExpressionQueryParam(exprInput.value);
             });
 
             renderVirtualKeyboard();
