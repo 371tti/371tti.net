@@ -3,6 +3,8 @@ use kurosabi::{html_format, kurosabi::Context};
 use serde::Deserialize;
 use crate::context::SiteContext;
 
+const ERR_TEMPLATE: &'static str = include_str!("../../data/pages/err/index.html");
+
 pub struct ErrPage {
     pub err_infos: HashMap<String, StatusCodeInfo>,
 }
@@ -17,13 +19,12 @@ impl ErrPage {
         }
     }
 
-    pub fn generate_status_page(&self, c: & Context<SiteContext>) -> String{
-        const ERR_TEMPLATE: &'static str = include_str!("../../data/pages/err/index.html");
+    pub fn status_page(mut c: Context<SiteContext>, code: u16, adv_message: &str) -> Context<SiteContext> {
         let binding = StatusCodeInfo::default();
-        let info = self.err_infos.get(&c.res.code.to_string()).unwrap_or(&binding);
+        let code_info = c.c.ssr.err_page.err_infos.get(&code.to_string()).unwrap_or(&binding);
         let mut solutions = String::new();
         let mut debug_info = String::new();
-        for (i, solution) in info.suggest.iter().enumerate() {
+        for (i, solution) in code_info.suggest.iter().enumerate() {
             solutions.push_str(&format!("<li>{}. {}</li>", i + 1, solution));
         }
         debug_info.push_str(&format!("<li>{}: <ul><li>{}</li></ul></li>", "Accept-Encoding", c.req.header.get("Accept-Encoding").unwrap_or(&"None".to_string())));
@@ -38,17 +39,19 @@ impl ErrPage {
             "TimeStamp",
             chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
         ));
+        let message = if adv_message.is_empty() { code_info.message.clone() } else { code_info.message.clone() + " - " + adv_message };
         let html = html_format!(
             ERR_TEMPLATE,
-            color = info.color,
+            color = code_info.color,
             code = c.res.code,
-            ms = info.message,
+            ms = message,
             solution = solutions,
             debug = debug_info,
         );
-        html
+        c.res.html(&html);
+        c.res.set_status(code);
+        c
     }
-    
 }
 
 #[derive(Deserialize)]

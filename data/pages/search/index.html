@@ -67,14 +67,8 @@
                         <div>
                             <label for="algorithm">select algorithm</label>
                             <select class="right" id="algorithm" name="algorithm">
+                                <option value="CosineSimilarity" selected>CosineSimilarity</option>
                                 <option value="BM25">BM25(k1,b)</option>
-                                <option value="BM25plus">BM25plus(k1,b,delta)</option>
-                                <option value="BM25L">BM25L(k1,b)</option>
-                                <option value="BM25CosineFilter">BM25CosineFilter(k1,b)</option>
-                                <option value="BM25CosineNormalizedLinearCombination">BM25CosineNormalizedLinearCombination(k1,b,alpha)</option>
-                                <option value="BM25PrfCosineSimilarity">BM25PrfCosineSimilarity(k1,b,top_n,alpha)</option>
-                                <option value="Dot">Dot</option>
-                                <option value="CosineSimilarity">CosineSimilarity</option>
                             </select>
                         </div>
                         <div>
@@ -131,14 +125,8 @@
 
         // algorithm -> required params
         const REQ = {
-            'Dot': [],
             'CosineSimilarity': [],
-            'BM25': ['k1','b'],
-            'BM25plus': ['k1','b','delta'],
-            'BM25L': ['k1','b'],
-            'BM25CosineFilter': ['k1','b'],
-            'BM25CosineNormalizedLinearCombination': ['k1','b','alpha'],
-            'BM25PrfCosineSimilarity': ['k1','b','top_n','alpha']
+            'BM25': ['k1','b']
         };
 
         function showNeededParams(algo){
@@ -158,23 +146,11 @@
         function buildAlgo(){
             const a = algoSel.value;
             switch(a){
-                case 'Dot':
-                case 'CosineSimilarity':
-                    return a; // no params
                 case 'BM25':
                     return `BM25(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
-                case 'BM25plus':
-                    return `BM25plus(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()},${(delta.value||'1.0').trim()})`;
-                case 'BM25L':
-                    return `BM25L(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
-                case 'BM25CosineFilter':
-                    return `BM25CosineFilter(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
-                case 'BM25CosineNormalizedLinearCombination':
-                    return `BM25CosineNormalizedLinearCombination(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()},${(alpha.value||'0.5').trim()})`;
-                case 'BM25PrfCosineSimilarity':
-                    return `BM25PrfCosineSimilarity(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()},${clampInt(topn.value||'5',1,100).toString()},${(alpha.value||'0.5').trim()})`;
+                case 'CosineSimilarity':
                 default:
-                    return 'BM25(1.2,0.75)';
+                    return 'CosineSimilarity';
             }
         }
 

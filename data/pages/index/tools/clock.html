@@ -10,65 +10,125 @@
     <meta property="og:title" content="371tti.net tool clock">
     <meta property="og:type" content="article">
     <meta property="og:url" content="/license">
-    <title>Clock - 371tti.net</title>
+    <title>Clock - Tool - 371tti.net</title>
     <link rel="stylesheet" href="/style.css">
     <script src="/menu.js"></script>
 </head>
+
 <body>
 
 
-<script src="/box-load-anime.js"></script>
+    <script src="/box-load-anime.js"></script>
 
-<div class="full center center-middle scroll" style="background: linear-gradient(to bottom, var(--color-accent-0) -107% -77%, transparent 88%);">
-<div class="card" id="content">
-<div id="clock" style="font-size:2em; text-align:center; margin:20px 0;"></div>
-<div id="date" style="font-size:0.9em; text-align:center; color: var(--text-color-0);"></div>
-<script>
-let is24Hour = true;
-let showJapaneseDay = false;
+    <div class="full center center-middle scroll"
+        style="background: linear-gradient(to bottom, var(--color-accent-0) -107% -77%, transparent 88%);">
+        <div class="card" id="content">
+            <div id="clock" style="font-size:2em; text-align:center; margin:20px 0; cursor: pointer;"></div>
+            <div id="date" style="font-size:0.9em; text-align:center; color: var(--text-color-0); cursor: pointer;"></div>
+            <script>
+                let showJapaneseDay = false;
+                const modes = [
+                    {
+                        id: 'local-24',
+                        label: 'Local 24h',
+                        render: (now) => {
+                            const h = String(now.getHours()).padStart(2, '0');
+                            const m = String(now.getMinutes()).padStart(2, '0');
+                            const s = String(now.getSeconds()).padStart(2, '0');
+                            return `${h}:${m}:${s}`;
+                        }
+                    },
+                    {
+                        id: 'local-12',
+                        label: 'Local 12h',
+                        render: (now) => {
+                            let h = now.getHours();
+                            const ampm = h >= 12 ? 'PM' : 'AM';
+                            h = h % 12;
+                            h = h === 0 ? 12 : h;
+                            const hh = String(h).padStart(2, '0');
+                            const m = String(now.getMinutes()).padStart(2, '0');
+                            const s = String(now.getSeconds()).padStart(2, '0');
+                            return `${hh}:${m}:${s} ${ampm}`;
+                        }
+                    },
+                    {
+                        id: 'utc-24',
+                        label: 'UTC 24h',
+                        render: (now) => {
+                            const h = String(now.getUTCHours()).padStart(2, '0');
+                            const m = String(now.getUTCMinutes()).padStart(2, '0');
+                            const s = String(now.getUTCSeconds()).padStart(2, '0');
+                            return `UTC ${h}:${m}:${s}`;
+                        }
+                    },
+                    {
+                        id: 'utc-ms',
+                        label: 'UTC ms',
+                        render: (now) => {
+                            const h = String(now.getUTCHours()).padStart(2, '0');
+                            const m = String(now.getUTCMinutes()).padStart(2, '0');
+                            const s = String(now.getUTCSeconds()).padStart(2, '0');
+                            const ms = String(now.getUTCMilliseconds()).padStart(3, '0');
+                            return `UTC ${h}:${m}:${s}.${ms}`;
+                        }
+                    },
+                    {
+                        id: 'iso',
+                        label: 'ISO',
+                        render: (now) => now.toISOString()
+                    },
+                    {
+                        id: 'unix-s',
+                        label: 'Unix 秒',
+                        render: (now) => String(Math.floor(now.getTime() / 1000))
+                    },
+                    {
+                        id: 'unix-ms',
+                        label: 'Unix ms',
+                        render: (now) => String(now.getTime())
+                    }
+                ];
 
-function getDayString(dayIndex) {
-    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const daysJa = ['日', '月', '火', '水', '木', '金', '土'];
-    return showJapaneseDay ? daysJa[dayIndex] : daysEn[dayIndex];
-}
+                let currentMode = 0;
 
-function updateClock() {
-    const now = new Date();
-    let h = now.getHours();
-    let displayHour = h;
-    let ampm = '';
-    if (!is24Hour) {
-        ampm = h >= 12 ? ' PM' : ' AM';
-        displayHour = h % 12;
-        displayHour = displayHour === 0 ? 12 : displayHour;
-        displayHour = String(displayHour).padStart(2, '0');
-    } else {
-        displayHour = String(h).padStart(2, '0');
-    }
-    const m = String(now.getMinutes()).padStart(2, '0');
-    const s = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById('clock').textContent = `${displayHour}:${m}:${s}${ampm}`;
-    const y = now.getFullYear();
-    const mon = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const dayStr = getDayString(now.getDay());
-    document.getElementById('date').textContent = `${y}/${mon}/${d} (${dayStr})`;
-}
+                function getDayString(dayIndex) {
+                    const daysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const daysJa = ['日', '月', '火', '水', '木', '金', '土'];
+                    return showJapaneseDay ? daysJa[dayIndex] : daysEn[dayIndex];
+                }
 
-document.getElementById('clock').onclick = function() {
-    is24Hour = !is24Hour;
-    updateClock();
-};
-document.getElementById('date').onclick = function() {
-    showJapaneseDay = !showJapaneseDay;
-    updateClock();
-};
+                function updateClock() {
+                    const now = new Date();
+                    const mode = modes[currentMode];
+                    const clockEl = document.getElementById('clock');
+                    // 表示は時計要素に。補助情報は title で表示（hover やスクリーンリーダーに有用）
+                    clockEl.textContent = mode.render(now);
+                    clockEl.title = `${mode.label} — クリックで切替`;
+                    const y = now.getFullYear();
+                    const mon = String(now.getMonth() + 1).padStart(2, '0');
+                    const d = String(now.getDate()).padStart(2, '0');
+                    const dayStr = getDayString(now.getDay());
+                    document.getElementById('date').textContent = `${y}/${mon}/${d} (${dayStr})`;
+                }
 
-setInterval(updateClock, 1000);
-updateClock();
-</script>
-</div>
-</div>
+                // クリックでモード切替（時計部分）
+                document.getElementById('clock').onclick = function () {
+                    currentMode = (currentMode + 1) % modes.length;
+                    updateClock();
+                };
+                // 日付クリックは和日名切替を維持
+                document.getElementById('date').onclick = function () {
+                    showJapaneseDay = !showJapaneseDay;
+                    updateClock();
+                };
+
+                // 定期更新（ミリ秒が見えるモードのため100ms程度で更新）
+                setInterval(updateClock, 10);
+                updateClock();
+            </script>
+        </div>
+    </div>
 </body>
+
 </html>

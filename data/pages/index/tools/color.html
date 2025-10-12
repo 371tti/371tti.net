@@ -10,7 +10,7 @@
     <meta property="og:title" content="371tti.net tools color">
     <meta property="og:type" content="article">
     <meta property="og:url" content="/license">
-    <title>Color - 371tti.net</title>
+    <title>Color - Tool - 371tti.net</title>
     <link rel="stylesheet" href="/style.css">
     <script src="/menu.js"></script>
 </head>
@@ -33,14 +33,23 @@ const uiArea = document.getElementById('ui-area');
 const cover = document.getElementById('cover');
 let coverMode = false;
 
+// URLから色を取得
+const urlParams = new URLSearchParams(window.location.search);
+const initialColor = urlParams.get('color') || '#000';
+
 // 初期化
-colorBg.style.background = '#000';
-colorPicker.value = '#000';
+colorBg.style.background = initialColor;
+colorPicker.value = initialColor;
+if (urlParams.has('color')) {
+    setCover(true);
+}
 
 colorPicker.addEventListener('input', function(e) {
     const color = e.target.value;
     colorBg.style.background = color;
     if (coverMode) cover.style.background = color;
+    // URLを更新
+    history.replaceState(null, '', `?color=${encodeURIComponent(color)}`);
 });
 
 function setCover(on) {

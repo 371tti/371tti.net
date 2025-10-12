@@ -3,4 +3,3 @@ pub mod context;
 pub mod user_manager;
 pub mod api;
 pub mod config;
-pub mod db;

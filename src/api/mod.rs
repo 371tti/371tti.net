@@ -1,9 +1,10 @@
 
 use chrono::Utc;
 
-use crate::{api::schema::{LoginReq, LoginRes, SessionState}, context::SiteContext, user_manager::auth_manager::{AccountSession, VerifyResult}};
+use crate::{api::schema::auth::{LoginReq, LoginRes, SessionState}, context::SiteContext, user_manager::auth_manager::{AccountSession, VerifyResult}};
 
 pub mod schema;
+pub mod handler;
 
 impl SiteContext {
     pub fn req_session_state(&self) -> Option<SessionState> {
