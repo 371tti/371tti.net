@@ -10,9 +10,9 @@ use serde::{Deserialize, Serialize};
 use futures::TryStreamExt;
 
 use crate::context::ACCOUNT_COLLECTION_NAME;
-use crate::user_manager::auth_manager::{AccountData, AccountID, AccountSession, AccountSessionStatus, Accounts, SessionKey};
+use crate::user_manager::auth::{AccountData, AccountID, AccountSession, AccountSessionStatus, Accounts, SessionKey};
 
-use crate::user_manager::auth_manager::ACCOUNT_DATA_VERSION;
+use crate::user_manager::auth::ACCOUNT_DATA_VERSION;
 
 // DB系の処理ここに
 impl Accounts {

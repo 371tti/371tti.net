@@ -1,4 +1,4 @@
-pub mod auth_manager;
-pub mod account_manager;
-pub mod session_manager;
+pub mod auth;
+pub mod account;
+pub mod session;
 pub mod hash_config;

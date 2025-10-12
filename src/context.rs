@@ -8,7 +8,7 @@ use log::info;
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 
-use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth_manager::{AccountID, AuthManager, SessionKey}};
+use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth::{AccountID, AuthManager, SessionKey}};
 
 
 /// Cookie key for session management

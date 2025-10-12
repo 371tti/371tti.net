@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::user_manager::auth_manager::{AccountID, AccountSession};
+use crate::user_manager::auth::{AccountID, AccountSession};
 
 #[derive(Clone, Serialize)]
 pub struct SessionState {

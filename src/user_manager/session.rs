@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use dashmap::mapref::one::{Ref, RefMut};
 use base64::{Engine, engine::general_purpose};
 
-use crate::user_manager::auth_manager::{AccountSession, SessionKey, Sessions, SessionsData};
+use crate::user_manager::auth::{AccountSession, SessionKey, Sessions, SessionsData};
 use rand::RngCore;
 
 impl Sessions {
