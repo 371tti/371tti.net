@@ -6,7 +6,7 @@ use kurosabi::kurosabi::Context;
 
 use crate::context::SiteContext;
 use crate::api::schema::search::{ResEntry, SearchApiResult};
-use crate::page_generator::err_page::ErrPage;
+use crate::page_generator::err::ErrPage;
 
 const SEARCH_TEMPLATE: &str = include_str!("../../data/pages/search/search_result.html");
 const SEARCH_UI: &str = include_str!("../../data/pages/search/index.html");

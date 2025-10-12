@@ -1,16 +1,16 @@
-pub mod err_page;
-pub mod search_page;
+pub mod err;
+pub mod search;
 
 pub struct PageGenerator {
-    pub err_page: err_page::ErrPage,
-    pub search_page: search_page::SearchPage,
+    pub err_page: err::ErrPage,
+    pub search_page: search::SearchPage,
 }
 
 impl PageGenerator {
     pub fn new() -> Self {
         Self {
-            err_page: err_page::ErrPage::new(),
-            search_page: search_page::SearchPage::new("http://localhost:90"),
+            err_page: err::ErrPage::new(),
+            search_page: search::SearchPage::new("http://localhost:90"),
         }
     }
 }

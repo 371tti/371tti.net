@@ -1,8 +1,8 @@
 use kurosabi::Kurosabi;
 use wk_371tti_net::api::handler::auth::AuthAPI;
 use wk_371tti_net::api::handler::search::SearchAPI;
-use wk_371tti_net::page_generator::err_page::ErrPage;
-use wk_371tti_net::page_generator::search_page::SearchPage;
+use wk_371tti_net::page_generator::err::ErrPage;
+use wk_371tti_net::page_generator::search::SearchPage;
 use wk_371tti_net::context::SiteContext;
 
 pub const CONFIG_PATH: &str = "config.toml";
