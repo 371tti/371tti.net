@@ -202,11 +202,20 @@ impl PartialEq for ReadyTaskItem {
 
 pub struct TaskScheduler {
     /// wait_queue
-    /// 実装上 ready_at が絶対Someであることを保証する
+    /// 待機中タスクのキュー
     wait_queue: RwLock<BTreeSet<WaitTaskItem>>,
+    /// wakeup_notify
+    /// ウェイクアップ通知
+    /// あたらしいタスクが追加されたときに通知する
     wakeup_notify: Notify,
+    /// ready_queue
+    /// 実行待機中タスクのキュー
     ready_queue: RwLock<BTreeSet<ReadyTaskItem>>,
+    /// ready_notify
+    /// 実行待機中タスクが追加されたときに通知する
     ready_notify: Notify,
+    /// task_id_counter
+    /// タスクIDのカウンタ
     task_id_counter: AtomicU64,
 }
 impl TaskScheduler {
