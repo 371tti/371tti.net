@@ -300,7 +300,7 @@ impl TaskScheduler {
     async fn execute_loop(&self, context: SiteContext) {
         loop {
             let task_item = self.fetch_ready_task_wait().await;
-            log::debug!("Executing task {:?}", task_item.id);
+            log::debug!("Executing task 0x{:?}", task_item.id);
             (task_item.task)(context.clone()).await;
         }
     }
