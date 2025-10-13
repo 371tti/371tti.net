@@ -114,6 +114,8 @@ impl SiteContext {
                         None,
                         None,
                     ).await;
+
+                    log::info!("Cron task finished");
                 }
             })
         }
