@@ -78,6 +78,7 @@ love cat
     app.post("/api/auth", |c| async move { AuthAPI::auth(c).await });
     app.post("/api/index", |c| async move { SearchAPI::index(c).await });
     app.post("/api/meta", |c| async move { SearchAPI::meta(c).await });
+    app.get("/api/meta/url", |c| async move { SearchAPI::meta_get(c).await });
     app.not_found_handler(|c| async move { ErrPage::status_page(c, 404, "") });
 
     let server = app.server()

@@ -84,4 +84,22 @@ impl SearchAPI {
         }
         c
     }
+
+    pub async fn meta_get(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        // /api/meta/get?url=...
+        let url = c.req.path.get_query("url").unwrap_or("".into());
+        let query = schema::search::MetaReq {
+            url: url.to_string(),
+        };
+        let result = c.c.ssr.search_page.search_api_meta(query).await;
+
+        match result {
+            Ok(resp) => {
+                c.res.json_value(&serde_json::to_value(&resp).unwrap_or(serde_json::json!({"error": "Failed to serialize response"})));
+                c.res.set_status(200);
+            }
+            Err(code) => { c.res.set_status(code); }
+        }
+        c
+    }
 }
