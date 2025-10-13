@@ -68,6 +68,7 @@
                             <label for="algorithm">select algorithm</label>
                             <select class="right" id="algorithm" name="algorithm">
                                 <option value="CosineSimilarity" selected>CosineSimilarity</option>
+                                <option value="Dot">Dot</option>
                                 <option value="BM25">BM25(k1,b)</option>
                             </select>
                         </div>
@@ -126,6 +127,7 @@
         // algorithm -> required params
         const REQ = {
             'CosineSimilarity': [],
+            'Dot': [],
             'BM25': ['k1','b']
         };
 
@@ -149,8 +151,9 @@
                 case 'BM25':
                     return `BM25(${(k1.value||'1.5').trim()},${(b.value||'0.75').trim()})`;
                 case 'CosineSimilarity':
+                case 'Dot':
                 default:
-                    return 'CosineSimilarity';
+                    return a || 'CosineSimilarity';
             }
         }
 

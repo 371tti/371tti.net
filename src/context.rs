@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 use chrono::Duration as ChronoDuration;
 
 
@@ -8,6 +9,7 @@ use log::info;
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 
+use crate::task::scheduler::{BoxedTask, TaskID, TaskPriority, TaskScheduler};
 use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth::{AccountID, AuthManager, SessionKey}};
 
 
@@ -19,6 +21,9 @@ pub const SESSION_COOKIE_MAX_AGE: i64 = 60 * 60 * 24 * 365;
 
 pub const ACCOUNT_COLLECTION_NAME: &str = "accounts";
 
+/// サイト全体のコンテキスト
+/// リクエストごとに生成される
+/// 共有するものはArcで持つ
 #[derive(Clone)]
 pub struct SiteContext {
     /// Server-Side Rendering engine
@@ -31,6 +36,10 @@ pub struct SiteContext {
     pub db_client: Arc<mongodb::Database>,
     /// Current session key, if any
     pub session_key: Option<SessionKey>,
+    /// task scheduler
+    pub scheduler: Arc<TaskScheduler>,
+
+    /// Instant data
     pub user_id: Option<AccountID>,
 }
 
@@ -52,15 +61,52 @@ impl SiteContext {
             config.hash_config.clone(),
             db_client.clone(),
         ).await);
+
+        let scheduler = Arc::new(TaskScheduler::new());
         
-        Self { 
+        let instance = Self { 
             ssr, 
             auth, 
             main_config: Arc::new(Mutex::new(config)),
             session_key: None,
             user_id: None,
+            scheduler,
             db_client,
+        };
+        
+        // 自分で自分をスケジュールするやつ
+        pub fn make_cron_task(
+            id: TaskID,
+            priority: TaskPriority,
+            interval: Duration,
+        ) -> BoxedTask {
+            TaskScheduler::boxed_task(move |ctx: SiteContext| {
+                async move {
+                    log::info!("CRONタスク実行");
+
+                    // 次回スケジューリング
+                    let next_ready = Instant::now() + interval;
+                    ctx.scheduler.push_task(
+                        id,
+                        make_cron_task(id, priority, interval),
+                        priority,
+                        Some(next_ready),
+                        None,
+                    ).await;
+                }
+            })
         }
+        TaskScheduler::start(instance.scheduler.clone(), instance.clone(), 4).await;
+        let cron_task = make_cron_task(TaskID::CRON, TaskPriority::NORMAL, Duration::from_secs(5));
+        instance.scheduler.push_task(
+            TaskID::CRON,
+            cron_task,
+            TaskPriority::NORMAL,
+            Some(Instant::now()),
+            None,
+        ).await;
+
+        instance
     }
 }
 
