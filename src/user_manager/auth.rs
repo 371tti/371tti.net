@@ -40,6 +40,9 @@ pub const HASH_LEN: usize = 32;
 /// for future
 pub const ACCOUNT_DATA_VERSION: u32 = 1;
 
+/// If the number of sessions exceeds this threshold, a garbage collection will be triggered.
+pub const SESSION_GC_THRESHOLD: usize = 128;
+
 impl AuthManager {
     /// new instance of AuthManager
     /// hash_salt: 16bytes random
@@ -120,6 +123,37 @@ impl AuthManager {
             }
         } else {
             None
+        }
+    }
+
+    pub async fn session_gc_task(&self) {
+        let keys_to_remove: Vec<SessionKey> = self.sessions.pool.iter()
+            .filter_map(|entry| {
+                let now = Utc::now();
+                if now.signed_duration_since(entry.value().last_accessed_at) > self.session_timeout {
+                    Some(entry.key().clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        if keys_to_remove.len() < SESSION_GC_THRESHOLD {
+            log::info!("Session GC: no need to run GC, only {} timeout sessions", keys_to_remove.len());
+            return;
+        }
+
+        log::info!("Session GC: removing {} timeout sessions", keys_to_remove.len());
+        for key in keys_to_remove {
+            if let Some(session) = self.sessions.get_mut(&key) {
+                // unlink session from accounts
+                for acc_session in session.accounts.iter(){
+                    if let Some(mut account_data) = self.accounts.get_mut(&acc_session.account_id).await {
+                        account_data.remove_session(&key);
+                    }
+                }
+            }
+            self.sessions.remove_session(&key);
         }
     }
     

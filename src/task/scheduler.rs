@@ -50,7 +50,7 @@ pub struct TaskID(u64);
 impl TaskID {
     pub const ANY: Self = Self(0);
     pub const CRON: Self = Self(1 << 48);
-    pub const SESSION_MANAGER: Self = Self(2 << 48);
+    pub const SESSION_GC: Self = Self(2 << 48);
     pub const HEALTH_CHECK: Self = Self(3 << 48);
 
     pub fn new(prefix: u16, counter: u64) -> Self {
@@ -77,7 +77,7 @@ impl TaskID {
         match (self.0 >> 48) as u16 {
             0 => "ANY",
             1 => "CRON",
-            2 => "SESMGR",
+            2 => "SESSION_GC",
             3 => "HLTHCK",
             _ => "UNKNOWN",
         }

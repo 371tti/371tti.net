@@ -21,6 +21,8 @@ pub const SESSION_COOKIE_MAX_AGE: i64 = 60 * 60 * 24 * 365;
 
 pub const ACCOUNT_COLLECTION_NAME: &str = "accounts";
 
+pub const TASK_SCHEDULER_WORKER_COUNT: usize = 4;
+
 /// サイト全体のコンテキスト
 /// リクエストごとに生成される
 /// 共有するものはArcで持つ
@@ -82,7 +84,7 @@ impl SiteContext {
         ) -> BoxedTask {
             TaskScheduler::boxed_task(move |ctx: SiteContext| {
                 async move {
-                    log::info!("CRONタスク実行");
+                    log::info!("Cron task running");
 
                     // 次回スケジューリング
                     let next_ready = Instant::now() + interval;
@@ -93,15 +95,38 @@ impl SiteContext {
                         Some(next_ready),
                         None,
                     ).await;
+
+                    // セッションGCタスク
+                    let session_gc_task: BoxedTask = TaskScheduler::boxed_task(move |ctx: SiteContext| {
+                        async move {
+                            log::info!("Session GC task running");
+                            ctx.auth.session_gc_task().await;
+                            log::info!("Session GC task finished");
+                        }
+                    });
+                    // etc...
+                    // 他の定期タスクもここに追加していく
+
+                    ctx.scheduler.push_task(
+                        TaskID::SESSION_GC,
+                        session_gc_task,
+                        TaskPriority::IDLE,
+                        None,
+                        None,
+                    ).await;
                 }
             })
         }
-        TaskScheduler::start(instance.scheduler.clone(), instance.clone(), 4).await;
-        let cron_task = make_cron_task(TaskID::CRON, TaskPriority::NORMAL, Duration::from_secs(5));
+        TaskScheduler::start(instance.scheduler.clone(), instance.clone(), TASK_SCHEDULER_WORKER_COUNT).await;
+        let cron_task = make_cron_task(
+            TaskID::CRON, 
+            TaskPriority::NORMAL, 
+            Duration::from_secs(300)
+        );
         instance.scheduler.push_task(
             TaskID::CRON,
             cron_task,
-            TaskPriority::NORMAL,
+            TaskPriority::HIGH,
             Some(Instant::now()),
             None,
         ).await;
