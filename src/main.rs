@@ -10,7 +10,7 @@ pub const CONFIG_PATH: &str = "config.toml";
 #[tokio::main(flavor = "multi_thread", worker_threads = 16)]
 async fn main() {
     env_logger::try_init_from_env(env_logger::Env::default().default_filter_or("debug")).unwrap_or_else(|_| ());
-    
+
     let context = SiteContext::new(CONFIG_PATH.into()).await;
     let mut app = Kurosabi::with_context(context);
 
@@ -77,6 +77,7 @@ love cat
     app.get("/api/search", |c| async move { SearchAPI::search(c).await });
     app.post("/api/auth", |c| async move { AuthAPI::auth(c).await });
     app.post("/api/index", |c| async move { SearchAPI::index(c).await });
+    app.post("/api/meta", |c| async move { SearchAPI::meta(c).await });
     app.not_found_handler(|c| async move { ErrPage::status_page(c, 404, "") });
 
     let server = app.server()

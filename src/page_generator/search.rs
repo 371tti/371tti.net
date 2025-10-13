@@ -4,6 +4,7 @@ use kurosabi::html_format;
 use reqwest::Client;
 use kurosabi::kurosabi::Context;
 
+use crate::api::schema;
 use crate::context::SiteContext;
 use crate::api::schema::search::{ResEntry, SearchApiResult};
 use crate::page_generator::err::ErrPage;
@@ -99,6 +100,13 @@ impl SearchPage {
         } else {
             Err(502u16)
         }
+    }
+
+    pub async fn search_api_meta(&self, req: schema::search::MetaReq) -> Result<schema::search::MetaRes, u16> {
+        let url = format!("{}/meta", self.search_api_endpoint);
+        let resp = self.client.post(&url).json(&req).send().await.map_err(|_| 502u16)?;
+        let parsed = resp.json::<schema::search::MetaRes>().await.map_err(|_| 502u16)?;
+        Ok(parsed)
     }
 
     pub fn generate_entry(entry: ResEntry) -> String {

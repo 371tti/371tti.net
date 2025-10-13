@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use kurosabi::kurosabi::Context;
 
-use crate::{api::schema::search::IndexReq, context::SiteContext};
+use crate::{api::schema::{self, search::IndexReq}, context::SiteContext};
 
 pub struct SearchAPI;
 
@@ -61,6 +61,27 @@ impl SearchAPI {
             Err(_) => { c.res.set_status(502); c.res.text("Bad Gateway"); }
         }
 
+        c
+    }
+
+    pub async fn meta(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        let req = c.req.body_de_struct::<schema::search::MetaReq>().await;
+        let result = match req {
+            Ok(r) => c.c.ssr.search_page.search_api_meta(r).await,
+            Err(_e) => {
+                c.res.text("Bad Request: Failed to parse request body");
+                c.res.set_status(400);
+                return c;
+            }
+        };
+
+        match result {
+            Ok(resp) => {
+                c.res.json_value(&serde_json::to_value(&resp).unwrap_or(serde_json::json!({"error": "Failed to serialize response"})));
+                c.res.set_status(200);
+            }
+            Err(code) => { c.res.set_status(code); }
+        }
         c
     }
 }
