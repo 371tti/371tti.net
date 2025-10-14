@@ -52,7 +52,9 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
 #helpOverlay h3{margin:0 0 8px;font-size:14px;color:#fff;font-weight:600}
 #helpOverlay code{background:#444;padding:1px 4px}
 #helpOverlay button.close{position:absolute;top:8px;right:8px;background:#555;color:#fff;border:1px solid #666;padding:2px 8px;cursor:pointer;border-radius:0}
-</style></head>
+</style>
+<script src="/menu.js"></script>
+</head>
 <body>
 <div id="workspace">
     <canvas id="main" tabindex="0"></canvas>
@@ -63,6 +65,7 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
         <button data-tool="draw" title="ペン (P)">✒</button>
         <button data-tool="bucket" title="バケツ (G)">🪣</button>
         <button data-tool="rect" title="矩形 (M)">⬚</button>
+    <button data-tool="erase" title="消しゴム (E)">🩹</button>
         <button data-tool="pan" title="パン (Space)">✥</button>
     </div>
     <!-- hidden legacy inputs for logic reuse -->
@@ -73,6 +76,7 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
         <option value="draw">draw</option>
         <option value="bucket">bucket</option>
         <option value="rect">rect</option>
+    <option value="erase">erase</option>
         <option value="pan">pan</option>
     </select>
     <input type="color" id="color" value="#c33" style="display:none" />
@@ -131,6 +135,18 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
             <div class="row wrap"><button id="btnSelectAll" class="small">全選択</button><button id="btnDeselect" class="small">解除</button><button id="btnInvertSel" class="small">反転</button><button id="btnClearRegions" class="small">領域クリア</button><button id="deleteEl" class="small">削除</button></div>
         </div>
     </div>
+    <!-- Curve / Property Panel -->
+    <div class="panel" id="panelCurve" style="top:250px;left:880px;width:220px;">
+        <div class="panel-header"><span class="title">プロパティ(曲線)</span></div>
+        <div class="panel-body">
+            <label class="inline"><input type="checkbox" id="curveEnable"> ベジェ補間</label>
+            <label class="inline" style="gap:8px;">簡略ε <input type="number" id="curveSimplify" value="0" min="0" step="0.1" style="flex:1;background:#555;color:#fff;border:1px solid #666"></label>
+            <label class="inline" style="gap:8px;">テンション <input type="number" id="curveTension" value="0.5" min="0" max="1" step="0.05" style="flex:1;background:#555;color:#fff;border:1px solid #666"></label>
+            <label class="inline" style="gap:8px;">区間分割 <input type="number" id="curveSegments" value="8" min="1" max="64" step="1" style="flex:1;background:#555;color:#fff;border:1px solid #666"></label>
+            <label class="inline" style="gap:8px;">点間距離 <input type="number" id="curveMinDist" value="0.5" min="0.1" step="0.1" style="flex:1;background:#555;color:#fff;border:1px solid #666"></label>
+            <div style="font-size:10px;opacity:.7;line-height:1.4">ベジェ補間: 描画後に Catmull-Rom をテンション付きでサンプリング。簡略ε は Douglas-Peucker 事前簡略化。</div>
+        </div>
+    </div>
     <!-- Export Panel -->
     <div class="panel" id="panelExport" style="top:8px;right:8px;width:200px;">
         <div class="panel-header"><span class="title">書き出し</span><button id="doExport" class="small">出力</button></div>
@@ -140,6 +156,9 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
             <label class="inline">背景 <input type="color" id="exportBg" value="#ffffff" style="flex:1"><input type="checkbox" id="exportTransparent" checked>透明</label>
             <label class="inline"><input type="checkbox" id="exportUseCrop" checked>領域/要素で切取</label>
             <label class="inline"><input type="checkbox" id="exportIncludeView" checked>ビュー反映</label>
+            <div class="divider"></div>
+            <div class="row wrap"><button id="btnSaveJson" class="small" type="button">保存JSON</button><button id="btnLoadJson" class="small" type="button">読込JSON</button></div>
+            <input type="file" id="importFile" accept="application/json" style="display:none" />
         </div>
     </div>
 
@@ -147,7 +166,7 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
     <div id="helpOverlay"><div class="box"><button class="close">×</button><h3>ショートカット</h3>
         <div style="columns:2;column-gap:24px;">
             <div><strong>基本</strong><br>
-            <code>V</code> 選択<br><code>W</code> 矩形選択<br><code>L</code> ラッソ<br><code>P/B</code> ペン<br><code>G</code> バケツ<br><code>M</code> 矩形<br><code>Space</code> パン</div>
+            <code>V</code> 選択<br><code>W</code> 矩形選択<br><code>L</code> ラッソ<br><code>P/B</code> ペン<br><code>G</code> バケツ<br><code>M</code> 矩形<br><code>E</code> 消しゴム<br><code>Space</code> パン</div>
             <div><strong>編集</strong><br>
             <code>Ctrl+Z</code> 戻る / <code>Ctrl+Y</code> 進む<br><code>Ctrl+A</code> 全選択<br><code>Del</code> 削除 / <code>Esc</code> 解除<br><code>Ctrl+C/X/V</code> コピー/切取/貼付</div>
             <div style="break-inside:avoid"><strong>ブラシ</strong><br><code>1/2/3</code> ブラシ形状</div>
@@ -183,9 +202,14 @@ select.blend{background:#555;color:#fff;border:1px solid #666;border-radius:0;fo
 // Keyboard mapping additions for bucket
 window.addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='g'){ document.querySelector('#toolBar button[data-tool="bucket"]').click(); }});
 // Extra tool key bindings (mirror legacy)
-window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA' || e.metaKey||e.ctrlKey) return; const k=e.key.toLowerCase(); const map={v:'select',w:'select-rect',l:'select-lasso',p:'draw',b:'draw',m:'rect'}; if(map[k]){ document.querySelector(`#toolBar button[data-tool="${map[k]}"]`).click(); }});
+window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA' || e.metaKey||e.ctrlKey) return; const k=e.key.toLowerCase(); const map={v:'select',w:'select-rect',l:'select-lasso',p:'draw',b:'draw',m:'rect',e:'erase'}; if(map[k]){ document.querySelector(`#toolBar button[data-tool="${map[k]}"]`).click(); }});
 // Help overlay toggle
 (()=>{ const overlay=document.getElementById('helpOverlay'); const toggle=document.getElementById('helpToggle'); const close=overlay.querySelector('button.close'); function hide(){ overlay.style.display='none'; } function show(){ overlay.style.display='flex'; }
  toggle.addEventListener('click',()=>{ overlay.style.display==='flex'?hide():show(); }); close.addEventListener('click',hide); window.addEventListener('keydown',e=>{ if(e.key==='Escape' && overlay.style.display==='flex') hide(); }); })();
+// Save / Load JSON
+(()=>{ const saveBtn=document.getElementById('btnSaveJson'); const loadBtn=document.getElementById('btnLoadJson'); const fileInput=document.getElementById('importFile'); if(saveBtn) saveBtn.addEventListener('click',()=>{ if(!window.VP) return; const data=window.VP.serialize(); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='drawing.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }); if(loadBtn) loadBtn.addEventListener('click',()=> fileInput.click()); if(fileInput) fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ window.VP && window.VP.deserialize(r.result); }catch(err){ alert('読込失敗: '+err); } }; r.readAsText(f); }); })();
+// Curve properties bindings
+(()=>{ function apply(){ if(!window.VP) return; const s=window.VP.curveSettings; s.enableBezier=document.getElementById('curveEnable').checked; s.simplifyEps=Number(document.getElementById('curveSimplify').value)||0; s.tension=Math.min(1,Math.max(0,Number(document.getElementById('curveTension').value)||0)); s.segments=Math.max(1,Math.min(256,Number(document.getElementById('curveSegments').value)||8)); s.minDist=Math.max(0.05,Number(document.getElementById('curveMinDist').value)||0.5); }
+ ['curveEnable','curveSimplify','curveTension','curveSegments','curveMinDist'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',apply); }); window.addEventListener('load',apply); })();
 </script>
 </body></html>

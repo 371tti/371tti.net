@@ -51,6 +51,8 @@
   let clipboard=[]; let currentBrushShape='round';
   let brushOpacity=1; // 0-1 stroke opacity
   let layerMoveActive=false; let layerMoveStart={x:0,y:0};
+  // Curve settings (public configurable)
+  const curveSettings={enableBezier:false,simplifyEps:0,tension:0.5,segments:8,minDist:0.5}; VP.curveSettings=curveSettings;
 
   const CONFIG={selectionDash:[4,4], previewDash:[6,4], hitTestTolerance:6}; VP.config=CONFIG;
 
@@ -90,7 +92,14 @@
   // Render
   function drawElement(el){ if(el.type==='path'){ if(!el.points.length)return; if(el.points.length===1){ // dot
       ctx.save(); ctx.fillStyle=el.stroke; if(el.strokeOpacity!=null) ctx.globalAlpha*=el.strokeOpacity; const p=el.points[0]; const r=Math.max(1,el.strokeWidth/2); ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.restore(); return; }
-      if(el.brushShape==='dotted'){ drawDotted(el); return;} ctx.save(); ctx.beginPath(); ctx.lineCap=(el.brushShape==='square')?'butt':'round'; ctx.lineJoin=(el.brushShape==='square')?'miter':'round'; ctx.lineWidth=el.strokeWidth; ctx.strokeStyle=el.stroke; if(el.strokeOpacity!=null) ctx.globalAlpha*=el.strokeOpacity; ctx.moveTo(el.points[0].x,el.points[0].y); for(let i=1;i<el.points.length;i++) ctx.lineTo(el.points[i].x,el.points[i].y); ctx.stroke(); ctx.restore(); } else if(el.type==='rect'){ ctx.save(); ctx.lineWidth=el.strokeWidth||1; ctx.strokeStyle=el.stroke||'#000'; if(el.strokeOpacity!=null) ctx.globalAlpha*=el.strokeOpacity; ctx.strokeRect(el.x,el.y,el.w,el.h); ctx.restore(); } }
+      if(el.brushShape==='dotted'){ drawDotted(el); return;}
+      ctx.save(); ctx.beginPath(); ctx.lineCap=(el.brushShape==='square')?'butt':'round'; ctx.lineJoin=(el.brushShape==='square')?'miter':'round'; ctx.lineWidth=el.strokeWidth; ctx.strokeStyle=el.stroke; if(el.strokeOpacity!=null) ctx.globalAlpha*=el.strokeOpacity;
+      let curve=el.curve; if(curveSettings.enableBezier){ // 動的再計算 (非破壊)
+        if(!curve || curve._cacheKey!==curveCacheKey(el)){ curve=computeCurve(el); el.curve=curve; }
+      }
+      if(curve && curve.cubic){ const pts=curve.cubic; ctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i+=3){ const c1=pts[i], c2=pts[i+1], p=pts[i+2]; if(!p) break; ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,p.x,p.y); } }
+      else { ctx.moveTo(el.points[0].x,el.points[0].y); for(let i=1;i<el.points.length;i++) ctx.lineTo(el.points[i].x,el.points[i].y); }
+      ctx.stroke(); ctx.restore(); } else if(el.type==='rect'){ ctx.save(); ctx.lineWidth=el.strokeWidth||1; ctx.strokeStyle=el.stroke||'#000'; if(el.strokeOpacity!=null) ctx.globalAlpha*=el.strokeOpacity; ctx.strokeRect(el.x,el.y,el.w,el.h); ctx.restore(); } }
   function drawSelectionOutline(el){ ctx.save(); ctx.lineWidth=1; ctx.setLineDash(CONFIG.selectionDash); ctx.strokeStyle='#1d6ae5'; if(el.type==='path'){ ctx.beginPath(); ctx.moveTo(el.points[0].x,el.points[0].y); for(let i=1;i<el.points.length;i++) ctx.lineTo(el.points[i].x,el.points[i].y); ctx.stroke(); } else ctx.strokeRect(el.x,el.y,el.w,el.h); ctx.restore(); }
   function drawSelectionRegions(){ if(!selectionRegions.length && !input.regionDraft) return; ctx.save(); ctx.lineWidth=1; ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(0,150,255,.9)'; const regs=[...selectionRegions]; if(input.regionDraft) regs.push(input.regionDraft); for(const r of regs){ if(r.mode==='rect'){ const rr=r.rect; ctx.strokeRect(rr.x,rr.y,rr.w,rr.h); } else if(r.mode==='lasso'&&r.points.length>1){ ctx.beginPath(); ctx.moveTo(r.points[0].x,r.points[0].y); for(let i=1;i<r.points.length;i++) ctx.lineTo(r.points[i].x,r.points[i].y); if(!r.draft) ctx.closePath(); ctx.stroke(); }} ctx.restore(); }
   function render(){ ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.setTransform(view[0]*baseScale,view[1]*baseScale,view[2]*baseScale,view[3]*baseScale,view[4]*baseScale,view[5]*baseScale); for(const l of layers){ if(!l.visible||!l.elements.length) continue; ctx.save(); ctx.globalAlpha=l.opacity; ctx.globalCompositeOperation=l.blend; for(const el of l.elements) drawElement(el); ctx.restore(); } if(input.currentPath) drawElement(input.currentPath); if(input.currentRect){ const r=input.currentRect; ctx.save(); ctx.setLineDash(CONFIG.previewDash); ctx.lineWidth=r.strokeWidth; ctx.strokeStyle=r.stroke; ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.restore(); } for(const id of selection){ const el=allElements().find(e=>e.id===id); if(el) drawSelectionOutline(el); } drawSelectionRegions(); }
@@ -125,6 +134,24 @@
 
   // Brushes
   function drawDotted(el){ if(el.points.length<2) return; ctx.save(); ctx.fillStyle=el.stroke; const step=el.strokeWidth*1.5; for(let i=1;i<el.points.length;i++){ const a=el.points[i-1], b=el.points[i]; const dx=b.x-a.x, dy=b.y-a.y, dist=Math.hypot(dx,dy); const segs=Math.max(1,Math.floor(dist/step)); for(let s=0;s<=segs;s++){ const t=s/segs; const px=a.x+dx*t, py=a.y+dy*t; ctx.beginPath(); ctx.arc(px,py,el.strokeWidth/2,0,Math.PI*2); ctx.fill(); }} ctx.restore(); }
+  // Simplify (Douglas-Peucker)
+  function simplify(points,eps){ if(points.length<=2||eps<=0) return points; const sq=eps*eps; function d2(p,a,b){ const A=b.y-a.y, B=a.x-b.x, C=b.x*a.y-a.x*b.y; return Math.abs(A*p.x+B*p.y+C)/Math.hypot(A,B); }
+    function rec(pts,a,b,out){ let maxD=0, idx=-1; for(let i=a+1;i<b;i++){ const d=d2(pts[i],pts[a],pts[b]); if(d>maxD){ maxD=d; idx=i; } } if(maxD*maxD>sq){ rec(pts,a,idx,out); rec(pts,idx,b,out);} else { out.push(pts[b]); } }
+    const out=[points[0]]; rec(points,0,points.length-1,out); return out; }
+  // Catmull-Rom to cubic Bezier segments
+  function catmullRomToBezier(pts,tension,segments){ if(pts.length<2) return null; const ts=Math.max(1,segments); const res=[]; function P(i){ if(i<0) i=0; if(i>=pts.length) i=pts.length-1; return pts[i]; }
+    // Convert each span p1-p2 to cubic using p0,p1,p2,p3
+    for(let i=0;i<pts.length-1;i++){ const p0=P(i-1), p1=P(i), p2=P(i+1), p3=P(i+2); const t=tension; // standard Catmull-Rom tangent scaling
+      const c1={x:p1.x+(p2.x-p0.x)*t/6, y:p1.y+(p2.y-p0.y)*t/6};
+      const c2={x:p2.x-(p3.x-p1.x)*t/6, y:p2.y-(p3.y-p1.y)*t/6};
+      res.push(p1,c1,c2,p2); }
+    // first element duplicated start; ensure start is pts[0]
+    res[0]=pts[0]; return res; }
+  function curveCacheKey(el){ return [el.points.length,curveSettings.simplifyEps,curveSettings.tension,curveSettings.segments,curveSettings.minDist].join(':'); }
+  function computeCurve(el){ const originalLen=el.points.length; let pts=el.points; if(pts.length<3) return null; if(curveSettings.minDist>0){ const f=[pts[0]]; for(let i=1;i<pts.length;i++){ const p=pts[i], q=f[f.length-1]; if(Math.hypot(p.x-q.x,p.y-q.y)>=curveSettings.minDist) f.push(p); } if(f.length>2) pts=f; }
+    if(curveSettings.simplifyEps>0) pts=simplify(pts,curveSettings.simplifyEps); if(pts.length<3) return null; const cubic=catmullRomToBezier(pts,curveSettings.tension,curveSettings.segments); return cubic?{cubic,_cacheKey:[originalLen,curveSettings.simplifyEps,curveSettings.tension,curveSettings.segments,curveSettings.minDist].join(':')}:null; }
+  function ensureCurve(el){ if(!curveSettings.enableBezier){ delete el.curve; return; } el.curve=computeCurve(el); }
+  VP.invalidateCurves=()=>{ for(const l of layers){ for(const el of l.elements){ if(el.type==='path' && el.curve) delete el.curve; }} render(); };
 
   // Cursor
   function updateCursor(){ let cls='select'; const t=currentTool(); if(t==='draw') cls='crosshair'; else if(t==='pan') cls=input.isDown?'grabbing':'grab'; else if(t==='rect') cls='crosshair'; else if(t.startsWith('select')) cls='select'; if(canvas._cursorCls!==cls){ canvas.classList.remove('crosshair','grab','grabbing','move','select'); canvas.classList.add(cls); canvas._cursorCls=cls; } }
@@ -138,19 +165,31 @@
         else { // add small fill marker (placeholder)
           const el={id:newId(),type:'rect',x:wpt.x-8,y:wpt.y-8,w:16,h:16,stroke:colorInput.value,strokeWidth:1,strokeOpacity:brushOpacity}; addElement(el); }
         input.isDown=false; canvas.releasePointerCapture(e.pointerId); return; }
+  else if(tool==='erase'){ // erase immediate hit segments
+        performErase(screenToCanvas(sx,sy), strokeW);
+        render();
+      }
   else if(tool==='select'){ const w=screenToCanvas(sx,sy); const hit=hitTest(w.x,w.y); if(hit){ if(!e.shiftKey&&!selection.has(hit.id)) selection.clear(); if(selection.has(hit.id)&&e.shiftKey) selection.delete(hit.id); else selection.add(hit.id); pushHistory('select'); render(); } else { // 背景: Alt+ドラッグでレイヤー移動
         if(!e.shiftKey && e.altKey){ layerMoveActive=true; layerMoveStart=screenToCanvas(sx,sy); }
         else if(!e.shiftKey){ if(selection.size){ selection.clear(); pushHistory('deselect'); render(); } }
       } } else if(tool==='select-rect'){ const p=screenToCanvas(sx,sy); input.regionDraft={mode:'rect',rect:{x:p.x,y:p.y,w:0,h:0},draft:true}; input.regionShift=e.shiftKey; render(); } else if(tool==='select-lasso'){ const p=screenToCanvas(sx,sy); input.regionDraft={mode:'lasso',points:[p],draft:true}; input.regionShift=e.shiftKey; render(); } });
   canvas.addEventListener('pointermove', e=>{ const r=canvas.getBoundingClientRect(); const sx=e.clientX-r.left, sy=e.clientY-r.top; const dx=sx-input.lastX, dy=sy-input.lastY; input.lastX=sx; input.lastY=sy; const world=screenToCanvas(sx,sy); input.hoverWorld=world; if(statusSpans.coords) statusSpans.coords.textContent='('+world.x.toFixed(1)+','+world.y.toFixed(1)+')'; updateCursor(); const tool=currentTool(); if(!input.isDown){ render(); return; } if(layerMoveActive){ const now=screenToCanvas(sx,sy); const l=getActiveLayer(); if(l){ const mx=now.x-layerMoveStart.x, my=now.y-layerMoveStart.y; for(const el of l.elements){ if(el.type==='path'){ for(const p of el.points){ p.x+=mx; p.y+=my; } } else { el.x+=mx; el.y+=my; } } layerMoveStart=now; render(); }
       return; }
-    if(tool==='pan'){ view[4]+=dx; view[5]+=dy; syncZoom(); render(); return; } if(tool==='draw' && input.currentPath){ input.currentPath.points.push(screenToCanvas(sx,sy)); render(); return; } if(tool==='rect' && input.currentRect){ const p=screenToCanvas(sx,sy); input.currentRect.w=p.x-input.currentRect.x; input.currentRect.h=p.y-input.currentRect.y; render(); return; } if(tool==='select-rect' && input.regionDraft){ const p=screenToCanvas(sx,sy); input.regionDraft.rect.w=p.x-input.regionDraft.rect.x; input.regionDraft.rect.h=p.y-input.regionDraft.rect.y; render(); return; } if(tool==='select-lasso' && input.regionDraft){ const p=screenToCanvas(sx,sy); const pts=input.regionDraft.points; if(!pts.length || Math.hypot(pts[pts.length-1].x-p.x, pts[pts.length-1].y-p.y)>0.5) pts.push(p); render(); return; } });
+    if(tool==='pan'){ view[4]+=dx; view[5]+=dy; syncZoom(); render(); return; } if(tool==='draw' && input.currentPath){ input.currentPath.points.push(screenToCanvas(sx,sy)); render(); return; } if(tool==='rect' && input.currentRect){ const p=screenToCanvas(sx,sy); input.currentRect.w=p.x-input.currentRect.x; input.currentRect.h=p.y-input.currentRect.y; render(); return; } if(tool==='erase'){ performErase(screenToCanvas(sx,sy), Math.max(1,Number(widthInput.value)||3)); render(); return; } if(tool==='select-rect' && input.regionDraft){ const p=screenToCanvas(sx,sy); input.regionDraft.rect.w=p.x-input.regionDraft.rect.x; input.regionDraft.rect.h=p.y-input.regionDraft.rect.y; render(); return; } if(tool==='select-lasso' && input.regionDraft){ const p=screenToCanvas(sx,sy); const pts=input.regionDraft.points; if(!pts.length || Math.hypot(pts[pts.length-1].x-p.x, pts[pts.length-1].y-p.y)>0.5) pts.push(p); render(); return; } });
   canvas.addEventListener('pointerup', e=>{ canvas.releasePointerCapture(e.pointerId); if(!input.isDown) return; input.isDown=false; if(layerMoveActive){ layerMoveActive=false; pushHistory('layer-move'); render(); }
     if(input.currentPath){ if(input.currentPath.points.length===1){ // ensure dot remains
         const p=input.currentPath.points[0]; input.currentPath.points.push({x:p.x+0.01,y:p.y}); }
+  // curve generation removed here (render-time now)
       addElement(input.currentPath); input.currentPath=null; render(); }
     if(input.currentRect){ const r=input.currentRect; if(Math.abs(r.w)<1&&Math.abs(r.h)<1){ input.currentRect=null; render(); return;} if(r.w<0){ r.x+=r.w;r.w*=-1;} if(r.h<0){ r.y+=r.h;r.h*=-1;} addElement(r); input.currentRect=null; render(); }
   if(input.regionDraft){ const draft=input.regionDraft; draft.draft=false; if(draft.mode==='rect'){ const rr=draft.rect; if(rr.w<0){ rr.x+=rr.w; rr.w*=-1;} if(rr.h<0){ rr.y+=rr.h; rr.h*=-1;} } const added=new Set(); for(const el of allElements()){ if(el.type==='rect'){ if(regionHitsRect(draft,el)) added.add(el.id);} else if(el.type==='path'){ if(regionHitsPath(draft,el)) added.add(el.id);} } if(!input.regionShift){ selection.clear(); selectionRegions=[]; } if(added.size){ for(const id of added) selection.add(id); } selectionRegions.push(JSON.parse(JSON.stringify(draft))); input.regionDraft=null; input.regionShift=false; pushHistory('region-select'); render(); } });
+  function performErase(pt,r){ const layer=getActiveLayer(); if(!layer) return; const radius=r; const radius2=radius*radius; let changed=false; for(let i=layer.elements.length-1;i>=0;i--){ const el=layer.elements[i]; if(el.type==='rect'){ const cx=el.x+el.w/2, cy=el.y+el.h/2; if((pt.x-cx)**2+(pt.y-cy)**2<=radius2){ layer.elements.splice(i,1); changed=true; } } else if(el.type==='path'){ // filter points; if all removed, delete element
+        const newPts=[]; for(const p of el.points){ if((p.x-pt.x)**2+(p.y-pt.y)**2>radius2) newPts.push(p); }
+        if(newPts.length===0){ layer.elements.splice(i,1); changed=true; }
+        else if(newPts.length!==el.points.length){ el.points=newPts; if(el.curve) delete el.curve; changed=true; }
+      } }
+    if(changed){ pushHistory('erase'); }
+  }
   canvas.addEventListener('wheel', e=>{ if(e.ctrlKey) return; e.preventDefault(); const r=canvas.getBoundingClientRect(); const sx=e.clientX-r.left, sy=e.clientY-r.top; const factor=Math.exp((-e.deltaY)*(e.shiftKey?0.0005:0.0015)); const before=screenToCanvas(sx,sy); view=mul([factor,0,0,factor,0,0],view); const after=applyM(view,before.x,before.y); view[4]+=sx-after.x; view[5]+=sy-after.y; syncZoom(); render(); }, {passive:false});
 
   // Keyboard
@@ -184,7 +223,7 @@
   // Mini layer popup support (legacy calls safe no-op if not present in new UI)
   function rebuildLayerMini(){}
   function rebuildLayerPanel(){ if(!layerListEl) return; layerListEl.innerHTML=''; for(let i=layers.length-1;i>=0;i--){ const l=layers[i]; const item=document.createElement('div'); item.className='layer-item'+(l.id===activeLayerId?' active':''); item.dataset.id=l.id; const vis=document.createElement('div'); vis.className='vis-toggle'; vis.textContent=l.visible?'👁':'🚫'; vis.title='表示切替'; vis.addEventListener('click',e=>{ e.stopPropagation(); l.visible=!l.visible; vis.textContent=l.visible?'👁':'🚫'; pushHistory('layer-vis'); render(); rebuildLayerPanel(); }); const meta=document.createElement('div'); meta.className='layer-meta'; const nameInput=document.createElement('input'); nameInput.className='name'; nameInput.value=l.name; nameInput.addEventListener('change',()=>{ l.name=nameInput.value.trim()||l.name; pushHistory('layer-rename'); rebuildLayerPanel(); }); meta.appendChild(nameInput); // blend select
-      const blendSel=document.createElement('select'); blendSel.className='blend'; ['source-over','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','difference','exclusion','hue','saturation','color','luminosity'].forEach(m=>{ const op=document.createElement('option'); op.value=m; op.textContent=m; if(m===l.blend) op.selected=true; blendSel.appendChild(op); }); blendSel.addEventListener('change',()=>{ l.blend=blendSel.value; pushHistory('layer-blend'); render(); }); meta.appendChild(blendSel); // opacity slider
+  const blendSel=document.createElement('select'); blendSel.className='blend'; ['source-over','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','difference','exclusion','hue','saturation','color','luminosity'].forEach(m=>{ const op=document.createElement('option'); op.value=m; op.textContent=m; if(m===l.blend) op.selected=true; blendSel.appendChild(op); }); let blendChanged=false; blendSel.addEventListener('change',()=>{ l.blend=blendSel.value; blendChanged=true; render(); }); blendSel.addEventListener('blur',()=>{ if(blendChanged){ pushHistory('layer-blend'); blendChanged=false; }}); meta.appendChild(blendSel); // opacity slider
       const opWrap=document.createElement('div'); opWrap.style.display='flex'; opWrap.style.alignItems='center'; opWrap.style.gap='4px'; const opLab=document.createElement('span'); opLab.style.fontSize='10px'; opLab.textContent=Math.round(l.opacity*100)+'%'; const opRange=document.createElement('input'); opRange.type='range'; opRange.min=0; opRange.max=1; opRange.step=0.01; opRange.value=l.opacity; opRange.style.flex='1'; opRange.addEventListener('input',()=>{ l.opacity=Number(opRange.value); opLab.textContent=Math.round(l.opacity*100)+'%'; render(); }); opRange.addEventListener('change',()=>{ pushHistory('layer-opacity'); }); opWrap.appendChild(opRange); opWrap.appendChild(opLab); meta.appendChild(opWrap); const info=document.createElement('div'); info.style.fontSize='10px'; info.style.opacity=.7; info.textContent=`objs:${l.elements.length}`; meta.appendChild(info); item.appendChild(vis); item.appendChild(meta); item.addEventListener('click',()=>{ activeLayerId=l.id; rebuildLayerPanel(); updateStatusBar(); }); item.addEventListener('dblclick',()=>{ // レイヤー全選択
         selection.clear(); for(const el of l.elements) selection.add(el.id); pushHistory('layer-select-all'); render(); updateStatusBar(); }); layerListEl.appendChild(item); } }
   function rebuildHistoryPanel(){ if(!historyListEl) return; historyListEl.innerHTML=''; history.forEach((snap,i)=>{ const b=document.createElement('button'); b.textContent=(snap._label||'state')+' #'+i; if(i===historyIndex) b.classList.add('active'); b.addEventListener('click',()=>{ historyIndex=i; restore(history[i]); updateHistoryButtons(); }); historyListEl.appendChild(b); }); }
@@ -213,6 +252,25 @@
   VP.applyStrokePropsToSelection=()=>{ if(!selection.size) return; for(const l of layers){ for(const el of l.elements){ if(selection.has(el.id)){ el.stroke=colorInput.value; el.strokeWidth=Number(widthInput.value); el.strokeOpacity=brushOpacity; }}} pushHistory('apply-stroke'); render(); };
   VP.currentBrushShape='round'; Object.defineProperty(VP,'currentBrushShape',{get(){return currentBrushShape;},set(v){ currentBrushShape=v; }});
   VP.setTool=(t)=>{ toolSel.value=t; toolSel.dispatchEvent(new Event('change')); };
+  // Serialization / Deserialization
+  VP.serialize=()=>{ const data={version:1,layers:layers.map(l=>({id:l.id,name:l.name,visible:l.visible,opacity:l.opacity,blend:l.blend,elements:l.elements.map(el=>({type:el.type,id:el.id,stroke:el.stroke,strokeWidth:el.strokeWidth,strokeOpacity:el.strokeOpacity,brushShape:el.brushShape,points:el.type==='path'?el.points.map(p=>[p.x,p.y]):undefined,x:el.x,y:el.y,w:el.w,h:el.h}))})),activeLayerId,view:[...view],selection:[...selection],selectionRegions:selectionRegions.map(r=>JSON.parse(JSON.stringify(r))),settings:{curve:{...curveSettings}}}; return JSON.stringify(data,null,2); };
+  VP.deserialize=(json)=>{ const obj=typeof json==='string'?JSON.parse(json):json; if(!obj || !Array.isArray(obj.layers)) throw new Error('invalid json');
+    // reset state
+    layers=[]; selection.clear(); selectionRegions=[]; activeLayerId=null; view=[1,0,0,1,0,0];
+    for(const l of obj.layers){ const nl={id:l.id||'L'+Math.random().toString(36).slice(2,8), name:l.name||'Layer', visible:l.visible!==false, opacity:typeof l.opacity==='number'?l.opacity:1, blend:l.blend||'source-over', elements:[]};
+      for(const el of (l.elements||[])){ if(el.type==='path'){ const pts=(el.points||[]).map(p=>({x:p[0],y:p[1]})); nl.elements.push({id:el.id||newId(),type:'path',stroke:el.stroke||'#000',strokeWidth:el.strokeWidth||1,strokeOpacity:el.strokeOpacity,brushShape:el.brushShape||'round',points:pts}); }
+        else if(el.type==='rect'){ nl.elements.push({id:el.id||newId(),type:'rect',stroke:el.stroke||'#000',strokeWidth:el.strokeWidth||1,strokeOpacity:el.strokeOpacity,x:el.x||0,y:el.y||0,w:el.w||0,h:el.h||0}); } }
+      layers.push(nl); }
+    activeLayerId= obj.activeLayerId && layers.some(l=>l.id===obj.activeLayerId)? obj.activeLayerId : (layers[0]?layers[0].id:null);
+    if(Array.isArray(obj.view) && obj.view.length===6) view=[...obj.view];
+    if(Array.isArray(obj.selection)) selection=new Set(obj.selection.filter(id=> layers.some(l=> l.elements.some(e=>e.id===id))));
+    if(Array.isArray(obj.selectionRegions)) selectionRegions=obj.selectionRegions;
+    if(obj.settings && obj.settings.curve){ Object.assign(curveSettings,obj.settings.curve); }
+    // invalidate cached curves
+    for(const l of layers){ for(const el of l.elements){ if(el.curve) delete el.curve; }}
+    // reset history
+    history.length=0; historyIndex=-1;
+    rebuildLayerSelect(); render(); updateStatusBar(); pushHistory('load'); };
 
   // initial render
   // パフォーマンス計測 loop
