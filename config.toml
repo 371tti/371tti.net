@@ -2,6 +2,7 @@ session_timeout = 2592000
 account_timeout = 604800
 database_url = "mongodb://192.168.0.48:27017/?replicaSet=rs0"
 db_name = "371tti_net"
+search_api_endpoint = "http://localhost:90"
 
 [hash_config]
 pepper = "o6uYwqakTmB0WQkyMSOd9Q=="

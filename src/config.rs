@@ -13,6 +13,7 @@ pub struct MainConfig {
     pub account_timeout: u64,
     pub database_url: String,
     pub db_name: String,
+    pub search_api_endpoint: String,
     pub hash_config: HashConfig,
 }
 
@@ -57,6 +58,7 @@ impl Default for MainConfig {
             session_timeout: 2592000,
             database_url: "mongodb://ex".to_string(),
             db_name: "371tti_net".to_string(),
+            search_api_endpoint: "http://localhost:90".to_string(),
             // after set by benchmark
             hash_config: HashConfig {
                 pepper: "default_pepper".to_string(), // Placeholder, will be set by benchmark

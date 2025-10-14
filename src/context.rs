@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
-use chrono::Duration as ChronoDuration;
+use chrono::{Duration as ChronoDuration, Utc};
 
 
 use kurosabi::{context::ContextMiddleware, kurosabi::Context};
@@ -9,7 +8,8 @@ use log::info;
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 
-use crate::task::scheduler::{BoxedTask, TaskID, TaskPriority, TaskScheduler};
+use crate::task;
+use crate::task::scheduler::{TaskID, TaskPriority, TaskScheduler};
 use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth::{AccountID, AuthManager, SessionKey}};
 
 
@@ -50,7 +50,7 @@ impl SiteContext {
         info!("Loading config from {:?}", config);
         let config = MainConfig::load_from_file(&config);
         info!("Config loaded");
-        let ssr = Arc::new(PageGenerator::new()); // Assuming PageGenerator has a new() method
+        let ssr = Arc::new(PageGenerator::new(&config.search_api_endpoint)); // Assuming PageGenerator has a new() method
 
         let client_options = ClientOptions::parse(&config.database_url).await.expect("Failed to parse MongoDB connection string");
         let client = Client::with_options(client_options).expect("Failed to initialize MongoDB client");
@@ -76,60 +76,14 @@ impl SiteContext {
             db_client,
         };
         
-        // 自分で自分をスケジュールするやつ
-        pub fn make_cron_task(
-            id: TaskID,
-            priority: TaskPriority,
-            interval: Duration,
-        ) -> BoxedTask {
-            TaskScheduler::boxed_task(move |ctx: SiteContext| {
-                async move {
-                    log::info!("Cron task running");
-
-                    // 次回スケジューリング
-                    let next_ready = Instant::now() + interval;
-                    ctx.scheduler.push_task(
-                        id,
-                        make_cron_task(id, priority, interval),
-                        priority,
-                        Some(next_ready),
-                        None,
-                    ).await;
-
-                    // セッションGCタスク
-                    let session_gc_task: BoxedTask = TaskScheduler::boxed_task(move |ctx: SiteContext| {
-                        async move {
-                            log::info!("Session GC task running");
-                            ctx.auth.session_gc_task().await;
-                            log::info!("Session GC task finished");
-                        }
-                    });
-                    // etc...
-                    // 他の定期タスクもここに追加していく
-
-                    ctx.scheduler.push_task(
-                        TaskID::SESSION_GC,
-                        session_gc_task,
-                        TaskPriority::IDLE,
-                        None,
-                        None,
-                    ).await;
-
-                    log::info!("Cron task finished");
-                }
-            })
-        }
+        
         TaskScheduler::start(instance.scheduler.clone(), instance.clone(), TASK_SCHEDULER_WORKER_COUNT).await;
-        let cron_task = make_cron_task(
-            TaskID::CRON, 
-            TaskPriority::NORMAL, 
-            Duration::from_secs(300)
-        );
+
         instance.scheduler.push_task(
             TaskID::CRON,
-            cron_task,
+            task::cron_task(),
             TaskPriority::HIGH,
-            Some(Instant::now()),
+            Some(Utc::now()),
             None,
         ).await;
 

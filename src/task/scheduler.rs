@@ -1,5 +1,6 @@
-use std::{cmp::Ordering, collections::BTreeSet, fmt::Debug, pin::Pin, sync::{atomic::{self, AtomicU64}, Arc}, time::Instant};
+use std::{cmp::Ordering, collections::BTreeSet, fmt::Debug, pin::Pin, sync::{atomic::{self, AtomicU64}, Arc}, time::Duration};
 
+use chrono::{DateTime, Timelike, Utc};
 use tokio::sync::{Notify, RwLock};
 
 use crate::context::SiteContext;
@@ -115,8 +116,8 @@ pub struct WaitTaskItem {
     id: TaskID,
     /// 優先度
     priority: TaskPriority,
-    ready_at: Instant,
-    deadline: Option<Instant>,
+    ready_at: DateTime<Utc>,
+    deadline: Option<DateTime<Utc>>,
     task: BoxedTask,
 }
 
@@ -149,10 +150,10 @@ impl PartialEq for WaitTaskItem {
 /// 実行待機中タスクのアイテム
 pub struct ReadyTaskItem {
     /// 一意
-    id: TaskID,
-    priority: TaskPriority,
-    deadline: Option<Instant>,
-    task: BoxedTask,
+    pub id: TaskID,
+    pub priority: TaskPriority,
+    pub deadline: Option<DateTime<Utc>>,
+    pub task: BoxedTask,
 }
 
 impl From<WaitTaskItem> for ReadyTaskItem {
@@ -229,11 +230,11 @@ impl TaskScheduler {
         }
     }
 
-    async fn next_wakeup_time(&self) -> Option<Instant> {
+    async fn next_wakeup_time(&self) -> Option<DateTime<Utc>> {
         self.wait_queue.read().await.iter().next().map(|item| item.ready_at)
     }
 
-    pub async fn push_task(&self,mut id: TaskID, task: BoxedTask, priority: TaskPriority, ready_at: Option<Instant>, deadline: Option<Instant>) -> TaskID {
+    pub async fn push_task(&self,mut id: TaskID, task: BoxedTask, priority: TaskPriority, ready_at: Option<DateTime<Utc>>, deadline: Option<DateTime<Utc>>) -> TaskID {
         let counter = self.task_id_counter.fetch_add(1, atomic::Ordering::SeqCst);
         id.set_counter(counter);
 
@@ -264,13 +265,14 @@ impl TaskScheduler {
         loop {
             let next_wakeup = self.next_wakeup_time().await;
             if let Some(wakeup_time) = next_wakeup {
-                let now = Instant::now();
+                let now = Utc::now();
                 if wakeup_time <= now {
                     self.ready_queue.write().await.insert(self.wait_queue.write().await.pop_first().unwrap().into());
                     self.ready_notify.notify_one();
                     continue;
                 } else {
-                    let duration = wakeup_time - now;
+                    let delta = wakeup_time - now;
+                    let duration = Duration::from_millis(delta.num_milliseconds().max(0) as u64);
                     tokio::select! {
                         _ = tokio::time::sleep(duration) => {},
                         _ = self.wakeup_notify.notified() => {},
@@ -300,7 +302,11 @@ impl TaskScheduler {
     async fn execute_loop(&self, context: SiteContext) {
         loop {
             let task_item = self.fetch_ready_task_wait().await;
-            log::debug!("Executing task 0x{:?}", task_item.id);
+            if task_item.deadline.map(|d| d < Utc::now()).unwrap_or(false) {
+                log::warn!("Task {} 0x{:?} deadline exceeded, skipping execution", task_item.id.prefix(), task_item.id);
+                continue;
+            }
+            log::debug!("Executing task {} 0x{:?}", task_item.id.prefix(), task_item.id);
             (task_item.task)(context.clone()).await;
         }
     }
@@ -331,6 +337,15 @@ impl TaskScheduler {
         Fut: std::future::Future<Output = ()> + Send + 'static,
     {
         Box::new(move |ctx| Box::pin(f(ctx)))
+    }
+
+    /// 次の5分間隔の時刻を取得
+    pub fn next_5min(dt: DateTime<Utc>) -> DateTime<Utc> {
+        let minute = dt.minute() as i64;
+        // 次の5分刻みまでの追加分（常に正）
+        let add = ((minute / 5) + 1) * 5 - minute;
+        let next = dt + chrono::Duration::minutes(add);
+        next.with_second(0).unwrap().with_nanosecond(0).unwrap()
     }
 }
 

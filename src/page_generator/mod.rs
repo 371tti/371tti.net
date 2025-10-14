@@ -7,10 +7,10 @@ pub struct PageGenerator {
 }
 
 impl PageGenerator {
-    pub fn new() -> Self {
+    pub fn new(search_api_endpoint: &str) -> Self {
         Self {
             err_page: err::ErrPage::new(),
-            search_page: search::SearchPage::new("http://localhost:90"),
+            search_page: search::SearchPage::new(search_api_endpoint),
         }
     }
 }
