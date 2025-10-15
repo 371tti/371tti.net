@@ -174,14 +174,14 @@ impl HealthChecker {
                             message: format!("Search engine is slow: {} ms", latency),
                             latency,
                             timestamp: Utc::now(),
-                            access_count: self.access_counter.load(Ordering::Relaxed),
+                            access_count: self.search_access_counter.load(Ordering::Relaxed),
                         }
                     } else {
                         HealthStatus::Ok {
                             message: "Search engine is healthy".to_string(),
                             latency,
                             timestamp: Utc::now(),
-                            access_count: self.access_counter.load(Ordering::Relaxed),
+                            access_count: self.search_access_counter.load(Ordering::Relaxed),
                         }
                     }
                 } else {
@@ -189,7 +189,7 @@ impl HealthChecker {
                         message: format!("Search engine returned error status: {}", resp.status()),
                         error: resp.status().to_string(),
                         timestamp: Utc::now(),
-                        access_count: self.access_counter.load(Ordering::Relaxed),
+                        access_count: self.search_access_counter.load(Ordering::Relaxed),
                     }
                 }
             }
@@ -197,7 +197,7 @@ impl HealthChecker {
                 message: "Disconnected Network".to_string(),
                 error: e.to_string(),
                 timestamp: Utc::now(),
-                access_count: self.access_counter.load(Ordering::Relaxed),
+                access_count: self.search_access_counter.load(Ordering::Relaxed),
             },
         }
     }
