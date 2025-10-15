@@ -14,6 +14,7 @@ pub struct HealthChecker {
     pub wl_search_engine: RwLock<VecDeque<HealthStatus>>,
     pub uptime: DateTime<Utc>,
     pub access_counter: AtomicU64,
+    pub search_access_counter: AtomicU64,
     // 以下シリアライズ未対象
     client: Client,
     pub self_url: String,
@@ -42,25 +43,30 @@ pub enum HealthStatus {
         message: String,
         latency: u64,
         timestamp: DateTime<Utc>,
+        access_count: u64,
     },
     SlowDown {
         message: String,
         latency: u64,
         timestamp: DateTime<Utc>,
+        access_count: u64,
     },
     Down {
         message: String,
         error: String,
         timestamp: DateTime<Utc>,
+        access_count: u64,
     },
     Error {
         message: String,
         error: String,
         timestamp: DateTime<Utc>,
+        access_count: u64,
     },
     Maintenance {
         message: String,
         timestamp: DateTime<Utc>,
+        access_count: u64,
     },
     None,
 }
@@ -72,8 +78,8 @@ impl HealthChecker {
             .timeout(std::time::Duration::from_secs(10))
             .build()
             .expect("build reqwest client");
-        let self_url = format!("https://{}", config.domain);
-        let search_url = config.api_endpoints.search.clone();
+        let self_url = format!("https://{}/ping", config.domain);
+        let search_url = format!("{}/ping", config.api_endpoints.search);
         HealthChecker {
             wk: RwLock::new(VecDeque::with_capacity(288)),
             wl_search_engine: RwLock::new(VecDeque::with_capacity(288)),
@@ -82,6 +88,7 @@ impl HealthChecker {
             search_url,
             uptime: Utc::now(),
             access_counter: AtomicU64::new(0),
+            search_access_counter: AtomicU64::new(0),
         }
     }
 
@@ -110,6 +117,10 @@ impl HealthChecker {
         self.access_counter.fetch_add(1, Ordering::Relaxed);
     }
 
+    pub fn add_search_count(&self) {
+        self.search_access_counter.fetch_add(1, Ordering::Relaxed);
+    }
+
     pub async fn check_self(&self, url: &str, slow_down_threshold: u64) -> HealthStatus {
         let start = Utc::now();
         let res = self.client.get(url).send().await;
@@ -122,12 +133,14 @@ impl HealthChecker {
                             message: format!("Service is slow: {} ms", latency),
                             latency,
                             timestamp: Utc::now(),
+                            access_count: self.access_counter.load(Ordering::Relaxed),
                         }
                     } else {
                         HealthStatus::Ok {
                             message: "Service is healthy".to_string(),
                             latency,
                             timestamp: Utc::now(),
+                            access_count: self.access_counter.load(Ordering::Relaxed),
                         }
                     }
                 } else {
@@ -135,6 +148,7 @@ impl HealthChecker {
                         message: format!("Service returned error status: {}", resp.status()),
                         error: resp.status().to_string(),
                         timestamp: Utc::now(),
+                        access_count: self.access_counter.load(Ordering::Relaxed),
                     }
                 }
             }
@@ -142,6 +156,7 @@ impl HealthChecker {
                 message: "Disconnected Network".to_string(),
                 error: e.to_string(),
                 timestamp: Utc::now(),
+                access_count: self.access_counter.load(Ordering::Relaxed),
             },
         }
     }
@@ -158,12 +173,14 @@ impl HealthChecker {
                             message: format!("Search engine is slow: {} ms", latency),
                             latency,
                             timestamp: Utc::now(),
+                            access_count: self.access_counter.load(Ordering::Relaxed),
                         }
                     } else {
                         HealthStatus::Ok {
                             message: "Search engine is healthy".to_string(),
                             latency,
                             timestamp: Utc::now(),
+                            access_count: self.access_counter.load(Ordering::Relaxed),
                         }
                     }
                 } else {
@@ -171,6 +188,7 @@ impl HealthChecker {
                         message: format!("Search engine returned error status: {}", resp.status()),
                         error: resp.status().to_string(),
                         timestamp: Utc::now(),
+                        access_count: self.access_counter.load(Ordering::Relaxed),
                     }
                 }
             }
@@ -178,6 +196,7 @@ impl HealthChecker {
                 message: "Disconnected Network".to_string(),
                 error: e.to_string(),
                 timestamp: Utc::now(),
+                access_count: self.access_counter.load(Ordering::Relaxed),
             },
         }
     }

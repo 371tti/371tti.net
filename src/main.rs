@@ -5,6 +5,7 @@ use wk_371tti_net::api::handler::status::StatusAPI;
 use wk_371tti_net::page_generator::err::ErrPage;
 use wk_371tti_net::page_generator::search::SearchPage;
 use wk_371tti_net::context::SiteContext;
+use wk_371tti_net::page_generator::status::StatusPage;
 
 pub const CONFIG_PATH: &str = "config.toml";
 
@@ -75,6 +76,7 @@ love cat
     app.get("/thisisfine", |c| async move { ErrPage::status_page(c, 218, "") });
     app.get("/777", |c| async move { ErrPage::status_page(c, 777, "") });
     app.get("/search", |c| async move { SearchPage::page(c).await });
+    app.get("/status", |c| async move { StatusPage::page(c).await });
     app.get("/api/session", |c| async move { AuthAPI::session(c).await });
     app.get("/api/search", |c| async move { SearchAPI::search(c).await });
     app.post("/api/auth", |c| async move { AuthAPI::auth(c).await });

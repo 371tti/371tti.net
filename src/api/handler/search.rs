@@ -8,6 +8,7 @@ pub struct SearchAPI;
 
 impl SearchAPI {
     pub async fn search(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        c.c.health.add_search_count();
         let query = c.req.path.path.splitn(2, '?').nth(1).unwrap_or("");
         let result = c.c.ssr.search_page.search_api(query).await;
 
@@ -22,6 +23,7 @@ impl SearchAPI {
     }
 
     pub async fn index(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        c.c.health.add_search_count();
         // Deserialize the request body into IndexReq
         let index_req = match c.req.body_de_struct::<IndexReq>().await {
             Ok(req) => req,
@@ -65,6 +67,7 @@ impl SearchAPI {
     }
 
     pub async fn meta(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        c.c.health.add_search_count();
         let req = c.req.body_de_struct::<schema::search::MetaReq>().await;
         let result = match req {
             Ok(r) => c.c.ssr.search_page.search_api_meta(r).await,
@@ -86,6 +89,7 @@ impl SearchAPI {
     }
 
     pub async fn meta_get(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        c.c.health.add_search_count();
         // /api/meta/get?url=...
         let url = c.req.path.get_query("url").unwrap_or("".into());
         let query = schema::search::MetaReq {

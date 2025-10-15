@@ -35,6 +35,7 @@ impl SearchPage {
     }
 
     pub async fn page(mut c: Context<SiteContext>) -> Context<SiteContext> {
+        c.c.health.add_search_count();
         let qs = c.req.path.path.splitn(2, '?').nth(1).unwrap_or("");
         match qs {
             "" => {

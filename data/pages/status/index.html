@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="371tti.net status page">
+    <meta property="og:description" content="371tti.net status page">
+    <meta property="og:title" content="371tti.net status page">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/status">
+    <title>Status - 371tti.net</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/menu.js"></script>
+</head>
+
+<body class="center-y">
+    <script src="/box-load-anime.js"></script>
+    <div class="center-x scroll">
+        <div class="card" id="content">
+            <div class="box">
+                <div class="flex block-m">
+                    <h1>Status</h1>
+                    <div class="block subtitle">
+                        <h2><a href="/">371tti.net</a></h2>
+                    </div>
+                </div>
+                <div class="indent">
+                    <h2>ステータスページです</h2>
+                </div>
+            </div>
+            <hr>
+
+            <div class="box">
+                <h2 class="h">サービス状態</h2>
+                <div class="indent">
+                    <div class="status-overview">
+                        <div class="overall-status" id="overall-status">
+                            <span class="status-indicator"></span>
+                            <span class="status-text">読み込み中...</span>
+                        </div>
+                        <div class="uptime-info" id="uptime-info">
+                            <span class="label">稼働開始:</span>
+                            <span id="uptime">-</span>
+                        </div>
+                    </div>
+
+                    <div class="index">
+                        <div class="service-status">
+                            <div class="service-header">
+                                <h3>WK (Web Server)</h3>
+                                <span class="current-status" id="wk-current">-</span>
+                            </div>
+
+                            <div class="compact-group">
+                                <h4>直近2時間（5分ごと）</h4>
+                                <div class="status-timeline" id="wk-timeline-2h">
+                                </div>
+                            </div>
+
+                            <div class="compact-group">
+                                <h4>24時間（1時間ごとの最悪状態）</h4>
+                                <div class="status-timeline" id="wk-timeline-hourly">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="index">
+                        <div class="service-status">
+                            <div class="service-header">
+                                <h3>Search Engine</h3>
+                                <span class="current-status" id="search-current">-</span>
+                            </div>
+
+                            <div class="compact-group">
+                                <h4>直近2時間（5分ごと）</h4>
+                                <div class="status-timeline" id="search-timeline-2h">
+                                </div>
+                            </div>
+
+                            <div class="compact-group">
+                                <h4>24時間（1時間ごとの最悪状態）</h4>
+                                <div class="status-timeline" id="search-timeline-hourly">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-legend">
+                        <div class="legend-item">
+                            <span class="legend-color status-ok"></span>
+                            <span>稼働中</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color status-slowdown"></span>
+                            <span>低速</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color status-down"></span>
+                            <span>停止</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color status-error"></span>
+                            <span>エラー</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color status-maintenance"></span>
+                            <span>メンテナンス</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color status-none"></span>
+                            <span>不明</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+
+    <style>
+        /* Very simple, low-decor styling to integrate with site CSS */
+        .status-overview, .service-status, .status-legend { margin: 0.5rem 0; }
+        .overall-status { display: flex; align-items: center; gap: 0.5rem; }
+        .status-indicator { width: 10px; height: 10px; display:inline-block; }
+
+        /* Timelines: stretch to full width and distribute blocks evenly (no horizontal scroll)
+           We set grid-template-columns dynamically in JS to repeat N equal columns. */
+        .status-timeline { width: 100%; display: block; height: 28px; max-width: 100mm;}
+        .status-timeline .status-block { height: 100%; }
+
+        /* Block colors (no rounded corners) */
+        .status-block { display:block; }
+        .status-block.status-ok { background-color: #4caf50; }
+        .status-block.status-slowdown { background-color: #ff9800; }
+        .status-block.status-down, .status-block.status-error { background-color: #f44336; }
+        .status-block.status-maintenance { background-color: #9e9e9e; }
+        .status-block.status-none { background-color: #e0e0e0; }
+
+        .timeline-labels { display:flex; justify-content:space-between; font-size:0.8rem; color:#666; }
+
+    /* Legend color boxes (minimal) */
+    .legend-color { display:inline-block; width:12px; height:12px; margin-right:6px; vertical-align:middle; }
+    .legend-color.status-ok { background-color: #4caf50; }
+    .legend-color.status-slowdown { background-color: #ff9800; }
+    .legend-color.status-down, .legend-color.status-error { background-color: #f44336; }
+    .legend-color.status-maintenance { background-color: #9e9e9e; }
+    .legend-color.status-none { background-color: #e0e0e0; }
+
+        /* Simple rectangular tooltip (no rounded corners) */
+        .status-tooltip { position: absolute; left: 50%; transform: translateX(-50%); bottom: 100%; background: #222; color: #fff; padding:6px; font-size:0.8rem; display:none; white-space:nowrap; }
+        .status-block:hover > .status-tooltip { display:block; }
+    </style>
+
+    <script>
+        // Make timeline always 288 entries (5-min intervals * 24h). If fewer, pad with None at the start.
+        const BLOCKS_COUNT = 288;
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const result = await response.json();
+
+                if (!result.success || !result.health) {
+                    console.error('Invalid response format');
+                    return;
+                }
+
+                const health = result.health;
+
+                if (health.uptime) {
+                    const uptimeDate = new Date(health.uptime);
+                    document.getElementById('uptime').textContent = uptimeDate.toLocaleString('ja-JP');
+                }
+
+                updateOverallStatus(health);
+
+                if (health.wk) updateServiceTimeline('wk', health.wk);
+                if (health.wl_search_engine) updateServiceTimeline('search', health.wl_search_engine);
+            } catch (err) {
+                console.error('Failed to fetch status:', err);
+                const overall = document.getElementById('overall-status');
+                overall.innerHTML = '<span class="status-indicator" style="background-color:#f44336"></span> <span class="status-text">データ取得エラー</span>';
+            }
+        }
+
+        function updateOverallStatus(health) {
+            const overall = document.getElementById('overall-status');
+            let hasError = false, hasSlow = false;
+
+            const checkLatest = (arr) => {
+                if (!arr || arr.length === 0) return;
+                const latest = arr[arr.length - 1];
+                const t = Object.keys(latest)[0];
+                if (t === 'Error' || t === 'Down') hasError = true;
+                if (t === 'SlowDown') hasSlow = true;
+            };
+
+            checkLatest(health.wk);
+            checkLatest(health.wl_search_engine);
+
+            if (hasError) {
+                overall.innerHTML = '<span class="status-indicator" style="background-color:#f44336"></span> <span class="status-text">一部のサービスに問題があります</span>';
+            } else if (hasSlow) {
+                overall.innerHTML = '<span class="status-indicator" style="background-color:#ff9800"></span> <span class="status-text">一部のサービスが低速です</span>';
+            } else {
+                overall.innerHTML = '<span class="status-indicator" style="background-color:#4caf50"></span> <span class="status-text">正常</span>';
+            }
+        }
+
+        function normalizeHistory(history) {
+            // history: array of objects (oldest->newest assumed). Ensure size = BLOCKS_COUNT.
+            const arr = Array.isArray(history) ? history.slice() : [];
+            // If there are more than BLOCKS_COUNT, take the last BLOCKS_COUNT entries
+            if (arr.length > BLOCKS_COUNT) {
+                return arr.slice(arr.length - BLOCKS_COUNT);
+            }
+            // If fewer, create padding of 'None' at the start
+            const padCount = BLOCKS_COUNT - arr.length;
+            const pad = [];
+            for (let i = 0; i < padCount; i++) {
+                pad.push({ 'None': { timestamp: null } });
+            }
+            return pad.concat(arr);
+        }
+
+        function pickWorst(a, b) {
+            // order of severity: None < Ok < SlowDown < Maintenance < Error/Down
+            const rank = (t) => {
+                switch (t) {
+                    case 'None': return 0;
+                    case 'Ok': return 1;
+                    case 'SlowDown': return 2;
+                    case 'Maintenance': return 3;
+                    case 'Error': return 4;
+                    case 'Down': return 4;
+                    default: return 0;
+                }
+            };
+            return rank(a) >= rank(b) ? a : b;
+        }
+
+        function renderBlocksInto(containerId, entries) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            // Use CSS grid to force equal-width columns and avoid horizontal scrolling
+            container.style.display = 'grid';
+            container.style.gridTemplateColumns = `repeat(${entries.length}, 1fr)`;
+            container.style.gap = '2px';
+
+            entries.forEach((entry) => {
+                const type = Object.keys(entry)[0];
+                const data = entry[type] || {};
+                const block = document.createElement('div');
+                block.className = `status-block status-${type.toLowerCase()}`;
+
+                // Build tooltip with more details
+                const tooltip = document.createElement('div');
+                tooltip.className = 'status-tooltip';
+                const parts = [];
+                if (data.timestamp) {
+                    const ts = new Date(data.timestamp);
+                    parts.push(ts.toLocaleString('ja-JP'));
+                } else {
+                    parts.push('不明日時');
+                }
+                parts.push(getStatusText(type));
+                if (data.latency !== undefined && data.latency !== null) parts.push(`レイテンシ: ${data.latency}ms`);
+                if (data.access_count !== undefined && data.access_count !== null) parts.push(`アクセス: ${data.access_count}`);
+                if (data.message) parts.push(`${data.message}`);
+                if (data.error) parts.push(`エラー: ${data.error}`);
+
+                tooltip.textContent = parts.join(' · ');
+                block.appendChild(tooltip);
+                container.appendChild(block);
+            });
+        }
+
+        function updateServiceTimeline(servicePrefix, statusHistory) {
+            // normalized 288 entries oldest->newest
+            const normalized = normalizeHistory(statusHistory);
+
+            // latest status
+            const current = document.getElementById(`${servicePrefix}-current`);
+            if (statusHistory.length > 0) {
+                const latest = statusHistory[statusHistory.length - 1];
+                const t = Object.keys(latest)[0];
+                const data = latest[t];
+                let txt = getStatusText(t);
+                if (data && data.latency !== undefined && data.latency !== null) txt += ` (${data.latency}ms)`;
+                current.textContent = txt;
+            } else {
+                current.textContent = '不明';
+            }
+
+            // 1) 直近2時間（24ブロック）: take last 24 entries
+            const last24 = normalized.slice(-24);
+            renderBlocksInto(`${servicePrefix}-timeline-2h`, last24);
+
+            // 2) 24時間を1時間ごとに集約（1時間=12ブロック）最悪の状態を採用
+            const hourly = [];
+            for (let h = 0; h < 24; h++) {
+                const start = normalized.length - (24 - h) * 12;
+                // start .. start+11 (12 entries)
+                const slice = normalized.slice(start, start + 12);
+                // if slice length < 12 (edge cases) pad with None
+                const types = slice.map(e => Object.keys(e)[0]);
+                // pick worst among types
+                let worst = 'None';
+                types.forEach(t => { worst = pickWorst(t, worst); });
+                // attempt to find a representative entry's timestamp
+                const rep = slice.find(e => Object.keys(e)[0] === worst) || { 'None': { timestamp: null } };
+                hourly.push(rep);
+            }
+            renderBlocksInto(`${servicePrefix}-timeline-hourly`, hourly);
+        }
+
+        function getStatusText(type) {
+            switch (type) {
+                case 'Ok': return '稼働中';
+                case 'SlowDown': return '低速';
+                case 'Down': return '停止';
+                case 'Error': return 'エラー';
+                case 'Maintenance': return 'メンテナンス';
+                default: return '不明';
+            }
+        }
+
+        updateStatus();
+        setInterval(updateStatus, 30000);
+    </script>
+</body>
+
+</html>
