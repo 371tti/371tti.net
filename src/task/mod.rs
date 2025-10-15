@@ -28,6 +28,15 @@ pub fn cron_task() -> BoxedTask {
                     log::info!("Session GC task finished");
                 }
             });
+
+            // ヘルスチェック
+            let health_check_task: BoxedTask = TaskScheduler::boxed_task(move |ctx: SiteContext| {
+                async move {
+                    log::info!("Health check task running");
+                    ctx.health.update("").await;
+                    log::info!("Health check task finished");
+                }
+            });
             // etc...
             // 他の定期タスクもここに追加していく
 
@@ -35,6 +44,14 @@ pub fn cron_task() -> BoxedTask {
                 TaskID::SESSION_GC,
                 session_gc_task,
                 TaskPriority::IDLE,
+                None,
+                None,
+            ).await;
+
+            ctx.scheduler.push_task(
+                TaskID::HEALTH_CHECK,
+                health_check_task,
+                TaskPriority::HIGH,
                 None,
                 None,
             ).await;

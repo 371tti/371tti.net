@@ -7,14 +7,25 @@ use crate::user_manager::hash_config::HashConfig;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MainConfig {
+    pub domain: String,
     /// session timeout in seconds
     /// min 0, Max u64::MAX
     pub session_timeout: u64,
     pub account_timeout: u64,
-    pub database_url: String,
-    pub db_name: String,
-    pub search_api_endpoint: String,
+    pub database: DBConfig,
+    pub api_endpoints: APIEndPoints,
     pub hash_config: HashConfig,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct APIEndPoints {
+    pub search: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct DBConfig {
+    pub url: String,
+    pub db_name: String,
 }
 
 impl MainConfig {
@@ -52,13 +63,18 @@ impl MainConfig {
 impl Default for MainConfig {
     fn default() -> Self {
         Self {
+            domain: "371tti.net".to_string(),
             // 1 week
             account_timeout: 604800,
             // 1 month
             session_timeout: 2592000,
-            database_url: "mongodb://ex".to_string(),
-            db_name: "371tti_net".to_string(),
-            search_api_endpoint: "http://localhost:90".to_string(),
+            database: DBConfig {
+                url: "mongodb://ex".to_string(),
+                db_name: "371tti_net".to_string(),
+            },
+            api_endpoints: APIEndPoints {
+                search: "http://localhost:90".to_string(),
+            },
             // after set by benchmark
             hash_config: HashConfig {
                 pepper: "default_pepper".to_string(), // Placeholder, will be set by benchmark

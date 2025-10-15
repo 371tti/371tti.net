@@ -8,6 +8,7 @@ use log::info;
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 
+use crate::health::HealthChecker;
 use crate::task;
 use crate::task::scheduler::{TaskID, TaskPriority, TaskScheduler};
 use crate::{config::MainConfig, page_generator::PageGenerator, user_manager::auth::{AccountID, AuthManager, SessionKey}};
@@ -40,6 +41,8 @@ pub struct SiteContext {
     pub session_key: Option<SessionKey>,
     /// task scheduler
     pub scheduler: Arc<TaskScheduler>,
+    /// health
+    pub health: Arc<HealthChecker>,
 
     /// Instant data
     pub user_id: Option<AccountID>,
@@ -50,11 +53,11 @@ impl SiteContext {
         info!("Loading config from {:?}", config);
         let config = MainConfig::load_from_file(&config);
         info!("Config loaded");
-        let ssr = Arc::new(PageGenerator::new(&config.search_api_endpoint)); // Assuming PageGenerator has a new() method
+        let ssr = Arc::new(PageGenerator::new(&config.api_endpoints.search)); // Assuming PageGenerator has a new() method
 
-        let client_options = ClientOptions::parse(&config.database_url).await.expect("Failed to parse MongoDB connection string");
+        let client_options = ClientOptions::parse(&config.database.url).await.expect("Failed to parse MongoDB connection string");
         let client = Client::with_options(client_options).expect("Failed to initialize MongoDB client");
-        let db = client.database(&config.db_name);
+        let db = client.database(&config.database.db_name);
         let db_client = Arc::new(db);
 
         let auth = Arc::new(AuthManager::new(
@@ -65,6 +68,8 @@ impl SiteContext {
         ).await);
 
         let scheduler = Arc::new(TaskScheduler::new());
+
+        let health = Arc::new(HealthChecker::new(&config));
         
         let instance = Self { 
             ssr, 
@@ -73,6 +78,7 @@ impl SiteContext {
             session_key: None,
             user_id: None,
             scheduler,
+            health,
             db_client,
         };
         
@@ -93,8 +99,11 @@ impl SiteContext {
 
 #[async_trait::async_trait]
 impl ContextMiddleware<SiteContext> for SiteContext {
-    /// セッション管理用
     async fn before_handle(mut ctx: Context<SiteContext>) -> Context<SiteContext> {
+        // アクセスカウント
+        ctx.c.health.add_count();
+
+        // 以下セッション管理
         let mut needs_new_session = true;
 
         if let Some(cookie) = ctx.req.header.get_cookie(SESSION_COOKIE_KEY) {

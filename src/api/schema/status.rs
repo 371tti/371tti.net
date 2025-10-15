@@ -1,16 +1,17 @@
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+
+use std::sync::Arc;
+
+use serde::Serialize;
+
+use crate::health::HealthChecker;
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize)]
 #[serde(tag = "success")]
 pub enum ServerStatusRes {
     #[serde(rename = "true")]
     Success {
-        cpu_usage: Vec<f32>,
-        ram_usage: Vec<f32>,
-        access_log: Vec<u32>,
-        uptime: DateTime<Utc>,
+        health: Arc<HealthChecker>
     },
     #[serde(rename = "false")]
     Failed {

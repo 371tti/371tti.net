@@ -1,6 +1,7 @@
 use kurosabi::Kurosabi;
 use wk_371tti_net::api::handler::auth::AuthAPI;
 use wk_371tti_net::api::handler::search::SearchAPI;
+use wk_371tti_net::api::handler::status::StatusAPI;
 use wk_371tti_net::page_generator::err::ErrPage;
 use wk_371tti_net::page_generator::search::SearchPage;
 use wk_371tti_net::context::SiteContext;
@@ -56,6 +57,7 @@ async fn main() {
     app.get("/robots.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/manifest.json", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/manifest.json"), "application/manifest+json"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/ref", |mut c| async move { c.res.set_status(302); c.res.header.set("Location", "/"); c });
+    app.get("/ping", |c| async move { StatusAPI::ping(c).await });
     app.get("/search/index/add/urls", |mut c| async move { c.res.html(include_str!("../data/pages/search/search_index_add.html")); c });
     app.get("/cat", |mut c| async move {
         c.res.text(
