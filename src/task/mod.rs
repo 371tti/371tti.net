@@ -33,7 +33,7 @@ pub fn cron_task() -> BoxedTask {
             let health_check_task: BoxedTask = TaskScheduler::boxed_task(move |ctx: SiteContext| {
                 async move {
                     log::info!("Health check task running");
-                    ctx.health.update("").await;
+                    ctx.health.update().await;
                     log::info!("Health check task finished");
                 }
             });

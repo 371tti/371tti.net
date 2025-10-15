@@ -85,9 +85,9 @@ impl HealthChecker {
         }
     }
 
-    pub async fn update(&self, url: &str) {
-        let self_status = self.check_self(url, SELF_SLOW_DOWN_THRESHOLD_MS).await;
-        let search_status = self.check_wl_search_engine(url, SEARCH_SLOW_DOWN_THRESHOLD_MS).await;
+    pub async fn update(&self) {
+        let self_status = self.check_self(&self.self_url, SELF_SLOW_DOWN_THRESHOLD_MS).await;
+        let search_status = self.check_wl_search_engine(&self.search_url, SEARCH_SLOW_DOWN_THRESHOLD_MS).await;
 
         {
             let mut wk = self.wk.write().unwrap();
