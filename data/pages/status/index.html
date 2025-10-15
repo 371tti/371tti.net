@@ -46,7 +46,7 @@
                         </div>
                     </div>
 
-                    <div class="index">
+                    <div class="indent">
                         <div class="service-status">
                             <div class="service-header">
                                 <h3>WK (Web Server)</h3>
@@ -67,7 +67,7 @@
                         </div>
                     </div>
 
-                    <div class="index">
+                    <div class="indent">
                         <div class="service-status">
                             <div class="service-header">
                                 <h3>Search Engine</h3>
@@ -251,13 +251,13 @@
             container.style.gridTemplateColumns = `repeat(${entries.length}, 1fr)`;
             container.style.gap = '2px';
 
-            entries.forEach((entry) => {
+            entries.forEach((entry, idx) => {
                 const type = Object.keys(entry)[0];
                 const data = entry[type] || {};
                 const block = document.createElement('div');
                 block.className = `status-block status-${type.toLowerCase()}`;
 
-                // Build tooltip with more details
+                // Build tooltip with more details, showing access_count delta vs previous block
                 const tooltip = document.createElement('div');
                 tooltip.className = 'status-tooltip';
                 const parts = [];
@@ -269,7 +269,26 @@
                 }
                 parts.push(getStatusText(type));
                 if (data.latency !== undefined && data.latency !== null) parts.push(`レイテンシ: ${data.latency}ms`);
-                if (data.access_count !== undefined && data.access_count !== null) parts.push(`アクセス: ${data.access_count}`);
+
+                // access_count delta handling
+                const curCount = (data.access_count !== undefined && data.access_count !== null) ? Number(data.access_count) : null;
+                let deltaStr = null;
+                if (idx > 0) {
+                    const prevEntry = entries[idx - 1];
+                    const prevType = Object.keys(prevEntry)[0];
+                    const prevData = prevEntry[prevType] || {};
+                    const prevCount = (prevData.access_count !== undefined && prevData.access_count !== null) ? Number(prevData.access_count) : null;
+                    if (curCount !== null && prevCount !== null) {
+                        const diff = curCount - prevCount;
+                        deltaStr = `Δアクセス: ${diff >= 0 ? '+' + diff : diff}`;
+                    }
+                }
+                if (deltaStr) {
+                    parts.push(deltaStr);
+                } else if (curCount !== null) {
+                    parts.push(`アクセス: ${curCount}`);
+                }
+
                 if (data.message) parts.push(`${data.message}`);
                 if (data.error) parts.push(`エラー: ${data.error}`);
 

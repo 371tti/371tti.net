@@ -28,11 +28,12 @@ impl Serialize for HealthChecker {
     {
         let wk = self.wk.read().unwrap();
         let wl_search_engine = self.wl_search_engine.read().unwrap();
-        let mut state = serializer.serialize_struct("HealthChecker", 5)?;
+        let mut state = serializer.serialize_struct("HealthChecker", 6)?;
         state.serialize_field("wk", &*wk)?;
         state.serialize_field("wl_search_engine", &*wl_search_engine)?;
         state.serialize_field("uptime", &self.uptime)?;
         state.serialize_field("access_counter", &self.access_counter.load(Ordering::Relaxed))?;
+        state.serialize_field("search_access_counter", &self.search_access_counter.load(Ordering::Relaxed))?;
         state.end()
     }
 }

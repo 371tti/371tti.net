@@ -151,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { cmd: "Go Terms", desc: "Navigate to terms page", action: () => location.href = "/terms" },
                 { cmd: "Go License", desc: "Navigate to license page", action: () => location.href = "/license" },
                 { cmd: "Go Tools", desc: "Navigate to tools page", action: () => location.href = "/tools" },
+                { cmd: "Go Status", desc: "Navigate to status page", action: () => location.href = "/status" },
                 { cmd: "Go Release", desc: "Navigate to release page", action: () => location.href = "/release" },
                 { cmd: "Scroll", desc: "Scroll to top (0%) or to specified percent", action: (args) => this.scrollPercent(args) },
                 { cmd: "Browser Back", desc: "Go back in browser history", action: () => history.back() },
@@ -565,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.searchTimer = setTimeout(()=>{
                 if(q === this.lastSearchQuery) return; // 同一クエリは再利用
                 this.performSearch(q);
-            }, 100); // 1s 停止で実行
+            }, 100); // 100msデバウンス
         }
 
         abortActiveSearch(){
@@ -581,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.activeSearchAbort = ac;
             this.lastSearchQuery = q;
             try {
-                const url = `/api/search?query=${encodeURIComponent(q)}&range=0..10`;
+                const url = `/api/search?query=${encodeURIComponent(q)}&range=0..10&algo=CosineSimilarity`;
                 const resp = await fetch(url, { signal: ac.signal });
                 if(!resp.ok){
                     if(resp.status === 404){
