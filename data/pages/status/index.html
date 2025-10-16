@@ -13,6 +13,7 @@
     <title>Status - 371tti.net</title>
     <link rel="stylesheet" href="/style.css">
     <script src="/menu.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body class="center-y">
@@ -32,92 +33,104 @@
             </div>
             <hr>
 
-            <div class="box">
-                <h2 class="h">サービス状態</h2>
-                <div class="indent">
-                    <div class="status-overview">
-                        <div class="overall-status" id="overall-status">
-                            <span class="status-indicator"></span>
-                            <span class="status-text">読み込み中...</span>
-                        </div>
-                        <div class="uptime-info" id="uptime-info">
-                            <span class="label">稼働開始:</span>
-                            <span id="uptime">-</span>
-                        </div>
-                    </div>
-
+            <div class="grid">
+                <div class="box">
+                    <h2 class="h">サービス状態</h2>
                     <div class="indent">
-                        <div class="service-status">
-                            <div class="service-header">
-                                <h3>WK (Web Server)</h3>
-                                <span class="current-status" id="wk-current">-</span>
+                        <div class="status-overview">
+                            <div class="overall-status" id="overall-status">
+                                <span class="status-indicator"></span>
+                                <span class="status-text">読み込み中...</span>
                             </div>
-
-                            <div class="compact-group">
-                                <h4>直近2時間（5分ごと）</h4>
-                                <div class="status-timeline" id="wk-timeline-2h">
-                                </div>
-                            </div>
-
-                            <div class="compact-group">
-                                <h4>24時間（1時間ごとの最悪状態）</h4>
-                                <div class="status-timeline" id="wk-timeline-hourly">
-                                </div>
+                            <div class="uptime-info" id="uptime-info">
+                                <span class="label">稼働開始:</span>
+                                <span id="uptime">-</span>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="indent">
-                        <div class="service-status">
-                            <div class="service-header">
-                                <h3>Search Engine</h3>
-                                <span class="current-status" id="search-current">-</span>
-                            </div>
-
-                            <div class="compact-group">
-                                <h4>直近2時間（5分ごと）</h4>
-                                <div class="status-timeline" id="search-timeline-2h">
+                        <div class="indent">
+                            <div class="service-status">
+                                <div class="service-header">
+                                    <h3>WK (Web Server)</h3>
+                                    <span class="current-status" id="wk-current">-</span>
                                 </div>
-                            </div>
 
-                            <div class="compact-group">
-                                <h4>24時間（1時間ごとの最悪状態）</h4>
-                                <div class="status-timeline" id="search-timeline-hourly">
+                                <div class="compact-group">
+                                    <h4>直近2時間（5分ごと）</h4>
+                                    <div class="status-timeline" id="wk-timeline-2h">
+                                    </div>
+                                </div>
+
+                                <div class="compact-group">
+                                    <h4>24時間（1時間ごとの最悪状態）</h4>
+                                    <div class="status-timeline" id="wk-timeline-hourly">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="status-legend">
-                        <div class="legend-item">
-                            <span class="legend-color status-ok"></span>
-                            <span>稼働中</span>
+                        <div class="indent">
+                            <div class="service-status">
+                                <div class="service-header">
+                                    <h3>Search Engine</h3>
+                                    <span class="current-status" id="search-current">-</span>
+                                </div>
+
+                                <div class="compact-group">
+                                    <h4>直近2時間（5分ごと）</h4>
+                                    <div class="status-timeline" id="search-timeline-2h">
+                                    </div>
+                                </div>
+
+                                <div class="compact-group">
+                                    <h4>24時間（1時間ごとの最悪状態）</h4>
+                                    <div class="status-timeline" id="search-timeline-hourly">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-color status-slowdown"></span>
-                            <span>低速</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color status-down"></span>
-                            <span>停止</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color status-error"></span>
-                            <span>エラー</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color status-maintenance"></span>
-                            <span>メンテナンス</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color status-none"></span>
-                            <span>不明</span>
+
+                        <div class="status-legend">
+                            <div class="legend-item">
+                                <span class="legend-color status-ok"></span>
+                                <span>稼働中</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color status-slowdown"></span>
+                                <span>低速</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color status-down"></span>
+                                <span>停止</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color status-error"></span>
+                                <span>エラー</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color status-maintenance"></span>
+                                <span>メンテナンス</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color status-none"></span>
+                                <span>不明</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            
+                <div class="box">
+                    <h2 class="h">Graph</h2>
+                    <div class="indent">
+                        <h3>WK: アクセスΔ / レイテンシ</h3>
+                        <canvas id="wk-chart"></canvas>
+                        
+                        <h3>Search Engine: アクセスΔ / レイテンシ</h3>
+                        <canvas id="search-chart"></canvas>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -138,7 +151,7 @@
         .status-block.status-slowdown { background-color: #ff9800; }
         .status-block.status-down, .status-block.status-error { background-color: #f44336; }
         .status-block.status-maintenance { background-color: #9e9e9e; }
-        .status-block.status-none { background-color: #e0e0e0; }
+        .status-block.status-none { background-color: #3d3d3d; }
 
         .timeline-labels { display:flex; justify-content:space-between; font-size:0.8rem; color:#666; }
 
@@ -148,14 +161,15 @@
     .legend-color.status-slowdown { background-color: #ff9800; }
     .legend-color.status-down, .legend-color.status-error { background-color: #f44336; }
     .legend-color.status-maintenance { background-color: #9e9e9e; }
-    .legend-color.status-none { background-color: #e0e0e0; }
+    .legend-color.status-none { background-color: #3d3d3d; }
 
         /* Simple rectangular tooltip (no rounded corners) */
         .status-tooltip { position: absolute; left: 50%; transform: translateX(-50%); bottom: 100%; background: #222; color: #fff; padding:6px; font-size:0.8rem; display:none; white-space:nowrap; }
         .status-block:hover > .status-tooltip { display:block; }
-    </style>
 
-    <script>
+        /* Charts */
+        #wk-chart, #search-chart { display:block; margin:12px 0; max-width:100%; }
+    </style>    <script>
         // Make timeline always 288 entries (5-min intervals * 24h). If fewer, pad with None at the start.
         const BLOCKS_COUNT = 288;
 
@@ -177,9 +191,7 @@
                 }
 
                 updateOverallStatus(health);
-
-                if (health.wk) updateServiceTimeline('wk', health.wk);
-                if (health.wl_search_engine) updateServiceTimeline('search', health.wl_search_engine);
+                renderAll(health);
             } catch (err) {
                 console.error('Failed to fetch status:', err);
                 const overall = document.getElementById('overall-status');
@@ -348,8 +360,173 @@
             }
         }
 
+        function renderAll(health) {
+            if (health.wk) updateServiceTimeline('wk', health.wk);
+            if (health.wl_search_engine) updateServiceTimeline('search', health.wl_search_engine);
+            updateCharts(health);
+        }
+
         updateStatus();
         setInterval(updateStatus, 30000);
+        // --- Chart.js charts for WK and Search Engine (access delta + latency) ---
+        let wkChart = null;
+        let searchChart = null;
+    let lastHealth = null;
+
+        function calcAccessDeltaSeries(history) {
+            const norm = normalizeHistory(history);
+            const deltas = [];
+            for (let i = 0; i < norm.length; i++) {
+                const cur = norm[i];
+                const curType = Object.keys(cur)[0];
+                const curData = cur[curType] || {};
+                const curCount = (curData.access_count !== undefined && curData.access_count !== null) ? Number(curData.access_count) : 0;
+                if (i === 0) { deltas.push(0); continue; }
+                const prev = norm[i - 1];
+                const prevType = Object.keys(prev)[0];
+                const prevData = prev[prevType] || {};
+                const prevCount = (prevData.access_count !== undefined && prevData.access_count !== null) ? Number(prevData.access_count) : 0;
+                deltas.push(curCount - prevCount);
+            }
+            return deltas;
+        }
+
+        function calcLatencySeries(history) {
+            const norm = normalizeHistory(history);
+            return norm.map(e => {
+                const t = Object.keys(e)[0];
+                const d = e[t] || {};
+                return (d.latency !== undefined && d.latency !== null) ? Number(d.latency) : null;
+            });
+        }
+
+        function updateCharts(health) {
+            const wkCanvas = document.getElementById('wk-chart');
+            const searchCanvas = document.getElementById('search-chart');
+            if (!wkCanvas || !searchCanvas) return;
+
+            // Get CSS variables
+            const styles = getComputedStyle(document.documentElement);
+            const accentColor = styles.getPropertyValue('--color-accent-1').trim() || '#739dc6';
+            const textColor = styles.getPropertyValue('--color-text-0').trim() || '#b3b3b3';
+            // 透明度付き色生成関数
+            function hexToRgba(hex, alpha) {
+                if (!hex.startsWith('#') || (hex.length !== 7 && hex.length !== 4)) return hex;
+                let r, g, b;
+                if (hex.length === 7) {
+                    r = parseInt(hex.slice(1,3), 16);
+                    g = parseInt(hex.slice(3,5), 16);
+                    b = parseInt(hex.slice(5,7), 16);
+                } else {
+                    r = parseInt(hex[1]+hex[1], 16);
+                    g = parseInt(hex[2]+hex[2], 16);
+                    b = parseInt(hex[3]+hex[3], 16);
+                }
+                return `rgba(${r},${g},${b},${alpha})`;
+            }
+            const accentBg = hexToRgba(accentColor, 0.1);
+            const textBg = hexToRgba(textColor, 0.1);
+
+            const chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        animation: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: textColor }
+                            }
+                        },
+                        scales: {
+                            y1: { 
+                                type: 'linear', 
+                                position: 'left',
+                                ticks: { color: textColor },
+                                grid: { display: false }
+                            },
+                            y2: { 
+                                type: 'linear', 
+                                position: 'right', 
+                                ticks: { color: textColor },
+                                grid: { display: false, drawOnChartArea: false }
+                            },
+                            x: {
+                                ticks: { color: textColor },
+                                grid: { display: false }
+                            }
+                        },
+                        elements: { point: { radius: 0 } }
+                    };
+
+            // Initialize charts once
+            if (!wkChart) {
+                wkChart = new Chart(wkCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: Array(BLOCKS_COUNT).fill(''),
+                        datasets: [
+                            { 
+                                label: 'Δアクセス', 
+                                data: [], 
+                                borderColor: textColor, 
+                                backgroundColor: textBg,
+                                yAxisID: 'y1', 
+                                tension: 0.2 
+                            },
+                            { 
+                                label: 'レイテンシ(ms)', 
+                                data: [], 
+                                borderColor: accentColor, 
+                                backgroundColor: accentBg,
+                                yAxisID: 'y2', 
+                                tension: 0.2 
+                            }
+                        ]
+                    },
+                    options: chartOptions
+                });
+            }
+
+            if (!searchChart) {
+                searchChart = new Chart(searchCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: Array(BLOCKS_COUNT).fill(''),
+                        datasets: [
+                            { 
+                                label: 'Δアクセス', 
+                                data: [], 
+                                borderColor: textColor, 
+                                backgroundColor: textBg,
+                                yAxisID: 'y1', 
+                                tension: 0.2 
+                            },
+                            { 
+                                label: 'レイテンシ(ms)', 
+                                data: [], 
+                                borderColor: accentColor, 
+                                backgroundColor: accentBg,
+                                yAxisID: 'y2', 
+                                tension: 0.2 
+                            }
+                        ]
+                    },
+                    options: chartOptions
+                });
+            }
+
+            // Update data
+            const wkDeltas = calcAccessDeltaSeries(health.wk || []);
+            const wkLat = calcLatencySeries(health.wk || []);
+            wkChart.data.datasets[0].data = wkDeltas;
+            wkChart.data.datasets[1].data = wkLat;
+            wkChart.update();
+
+            const sDeltas = calcAccessDeltaSeries(health.wl_search_engine || []);
+            const sLat = calcLatencySeries(health.wl_search_engine || []);
+            searchChart.data.datasets[0].data = sDeltas;
+            searchChart.data.datasets[1].data = sLat;
+            searchChart.update();
+        }
     </script>
 </body>
 

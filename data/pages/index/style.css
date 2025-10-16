@@ -126,7 +126,7 @@ img, image { border-radius: 1mm; }
 .grid .box { margin: 0; }
 
 .indent { padding: 0 5mm 0 5mm; margin: 0 0 0 5mm; border-left: solid 1px var(--color-text-1); }
-.indent + .indent { margin-top: 5mm; margin-right: 5mm; }
+.indent + .indent { margin-top: 5mm; }
 
 input[type="password"]::-webkit-textfield-decoration-container {
     color: var(--color-text-1);

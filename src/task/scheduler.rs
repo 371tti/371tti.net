@@ -347,6 +347,11 @@ impl TaskScheduler {
         let next = dt + chrono::Duration::minutes(add);
         next.with_second(0).unwrap().with_nanosecond(0).unwrap()
     }
+
+    pub fn next_min(dt: DateTime<Utc>) -> DateTime<Utc> {
+        let next = dt + chrono::Duration::minutes(1);
+        next.with_second(0).unwrap().with_nanosecond(0).unwrap()
+    }
 }
 
 /// 非同期タスクをbox化
