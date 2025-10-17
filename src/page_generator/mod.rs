@@ -1,6 +1,5 @@
 pub mod err;
 pub mod search;
-pub mod status;
 
 pub struct PageGenerator {
     pub err_page: err::ErrPage,

@@ -5,7 +5,6 @@ use wk_371tti_net::api::handler::status::StatusAPI;
 use wk_371tti_net::page_generator::err::ErrPage;
 use wk_371tti_net::page_generator::search::SearchPage;
 use wk_371tti_net::context::SiteContext;
-use wk_371tti_net::page_generator::status::StatusPage;
 
 pub const CONFIG_PATH: &str = "config.toml";
 
@@ -57,6 +56,7 @@ async fn main() {
     app.get("/favicon.ico", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/favicon.ico"), "image/x-icon"); c });
     app.get("/robots.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/manifest.json", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/manifest.json"), "application/manifest+json"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    app.get("/status", |mut c| async move { c.res.html(include_str!("../data/pages/status/index.html")); c });
     app.get("/ref", |mut c| async move { c.res.set_status(302); c.res.header.set("Location", "/"); c });
     app.get("/ping", |c| async move { StatusAPI::ping(c).await });
     app.get("/search/index/add/urls", |mut c| async move { c.res.html(include_str!("../data/pages/search/search_index_add.html")); c });
@@ -76,10 +76,9 @@ love cat
     app.get("/thisisfine", |c| async move { ErrPage::status_page(c, 218, "") });
     app.get("/777", |c| async move { ErrPage::status_page(c, 777, "") });
     app.get("/search", |c| async move { SearchPage::page(c).await });
-    app.get("/status", |c| async move { StatusPage::page(c).await });
-    app.get("/api/session", |c| async move { AuthAPI::session(c).await });
     app.get("/api/search", |c| async move { SearchAPI::search(c).await });
     app.post("/api/auth", |c| async move { AuthAPI::auth(c).await });
+    app.get("/api/session", |c| async move { AuthAPI::session(c).await });
     app.post("/api/index", |c| async move { SearchAPI::index(c).await });
     app.post("/api/meta", |c| async move { SearchAPI::meta(c).await });
     app.get("/api/meta/url", |c| async move { SearchAPI::meta_get(c).await });
