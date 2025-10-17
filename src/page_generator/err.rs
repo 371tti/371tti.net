@@ -40,6 +40,7 @@ impl ErrPage {
             chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
         ));
         let message = if adv_message.is_empty() { code_info.message.clone() } else { code_info.message.clone() + " - " + adv_message };
+        c.res.set_status(code);
         let html = html_format!(
             ERR_TEMPLATE,
             color = code_info.color,
@@ -49,7 +50,6 @@ impl ErrPage {
             debug = debug_info,
         );
         c.res.html(&html);
-        c.res.set_status(code);
         c
     }
 }
