@@ -57,6 +57,7 @@ async fn main() {
     app.get("/robots.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/manifest.json", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/manifest.json"), "application/manifest+json"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/status", |mut c| async move { c.res.html(include_str!("../data/pages/status/index.html")); c });
+    app.get("/hekade" , |mut c| async move { c.res.html(include_str!("../data/pages/hekade/index.html")); c });
     app.get("/ref", |mut c| async move { c.res.set_status(302); c.res.header.set("Location", "/"); c });
     app.get("/ping", |c| async move { StatusAPI::ping(c).await });
     app.get("/search/index/add/urls", |mut c| async move { c.res.html(include_str!("../data/pages/search/search_index_add.html")); c });

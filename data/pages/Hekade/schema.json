@@ -1,0 +1,21 @@
+{
+    "title": "Hekade",
+    "dependencies": [
+        {
+            "type": "trait",
+            "path": "/self/services/traits/HekadeTrait"
+        }
+    ],
+    "version": "1.0.0",
+    "create_at": "2024-06-20T00:00:00Z",
+    "update_at": "2024-06-20T00:00:00Z",
+    "type": "object",
+    "lang": "ja",
+    "author": "Author Name",
+    "description": "Hekadeに関する情報を格納するスキーマ。",
+    "summary": "Hekadeはデータを構造化して保存します。Hekadeの構造化はJSONスキーマに基づいています。",
+    "content": "markdown",
+    "chat": {
+
+    }
+}
