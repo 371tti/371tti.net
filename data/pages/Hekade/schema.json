@@ -1,21 +1,35 @@
 {
+    "schema_version": "0",
     "title": "Hekade",
+    "version": "1.0.0",
+    "created_at": "2024-06-20T00:00:00Z",
+    "updated_at": "2024-06-20T00:00:00Z",
+    "node_kind": "object",
+    "lang": "ja",
+    "author": "Author Name",
+    "description": "Hekadeに関する情報を格納するスキーマ。",
+    "summary": "Hekadeはデータを構造化して保存します。Hekadeの構造化はJSONスキーマに基づいています。",
+    "content": [
+        {
+            "title": "Hekadeとは？",
+            "markdown": "Hekadeは、データを効率的に保存および管理するためのシステムです。JSONスキーマを使用してデータの構造を定義し、柔軟性と拡張性を提供します。"
+        }
+    ],
     "dependencies": [
         {
             "type": "trait",
             "path": "/self/services/traits/HekadeTrait"
         }
     ],
-    "version": "1.0.0",
-    "create_at": "2024-06-20T00:00:00Z",
-    "update_at": "2024-06-20T00:00:00Z",
-    "type": "object",
-    "lang": "ja",
-    "author": "Author Name",
-    "description": "Hekadeに関する情報を格納するスキーマ。",
-    "summary": "Hekadeはデータを構造化して保存します。Hekadeの構造化はJSONスキーマに基づいています。",
-    "content": "markdown",
-    "chat": {
-
-    }
+    "children": [
+        "/data/pages/Hekade/Overview",
+        "/data/pages/Hekade/GettingStarted"
+    ],
+    "links": [
+        {
+            "type": "related",
+            "title": "Hekade公式ドキュメント",
+            "url": "https://hekade.example.com/docs"
+        }
+    ]
 }
