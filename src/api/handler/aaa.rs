@@ -101,7 +101,7 @@ impl AsciiArcAnimation {
         }
         const FRAMES_BIN: &[u8] = include_bytes!("../../../data/aaa/bad_apple_frames.bin");
         const FRAME_SIZE: usize = 65 * 26; // width 65, height 26
-        const FRAME_NUM: usize = 4385;
+        const FRAME_NUM: usize = 5259;
         const VIDEO_TIME_SEC: f32 = 219.1;
             let (mut a, b) = duplex(FRAME_SIZE + 32);
             let bin_str = std::str::from_utf8(FRAMES_BIN).unwrap_or("");
