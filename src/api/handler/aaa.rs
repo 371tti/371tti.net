@@ -102,14 +102,14 @@ impl AsciiArcAnimation {
         const FRAMES_BIN: &[u8] = include_bytes!("../../../data/aaa/bad_apple_frames.bin");
         const FRAME_SIZE: usize = 65 * 26; // width 65, height 26
         const FRAME_NUM: usize = 4385;
-        const VIDEO_TIME_SEC: f32 = 219.0;
+        const VIDEO_TIME_SEC: f32 = 219.1;
             let (mut a, b) = duplex(FRAME_SIZE + 32);
-            let frame_delay = (VIDEO_TIME_SEC * 1000.0 / FRAME_NUM as f32) as u64;
             let bin_str = std::str::from_utf8(FRAMES_BIN).unwrap_or("");
             let frames: Vec<&str> = bin_str.split("\\fe\\").collect();
             tokio::spawn(async move {
                 // 最初にコンソール全体クリア
                 let _ = a.write_all(b"\x1b[2J\x1b[H").await;
+                let start = std::time::Instant::now();
                 for (i, frame) in frames.iter().enumerate() {
                     if i >= FRAME_NUM { break; }
                     let mut ascii = String::with_capacity(frame.len() + 32);
@@ -118,7 +118,13 @@ impl AsciiArcAnimation {
                     ascii.push('\n');
                     if a.write_all(ascii.as_bytes()).await.is_err() { break; }
                     if a.flush().await.is_err() { break; }
-                    sleep(Duration::from_millis(frame_delay)).await;
+                    // 正確なフレーム間隔を維持
+                    let elapsed = start.elapsed().as_secs_f32();
+                    let target = ((i + 1) as f32 * VIDEO_TIME_SEC) / (FRAME_NUM as f32);
+                    let sleep_time = target - elapsed;
+                    if sleep_time > 0.0 {
+                        sleep(Duration::from_secs_f32(sleep_time)).await;
+                    }
                 }
             });
         c.res.header.set("Content-Type", "text/plain; charset=utf-8");
