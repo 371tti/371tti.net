@@ -1,4 +1,5 @@
 use kurosabi::Kurosabi;
+use wk_371tti_net::api::handler::aaa::AsciiArcAnimation;
 use wk_371tti_net::api::handler::auth::AuthAPI;
 use wk_371tti_net::api::handler::search::SearchAPI;
 use wk_371tti_net::api::handler::status::StatusAPI;
@@ -59,20 +60,12 @@ async fn main() {
     app.get("/status", |mut c| async move { c.res.html(include_str!("../data/pages/status/index.html")); c });
     app.get("/hekade" , |mut c| async move { c.res.html(include_str!("../data/pages/hekade/index.html")); c });
     app.get("/ref", |mut c| async move { c.res.set_status(302); c.res.header.set("Location", "/"); c });
-    app.get("/ping", |c| async move { StatusAPI::ping(c).await });
     app.get("/search/index/add/urls", |mut c| async move { c.res.html(include_str!("../data/pages/search/search_index_add.html")); c });
-    app.get("/cat", |mut c| async move {
-        c.res.text(
-r#"
-   /\_/\
-  ( o.o )
-   > ^ <
-
-love cat
-"#,
-    );
-        c
-    });
+    app.get("/ping", |c| async move { StatusAPI::ping(c).await });
+    app.get("/aaa", |c| async move { AsciiArcAnimation::root(c).await });
+    app.get("/aaa/kaomoji", |c| async move { AsciiArcAnimation::kaomoji(c).await });
+    app.get("/aaa/cat", |c| async move { AsciiArcAnimation::cat(c).await });
+    app.get("/aaa/bad_apple", |c| async move { AsciiArcAnimation::bad_apple(c).await });
     app.get("/teapot", |c| async move { ErrPage::status_page(c, 418, "") });
     app.get("/thisisfine", |c| async move { ErrPage::status_page(c, 218, "") });
     app.get("/777", |c| async move { ErrPage::status_page(c, 777, "") });
@@ -88,7 +81,6 @@ love cat
 
     let server = app.server()
         .host([0, 0, 0, 0])
-        .accept_threads(1)
         .port(85)
         .thread(16)
         .queue_size(1000)
