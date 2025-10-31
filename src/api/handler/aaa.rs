@@ -103,30 +103,30 @@ impl AsciiArcAnimation {
         const FRAME_SIZE: usize = 65 * 26; // width 65, height 26
         const FRAME_NUM: usize = 5259;
         const VIDEO_TIME_SEC: f32 = 219.1;
-            let (mut a, b) = duplex(FRAME_SIZE + 32);
-            let bin_str = std::str::from_utf8(FRAMES_BIN).unwrap_or("");
-            let frames: Vec<&str> = bin_str.split("\\fe\\").collect();
-            tokio::spawn(async move {
-                // 最初にコンソール全体クリア
-                let _ = a.write_all(b"\x1b[2J\x1b[H").await;
-                let start = std::time::Instant::now();
-                for (i, frame) in frames.iter().enumerate() {
-                    if i >= FRAME_NUM { break; }
-                    let mut ascii = String::with_capacity(frame.len() + 32);
-                    ascii.push_str("\x1b[2J\x1b[H"); // クリア
-                    ascii.push_str(frame);
-                    ascii.push('\n');
-                    if a.write_all(ascii.as_bytes()).await.is_err() { break; }
-                    if a.flush().await.is_err() { break; }
-                    // 正確なフレーム間隔を維持
-                    let elapsed = start.elapsed().as_secs_f32();
-                    let target = ((i + 1) as f32 * VIDEO_TIME_SEC) / (FRAME_NUM as f32);
-                    let sleep_time = target - elapsed;
-                    if sleep_time > 0.0 {
-                        sleep(Duration::from_secs_f32(sleep_time)).await;
-                    }
+        let (mut a, b) = duplex(FRAME_SIZE + 32);
+        let bin_str = std::str::from_utf8(FRAMES_BIN).unwrap_or("");
+        let frames: Vec<&str> = bin_str.split("\\fe\\").collect();
+        tokio::spawn(async move {
+            // 最初にコンソール全体クリア
+            let _ = a.write_all(b"\x1b[2J\x1b[H").await;
+            let start = std::time::Instant::now();
+            for (i, frame) in frames.iter().enumerate() {
+                if i >= FRAME_NUM { break; }
+                let mut ascii = String::with_capacity(frame.len() + 32);
+                ascii.push_str("\x1b[2J\x1b[H"); // クリア
+                ascii.push_str(frame);
+                ascii.push('\n');
+                if a.write_all(ascii.as_bytes()).await.is_err() { break; }
+                if a.flush().await.is_err() { break; }
+                // 正確なフレーム間隔を維持
+                let elapsed = start.elapsed().as_secs_f32();
+                let target = ((i + 1) as f32 * VIDEO_TIME_SEC) / (FRAME_NUM as f32);
+                let sleep_time = target - elapsed;
+                if sleep_time > 0.0 {
+                    sleep(Duration::from_secs_f32(sleep_time)).await;
                 }
-            });
+            }
+        });
         c.res.header.set("Content-Type", "text/plain; charset=utf-8");
         c.res.header.set("X-Accel-Buffering", "no");
         c.res.header.set("Cache-Control", "no-cache, no-transform");
