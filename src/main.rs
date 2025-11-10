@@ -31,7 +31,6 @@ async fn main() {
     app.get("/tool/clock", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/clock.html")); c });
     app.get("/tool/color", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/color.html")); c });
     app.get("/tool/string_converter", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/string_converter.html")); c });
-    app.get("/tool/music_chord", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/music_chord.html")); c });
     app.get("/tool/math_synthesizer", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/math_synthesizer.html")); c });
     app.get("/tool/2d_code", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/2d_code.html")); c });
     app.get("/tool/show", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/SHOW.html")); c });
@@ -75,14 +74,21 @@ async fn main() {
     app.get("/api/session", |c| async move { AuthAPI::session(c).await });
     app.post("/api/index", |c| async move { SearchAPI::index(c).await });
     app.post("/api/meta", |c| async move { SearchAPI::meta(c).await });
-    app.get("/api/meta/url", |c| async move { SearchAPI::meta_get(c).await });
+    app.get("/api/meta/*", |c| async move { SearchAPI::meta_get(c).await });
     app.get("/api/status", |c| async move { StatusAPI::health(c).await });
     app.not_found_handler(|c| async move { ErrPage::status_page(c, 404, "") });
+
+        app.get("/dec/*", |mut c| async move {
+        let wildcard = c.req.path.get_field("*").unwrap_or_default();
+        c.res.text(&format!("Wildcard path: {}", wildcard));
+        c
+    });
 
     let server = app.server()
         .host([0, 0, 0, 0])
         .port(85)
         .thread(16)
+        .nodelay(true)
         .queue_size(1000)
         .build();
 

@@ -111,6 +111,8 @@ impl SearchPage {
     }
 
     pub fn generate_entry(entry: ResEntry) -> String {
+        // display と href に使う
+        // Unsafe charactersはバックですでにエスケープされている想定
         let safe_url = escape_html(&entry.url);
         let safe_title = escape_html(&entry.title);
         let description = format!("<p class=\"description\">{}</p>", escape_html(&entry.descriptions));
@@ -123,7 +125,7 @@ impl SearchPage {
                 <h3>{favicon}<a href="{url}" target="_blank" rel="noopener noreferrer">{title}</a></h3>
                 <p class="score">score: {score}</p>
                 <p class="tags">tags: {tags}</p>
-                <p><small class="debug">length: {length} tokens, point: {point}, id: {id}, index_id: {index_id}, time: {time}</small></p>
+                <p><small class="debug">length: {length} tokens, point: {point}, id: {id}, index_id: {index_id}, time: {time}</small> <small class="meta-url"><a href="{meta_url}" target="_blank" rel="noopener noreferrer">Meta Information</a></small></p>
                 <p><small class="url">{url}</small></p>
                 <div class="pd"></div>
                 {description}
@@ -142,6 +144,7 @@ impl SearchPage {
                 .collect::<Vec<_>>()
                 .join(" "),
             description = description,
+            meta_url = format!("/api/meta/{}", safe_url),
         )
     }
 }

@@ -1205,16 +1205,15 @@ dependencies = [
 
 [[package]]
 name = "kurosabi"
-version = "0.5.1"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d37e45e7eedeffd1a63bf2edf423aa0763b6a5ff06ebc1de9d7f9bdbe2790a32"
+checksum = "b82042d457c8d85735f6ab6b88917d15fce153e593c5a714a3ecb74c580a879a"
 dependencies = [
  "ahash",
  "async-compression",
  "async-trait",
  "brotli",
  "crossbeam-queue",
- "env_logger",
  "futures",
  "html_format",
  "log",

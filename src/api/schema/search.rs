@@ -67,7 +67,9 @@ pub struct ResEntry {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IndexReq {
     pub url: String,
+    #[serde(default)]
     pub title: Option<String>,
+    #[serde(default)]
     pub favicon: Option<String>,
     /// タグは空でも良い
     /// 例: ["wiki", "blog"]
@@ -81,7 +83,12 @@ pub struct IndexReq {
     /// - "academic": 学術論文
     /// - "tools": ツール系サイト
     pub tags: Vec<String>,
+    #[serde(default)]
     pub descriptions: Option<String>,
+    /// クロール時のターゲットセレクタ
+    /// wikipediaなら .mw-body-content など
+    #[serde(default)]
+    pub target_selector: Option<String>,
 }
 
 

@@ -72,6 +72,8 @@ html {
 .card { width: 100%; padding: 10mm; height: fit-content; max-width: 300mm; }
 
 .full { width: 100%; height: 100%; padding: 0; margin: 0; }
+.full-width { width: 100%; }
+.full-height { height: 100%; }
 
 .scroll { overflow: auto; }
 

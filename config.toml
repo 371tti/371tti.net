@@ -3,7 +3,7 @@ session_timeout = 2592000
 account_timeout = 604800
 
 [database]
-url = "mongodb://192.168.0.48:27017/?replicaSet=rs0"
+url = "mongodb://192.168.0.48:27017/"
 db_name = "371tti_net"
 
 [api_endpoints]

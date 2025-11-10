@@ -1,12 +1,14 @@
 use std::time::Duration;
 
 use kurosabi::kurosabi::Context;
+use log::error;
 
 use crate::{api::schema::{self, search::IndexReq}, context::SiteContext};
 
 pub struct SearchAPI;
 
 impl SearchAPI {
+    /// proxy to backend search API
     pub async fn search(mut c: Context<SiteContext>) -> Context<SiteContext> {
         c.c.health.add_search_count();
         let query = c.req.path.path.splitn(2, '?').nth(1).unwrap_or("");
@@ -22,6 +24,7 @@ impl SearchAPI {
         c
     }
 
+    /// proxy to backend index API
     pub async fn index(mut c: Context<SiteContext>) -> Context<SiteContext> {
         c.c.health.add_search_count();
         // Deserialize the request body into IndexReq
@@ -38,7 +41,7 @@ impl SearchAPI {
         let url = "http://127.0.0.1:90/add";
 
         let client = reqwest::Client::builder()
-            .timeout(Duration::from_secs(20))
+            .timeout(Duration::from_secs(30))
             .build()
             .unwrap();
         match client
@@ -60,12 +63,16 @@ impl SearchAPI {
                     Err(_) => { c.res.set_status(502); c.res.text("Bad Gateway"); }
                 }
             }
-            Err(_) => { c.res.set_status(502); c.res.text("Bad Gateway"); }
+            Err(e) => { 
+                error!("Error proxying index request: {}", e);
+                c.res.set_status(502); c.res.text("Bad Gateway"); 
+            }
         }
 
         c
     }
 
+    /// proxy to backend meta POST API
     pub async fn meta(mut c: Context<SiteContext>) -> Context<SiteContext> {
         c.c.health.add_search_count();
         let req = c.req.body_de_struct::<schema::search::MetaReq>().await;
@@ -88,10 +95,17 @@ impl SearchAPI {
         c
     }
 
+    /// proxy to backend meta GET API
     pub async fn meta_get(mut c: Context<SiteContext>) -> Context<SiteContext> {
         c.c.health.add_search_count();
-        // /api/meta/get?url=...
-        let url = c.req.path.get_query("url").unwrap_or("".into());
+        let base = c.req.path.get_field("*").unwrap_or("".into());
+        let query = c.req.path.path.splitn(2, '?').nth(1).unwrap_or("");
+        let url = if query.is_empty() {
+            base
+        } else {
+            format!("{}?{}", base, query)
+        };
+        println!("meta_get url: {}", url);
         let query = schema::search::MetaReq {
             url: url.to_string(),
         };
