@@ -3,7 +3,6 @@ use std::sync::Arc;
 use dashmap::{mapref::one::RefMut, DashMap};
 use argon2::Argon2;
 use chrono::{DateTime, Utc, Duration as ChronoDuration};
-use rand::RngCore;
 use serde::{Deserialize, Serialize};
 
 
@@ -169,9 +168,8 @@ impl AuthManager {
             return None;
         }
         // generate random salt
-        let mut rng = rand::rngs::OsRng;
         let mut salt = [0u8; 16];
-        rng.fill_bytes(&mut salt);
+        getrandom::fill(&mut salt).expect("generate random salt");
         let password_hash = self.hash_password(password, &salt);
         let account_data = AccountData::new(id, &password_hash, &salt);
         self.accounts.insert_account(account_data).await;

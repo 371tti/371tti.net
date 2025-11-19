@@ -114,11 +114,11 @@ impl HealthChecker {
         }
     }
 
-    pub fn add_count(&self) {
+    pub fn add_access_count(&self) {
         self.access_counter.fetch_add(1, Ordering::Relaxed);
     }
 
-    pub fn add_search_count(&self) {
+    pub fn add_search_access_count(&self) {
         self.search_access_counter.fetch_add(1, Ordering::Relaxed);
     }
 

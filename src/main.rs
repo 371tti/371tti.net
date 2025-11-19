@@ -75,14 +75,10 @@ async fn main() {
     app.post("/api/index", |c| async move { SearchAPI::index(c).await });
     app.post("/api/meta", |c| async move { SearchAPI::meta(c).await });
     app.get("/api/meta/*", |c| async move { SearchAPI::meta_get(c).await });
+    app.post("/api/token_freq", |c| async move { SearchAPI::token_freq(c).await });
+    app.get("/api/token_freq/*", |c| async move { SearchAPI::token_freq_get(c).await });
     app.get("/api/status", |c| async move { StatusAPI::health(c).await });
     app.not_found_handler(|c| async move { ErrPage::status_page(c, 404, "") });
-
-        app.get("/dec/*", |mut c| async move {
-        let wildcard = c.req.path.get_field("*").unwrap_or_default();
-        c.res.text(&format!("Wildcard path: {}", wildcard));
-        c
-    });
 
     let server = app.server()
         .host([0, 0, 0, 0])

@@ -2,7 +2,6 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use argon2::{Argon2, Params, Algorithm, Version};
-use rand::RngCore;
 use base64::{Engine, engine::general_purpose};
 use log::{info, debug};
 
@@ -102,9 +101,8 @@ impl HashConfig {
     }
 
     fn generate_random_pepper() -> String {
-        let mut rng = rand::rngs::OsRng;
         let mut bytes = [0u8; 16];
-        rng.fill_bytes(&mut bytes);
+        getrandom::fill(&mut bytes).expect("generate random pepper");
         general_purpose::STANDARD.encode(&bytes)
     }
 

@@ -5,7 +5,6 @@ use dashmap::mapref::one::{Ref, RefMut};
 use base64::{Engine, engine::general_purpose};
 
 use crate::user_manager::auth::{AccountSession, SessionKey, Sessions, SessionsData};
-use rand::RngCore;
 
 impl Sessions {
     pub fn new() -> Self {
@@ -40,9 +39,8 @@ impl Sessions {
 
 impl SessionKey {
     pub fn new() -> Self {
-        let mut rng = rand::rngs::OsRng;
         let mut key = [0u8; 32];
-        rng.fill_bytes(&mut key);
+        getrandom::fill(&mut key).expect("generate random session key");
         SessionKey(key)
     }
 

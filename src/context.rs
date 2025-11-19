@@ -101,7 +101,7 @@ impl SiteContext {
 impl ContextMiddleware<SiteContext> for SiteContext {
     async fn before_handle(mut ctx: Context<SiteContext>) -> Context<SiteContext> {
         // アクセスカウント
-        ctx.c.health.add_count();
+        ctx.c.health.add_access_count();
 
         // 以下セッション管理
         let mut needs_new_session = true;

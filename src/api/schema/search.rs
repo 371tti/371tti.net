@@ -2,6 +2,7 @@ use std::ops::Range;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use tf_idf_vectorizer::TokenFrequency;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,6 +32,28 @@ pub enum MetaRes {
         error: String,
     },
 }
+
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct TokenFreqReq {
+    pub url: String,
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "success")]
+pub enum TokenFreqRes {
+    #[serde(rename = "true")]
+    Success {
+        fq: TokenFrequency,
+    },
+    #[serde(rename = "false")]
+    Failed {
+        error: String,
+    },
+}
+
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "success")]

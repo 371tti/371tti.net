@@ -35,7 +35,7 @@ impl SearchPage {
     }
 
     pub async fn page(mut c: Context<SiteContext>) -> Context<SiteContext> {
-        c.c.health.add_search_count();
+        c.c.health.add_search_access_count();
         let qs = c.req.path.path.splitn(2, '?').nth(1).unwrap_or("");
         match qs {
             "" => {
@@ -107,6 +107,13 @@ impl SearchPage {
         let url = format!("{}/meta", self.search_api_endpoint);
         let resp = self.client.post(&url).json(&req).send().await.map_err(|_| 502u16)?;
         let parsed = resp.json::<schema::search::MetaRes>().await.map_err(|_| 502u16)?;
+        Ok(parsed)
+    }
+
+    pub async fn search_api_token_freq(&self, req: schema::search::TokenFreqReq) -> Result<schema::search::TokenFreqRes, u16> {
+        let url = format!("{}/token_freq", self.search_api_endpoint);
+        let resp = self.client.post(&url).json(&req).send().await.map_err(|_| 502u16)?;
+        let parsed = resp.json::<schema::search::TokenFreqRes>().await.map_err(|_| 502u16)?;
         Ok(parsed)
     }
 
