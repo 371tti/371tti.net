@@ -73,6 +73,14 @@ impl Accounts {
         Some(RefMut::map(r, |opt| opt.as_mut().unwrap()))
     }
 
+    pub async fn get_on_memory(&self, id: &AccountID) -> Option<MappedRef<'_, AccountID, std::option::Option<AccountData>, AccountData>> {
+        let r = self.pool.get(id)?;
+        if r.is_none() {
+            return None;
+        }
+        Some(Ref::map(r, |opt| opt.as_ref().expect("AccountData should be loaded")) )
+    }
+
     pub async fn load_account(&self, id: &AccountID) -> Option<()> {
         debug!("Loading account data for ID: {}", id.as_str());
         let col_full: Collection<AccountData> = self.db_client.collection(ACCOUNT_COLLECTION_NAME);
@@ -85,9 +93,9 @@ impl Accounts {
     }
 
     pub async fn save_account(&self, id: &AccountID) -> SaveResult {
-        let account_data = match self.get(id).await {
+        let account_data = match self.get_on_memory(id).await {
             Some(data) => data.clone(),
-            None => return SaveResult::Error,
+            None => return SaveResult::AlreadySaved,
         };
         if account_data.is_saved {
             return SaveResult::AlreadySaved;
@@ -122,22 +130,17 @@ impl Accounts {
         info!("Saving all accounts to database...");
         let mut saves = 0;
         let mut errors = 0;
-        // Use an async loop instead of for_each so we can await
-        for entry in self.pool.iter() {
-            let account_id = entry.key().clone();
+        // 先にキー一覧を取得 じゃないとloop内でデッドロックする
+        let keys: Vec<AccountID> = self.pool.iter().map(|entry| entry.key().clone()).collect();
+        for account_id in keys {
             match self.save_account(&account_id).await {
-                SaveResult::Saved => {
-                    saves += 1;
-                }
-                SaveResult::Error => {
-                    errors += 1;
-                }
+                SaveResult::Saved => saves += 1,
+                SaveResult::Error => errors += 1,
                 _ => {}
             }
         }
         info!("Saved {} accounts, {} errors / {} accounts", saves, errors, self.pool.len());
     }
-
     pub fn contains_account(&self, id: &AccountID) -> bool {
         self.pool.contains_key(id)
     }

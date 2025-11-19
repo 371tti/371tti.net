@@ -285,8 +285,14 @@ pub struct AccountData {
     pub session_ids: Vec<SessionKey>,
     pub created_at: DateTime<Utc>,
     pub version: u32, // for future
+    #[serde(skip)]
+    #[serde(default = "default_true")]
     pub is_saved: bool,
     pub last_accessed_at: DateTime<Utc>,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 // base64 helpers for serde
