@@ -14,6 +14,8 @@ use crate::user_manager::auth::{AccountData, AccountID, AccountSession, AccountS
 
 use crate::user_manager::auth::ACCOUNT_DATA_VERSION;
 
+pub const REMOVE_ESCAPE: &str = "\x1brm_scd";
+
 // DB系の処理ここに
 impl Accounts {
     pub async fn new(db_client: Arc<mongodb::Database>) -> Self {
@@ -101,6 +103,14 @@ impl Accounts {
             return SaveResult::AlreadySaved;
         }
         let col_full: Collection<AccountData> = self.db_client.collection(ACCOUNT_COLLECTION_NAME);
+        // // 削除が予約されてる場合はエスケープしてpoolから削除
+        // let id = if id.0.starts_with(REMOVE_ESCAPE) {
+        //     account_data.account_id = id.clone();
+        //     self.pool.remove(id);
+        //     AccountID(id.0.trim_start_matches(REMOVE_ESCAPE).to_string())
+        // } else {
+        //     id.clone()
+        // };
         let filter = doc! { "account_id": &id.0 };
         let update = match bson::to_bson(&account_data) {
             Ok(bson_data) => doc! { "$set": bson_data },
@@ -171,9 +181,12 @@ impl Accounts {
         }
     }
 
-    pub fn remove_account(&self, account: &AccountID) {
-        self.pool.remove(account);
-    }
+    // pub fn remove_account(&self, account: &AccountID) -> Option<()> {
+    //     let mut v = self.pool.remove(account)?;
+    //     v.0 = AccountID(REMOVE_ESCAPE.to_string() + &v.0.0);
+    //     self.pool.insert(account.clone(), None);
+    //     Some(())
+    // }
 }
 
 impl AccountID {
