@@ -37,6 +37,15 @@ pub fn cron_task() -> BoxedTask {
                     log::info!("Health check task finished");
                 }
             });
+
+            // アカウントセーブタスク
+            let account_save_task: BoxedTask = TaskScheduler::boxed_task(move |ctx: SiteContext| {
+                async move {
+                    log::info!("Account save task running");
+                    ctx.auth.accounts.save_all_accounts().await;
+                    log::info!("Account save task finished");
+                }
+            });
             // etc...
             // 他の定期タスクもここに追加していく
 
@@ -52,6 +61,14 @@ pub fn cron_task() -> BoxedTask {
                 TaskID::HEALTH_CHECK,
                 health_check_task,
                 TaskPriority::HIGH,
+                None,
+                None,
+            ).await;
+
+            ctx.scheduler.push_task(
+                TaskID::ACCOUNT_SAVE,
+                account_save_task,
+                TaskPriority::NORMAL,
                 None,
                 None,
             ).await;

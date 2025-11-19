@@ -55,6 +55,8 @@ async fn main() {
     app.get("/banner.gif", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/banner.gif"), "image/gif"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/favicon.ico", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/favicon.ico"), "image/x-icon"); c });
     app.get("/robots.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    app.get("/humans.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/humans.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    app.get("/security.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/security.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/manifest.json", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/manifest.json"), "application/manifest+json"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/status", |mut c| async move { c.res.html(include_str!("../data/pages/status/index.html")); c });
     app.get("/hekade" , |mut c| async move { c.res.html(include_str!("../data/pages/hekade/index.html")); c });

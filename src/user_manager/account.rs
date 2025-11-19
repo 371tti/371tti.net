@@ -28,12 +28,12 @@ impl Accounts {
         let mut cursor = col.find(doc! {  }).await.expect("Failed to fetch account IDs");
         let pool = DashMap::new();
 
+        // have All account IDs on memory
         while let Some(doc) = cursor.try_next().await.expect("Failed to get next document") {
             pool.insert(doc.account_id, None);
         }
 
         info!{ "Loaded {} account IDs from database", pool.len() }
-
 
         Self {
             pool,
@@ -84,27 +84,58 @@ impl Accounts {
         Some(())
     }
 
-    pub async fn save_account(&self, id: &AccountID) -> Option<()> {
-        let account_data = self.get(id).await?.clone();
+    pub async fn save_account(&self, id: &AccountID) -> SaveResult {
+        let account_data = match self.get(id).await {
+            Some(data) => data.clone(),
+            None => return SaveResult::Error,
+        };
         if account_data.is_saved {
-            return Some(());
+            return SaveResult::AlreadySaved;
         }
         let col_full: Collection<AccountData> = self.db_client.collection(ACCOUNT_COLLECTION_NAME);
         let filter = doc! { "account_id": &id.0 };
-        let update = doc! { "$set": bson::to_bson(&account_data).ok()? };
-        let res = col_full.update_one(filter, update).await.map_err(|e| {
-            error!("Database error while saving account {}: {}", id.as_str(), e);
-        }).ok()?;
+        let update = match bson::to_bson(&account_data) {
+            Ok(bson_data) => doc! { "$set": bson_data },
+            Err(_) => return SaveResult::Error,
+        };
+        let res = match col_full.update_one(filter, update).await {
+            Ok(r) => r,
+            Err(e) => {
+                error!("Database error while saving account {}: {}", id.as_str(), e);
+                return SaveResult::Error;
+            }
+        };
         if res.matched_count == 0 {
             // insert if not exists
-            col_full.insert_one(&account_data).await.map_err(|e| {
+            if let Err(e) = col_full.insert_one(&account_data).await {
                 error!("Database error while inserting account {}: {}", id.as_str(), e);
-            }).ok()?;
+                return SaveResult::Error;
+            }
         }
         if let Some(mut acc) = self.get_mut(id).await {
             acc.is_saved = true;
         }
-        Some(())
+        SaveResult::Saved
+    }
+
+    pub async fn save_all_accounts(&self) {
+        info!("Saving all accounts to database...");
+        let mut saves = 0;
+        let mut errors = 0;
+        // Use an async loop instead of for_each so we can await
+        for entry in self.pool.iter() {
+            let account_id = entry.key().clone();
+            match self.save_account(&account_id).await {
+                SaveResult::Saved => {
+                    saves += 1;
+                }
+                SaveResult::Error => {
+                    errors += 1;
+                }
+                _ => {}
+            }
+        }
+        info!("Saved {} accounts, {} errors / {} accounts", saves, errors, self.pool.len());
     }
 
     pub fn contains_account(&self, id: &AccountID) -> bool {
@@ -205,4 +236,10 @@ impl AccountSession {
     pub fn get_account_id(&self) -> &AccountID {
         &self.account_id
     }
+}
+
+pub enum SaveResult {
+    Saved,
+    AlreadySaved,
+    Error,
 }

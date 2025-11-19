@@ -11,6 +11,14 @@
 
 https://371tti.net/
 
+# メンテ
+1. クレートの更新
+2. 各有効期限の確認
+   - copy right
+   - security.txt
+3. リファクタリング
+
+
 
 
 

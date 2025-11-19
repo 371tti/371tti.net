@@ -53,6 +53,7 @@ impl TaskID {
     pub const CRON: Self = Self(1 << 48);
     pub const SESSION_GC: Self = Self(2 << 48);
     pub const HEALTH_CHECK: Self = Self(3 << 48);
+    pub const ACCOUNT_SAVE: Self = Self(4 << 48);
 
     pub fn new(prefix: u16, counter: u64) -> Self {
         let counter = counter & 0x0000FFFFFFFFFFFF;
@@ -80,6 +81,7 @@ impl TaskID {
             1 => "CRON",
             2 => "SESSION_GC",
             3 => "HLTHCK",
+            4 => "ACCTSV",
             _ => "UNKNOWN",
         }
     }
