@@ -1,35 +1,22 @@
-<!doctype html>
-<html lang="ja">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="371tti.net mandelbrot viewer" />
-    <meta property="og:title" content="Mandelbrot Viewer - 371tti.net" />
-    <meta property="og:description" content="Mandelbrot wo render" />
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content="/tool/mandelbrot" />
-    <title>Mandelbrot - Library - 371tti.net</title>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            background: #000;
-            color: #f5f5f5;
-            font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
-            overflow: hidden;
-        }
 
-        #canvas {
-            width: 100vw;
-            height: 100vh;
-            display: block;
-            cursor: crosshair;
-            touch-action: none;
-        }
-    </style>
-    <link rel="stylesheet" href="/style.css" />
-    <script src="/menu.js"></script>
-</head>
+    <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        background: #000;
+        color: #f5f5f5;
+        font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+        overflow: hidden;
+    }
+
+    #canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        cursor: crosshair;
+        touch-action: none;
+    }
+</style>
 <body>
     <canvas id="canvas"></canvas>
 
@@ -762,4 +749,3 @@
     scheduleRender(0);
     </script>
 </body>
-</html>

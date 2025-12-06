@@ -1,66 +1,52 @@
-<!DOCTYPE html>
-<html lang="ja">
+<style>
+    .tool-grid {
+        display: grid;
+        gap: 16px;
+    }
 
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="371tti.net tools UTF8 Steganography">
-    <meta property="og:description" content="371tti.net tools UTF8 Steganography">
-    <meta property="og:title" content="371tti.net tools UTF8 Steganography">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="/tools/utf-8_steganography">
-    <title>UTF8 Steganography - Tool - 371tti.net</title>
-    <link rel="stylesheet" href="/style.css">
-    <script src="/menu.js"></script>
-    <style>
-        .tool-grid {
-            display: grid;
-            gap: 16px;
-        }
+    .field-label {
+        display: block;
+        margin-top: 12px;
+        margin-bottom: 4px;
+        font-weight: 600;
+        color: var(--color-text-0);
+    }
 
-        .field-label {
-            display: block;
-            margin-top: 12px;
-            margin-bottom: 4px;
-            font-weight: 600;
-            color: var(--color-text-0);
-        }
+    .field-label:first-of-type {
+        margin-top: 0;
+    }
 
-        .field-label:first-of-type {
-            margin-top: 0;
-        }
+    .action-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
 
-        .action-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-        }
+    .status-text {
+        font-size: 0.85rem;
+        margin-top: 10px;
+        color: var(--color-text-0);
+        transition: color 0.2s ease;
+    }
 
-        .status-text {
-            font-size: 0.85rem;
-            margin-top: 10px;
-            color: var(--color-text-0);
-            transition: color 0.2s ease;
-        }
+    .status-text[data-tone="success"] {
+        color: var(--color-accent-1);
+    }
 
-        .status-text[data-tone="success"] {
-            color: var(--color-accent-1);
-        }
+    .status-text[data-tone="error"] {
+        color: #ff6b6b;
+    }
 
-        .status-text[data-tone="error"] {
-            color: #ff6b6b;
-        }
-
-        .status-text[data-tone="info"] {
-            color: var(--color-text-0);
-        }
-    </style>
-</head>
+    .status-text[data-tone="info"] {
+        color: var(--color-text-0);
+    }
+</style>
 
 <body class="center-y">
     <script src="/box-load-anime.js"></script>
+    <link rel="stylesheet" href="/modern-border.css">
+    <script src="/modern-border.js"></script>
     <div class="center-x scroll">
         <div class="card" id="content">
             <div class="box">
@@ -272,5 +258,3 @@
     </script>
 
 </body>
-
-</html>

@@ -1,57 +1,43 @@
-<!DOCTYPE html>
-<html lang="ja">
 
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Full screen text viewer" />
-    <meta property="og:description" content="?" />
-    <meta property="og:title" content="371tti.net tool show ?" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="/tools/show" />
-    <title>Show - Tool - 371tti.net</title>
-    <link rel="stylesheet" href="/style.css" />
-    <script src="/menu.js"></script>
-    <style>
-        #display {
-            position: fixed;
-            inset: 0;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            background: var(--color-bg-0);
-            color: var(--color-text-1);
-            cursor: zoom-out;
-            text-align: center;
-            z-index: 999999;
-        }
+<style>
+    #display {
+        position: fixed;
+        inset: 0;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        background: var(--color-bg-0);
+        color: var(--color-text-1);
+        cursor: zoom-out;
+        text-align: center;
+        z-index: 999999;
+    }
 
-        #display.show {
-            display: flex;
-        }
+    #display.show {
+        display: flex;
+    }
 
-        #display-inner {
-            width: 100%;
-            height: 100%;
-            padding: 4vh 6vw;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            word-break: break-word;
-        }
+    #display-inner {
+        width: 100%;
+        height: 100%;
+        padding: 4vh 6vw;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        word-break: break-word;
+    }
 
-        #display-text {
-            margin: 0;
-            white-space: pre-wrap;
-            line-height: 1.05;
-        }
-    </style>
-</head>
-
+    #display-text {
+        margin: 0;
+        white-space: pre-wrap;
+        line-height: 1.05;
+    }
+</style>
 <body class="center-y">
     <script src="/box-load-anime.js"></script>
+    <link rel="stylesheet" href="/modern-border.css">
+    <script src="/modern-border.js"></script>
     <div class="center-x scroll">
         <div class="card box">
             <div class="flex block-m">
@@ -189,5 +175,3 @@
         loadFromParam();
     </script>
 </body>
-
-</html>

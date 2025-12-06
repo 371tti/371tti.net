@@ -1,129 +1,116 @@
-<!DOCTYPE html>
-<html lang="ja">
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="371tti.net math synthesizer" />
-    <meta property="og:title" content="Math Synthesizer - 371tti.net" />
-    <meta property="og:description" content="Expr de Generate Wave" />
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content="/tool/math_synthesizer" />
-    <title>Math Synthesizer - Tool - 371tti.net</title>
-    <link rel="stylesheet" href="/style.css" />
-    <script src="/menu.js"></script>
-    <style>
-        .keyboard-section {
-            margin-top: 24px;
-        }
+<style>
+    .keyboard-section {
+        margin-top: 24px;
+    }
 
-        .piano-wrapper {
-            position: relative;
-            display: inline-block;
-            user-select: none;
-        }
+    .piano-wrapper {
+        position: relative;
+        display: inline-block;
+        user-select: none;
+    }
 
-        .midi-file-section {
-            margin-top: 24px;
-        }
+    .midi-file-section {
+        margin-top: 24px;
+    }
 
-        .piano-whites {
-            display: flex;
-        }
+    .piano-whites {
+        display: flex;
+    }
 
-        button.key {
-            position: relative;
-            border: 1px solid var(--color-bg-2);
-            font-family: inherit;
-            cursor: pointer;
-            padding: 4px 2px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            transition: background-color 0.15s ease;
-            color: var(--color-text-1);
-        }
+    button.key {
+        position: relative;
+        border: 1px solid var(--color-bg-2);
+        font-family: inherit;
+        cursor: pointer;
+        padding: 4px 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        transition: background-color 0.15s ease;
+        color: var(--color-text-1);
+    }
 
-        button.key.white {
-            width: 48px;
-            height: 150px;
-            background: var(--color-bg-1);
-            margin: 0;
-            border-bottom: 3px solid var(--color-bg-2);
-        }
+    button.key.white {
+        width: 48px;
+        height: 150px;
+        background: var(--color-bg-1);
+        margin: 0;
+        border-bottom: 3px solid var(--color-bg-2);
+    }
 
-        button.key.white.active {
-            background: color-mix(in srgb, var(--color-accent-1) 25%, var(--color-bg-1));
-        }
+    button.key.white.active {
+        background: color-mix(in srgb, var(--color-accent-1) 25%, var(--color-bg-1));
+    }
 
-        button.key.black {
-            width: 32px;
-            height: 100px;
-            background: var(--color-bg-2);
-            color: var(--color-text-1);
-            border: 1px solid var(--color-bg-0);
-            position: absolute;
-            top: 0;
-            z-index: 2;
-        }
+    button.key.black {
+        width: 32px;
+        height: 100px;
+        background: var(--color-bg-2);
+        color: var(--color-text-1);
+        border: 1px solid var(--color-bg-0);
+        position: absolute;
+        top: 0;
+        z-index: 2;
+    }
 
-        button.key.black.active {
-            background: color-mix(in srgb, var(--color-accent-1) 35%, var(--color-bg-2));
-            border-color: var(--color-accent-1);
-        }
+    button.key.black.active {
+        background: color-mix(in srgb, var(--color-accent-1) 35%, var(--color-bg-2));
+        border-color: var(--color-accent-1);
+    }
 
-        button.key .note-label {
-            font-size: 12px;
-        }
+    button.key .note-label {
+        font-size: 12px;
+    }
 
-        button.key .key-label {
-            font-size: 11px;
-            opacity: 0.7;
-        }
+    button.key .key-label {
+        font-size: 11px;
+        opacity: 0.7;
+    }
 
-        button.key:focus-visible {
-            outline: 2px solid var(--color-accent-0);
-            outline-offset: 2px;
-        }
+    button.key:focus-visible {
+        outline: 2px solid var(--color-accent-0);
+        outline-offset: 2px;
+    }
 
-        .expr-preview {
-            margin-top: 12px;
-            min-height: 48px;
-        }
+    .expr-preview {
+        margin-top: 12px;
+        min-height: 48px;
+    }
 
-        canvas#wave {
-            width: 100%;
-            max-width: 640px;
-            border-radius: 8px;
-        }
+    canvas#wave {
+        width: 100%;
+        max-width: 640px;
+        border-radius: 8px;
+    }
 
-        details.examples {
-            margin-top: 18px;
-        }
+    details.examples {
+        margin-top: 18px;
+    }
 
-        details.examples summary {
-            cursor: pointer;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
+    details.examples summary {
+        cursor: pointer;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
 
-        .preset-group {
-            margin-top: 8px;
-        }
+    .preset-group {
+        margin-top: 8px;
+    }
 
-        .preset-group a {
-            display: inline-block;
-            margin: 0 6px 6px 0;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/mathjs@11.11.2/lib/browser/math.js"></script>
-</head>
-
+    .preset-group a {
+        display: inline-block;
+        margin: 0 6px 6px 0;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjs@11.11.2/lib/browser/math.js"></script>
 <body class="center-y">
     <script src="/box-load-anime.js"></script>
+    <link rel="stylesheet" href="/modern-border.css">
+    <script src="/modern-border.js"></script>
     <div class="center-x scroll">
         <div class="card box">
             <div class="flex block-m">
@@ -1790,5 +1777,3 @@
         });
     </script>
 </body>
-
-</html>

@@ -1,0 +1,169 @@
+
+<body>
+<script src="/box-load-anime.js"></script>
+<link rel="stylesheet" href="/modern-border.css">
+<script src="/modern-border.js"></script>
+<div class="full center scroll">
+<div class="card" id="content">
+    <div class="box">
+        <div class="flex block-m">
+            <h1>JavaScript for Hater</h1>
+            <div class="block subtitle">
+                <h2><a href="/">371tti.net</a></h2>
+            </div>
+        </div>
+        <div class="indent">
+            <h2>JavaScriptが嫌いなあなたへ</h2>
+        </div>
+    </div>
+    <hr>
+    <div class="box modern-border">
+        <h2 class="h">意味不明な仕様を見よう</h2>
+        <div class="indent">
+            
+            <div id="js-examples"></div>
+
+            <script>
+                const sections = [
+                    {
+                        title: "配列とオブジェクトの足し算",
+                        desc: "型強制の闇。オブジェクトと配列を足すとどうなる？",
+                        codes: [
+                            "[] + []",
+                            "[] + {}",
+                            "{} + []",
+                            "{} + {}"
+                        ]
+                    },
+                    {
+                        title: "推移律の不成立",
+                        desc: "A == B かつ A == C ならば B == C ...とは限りません。",
+                        codes: [
+                            "0 == []",
+                            "0 == '0'",
+                            "'0' == []"
+                        ]
+                    },
+                    {
+                        title: "数値とNaN(Not-a-Number)",
+                        desc: "直感に反する数値演算。",
+                        codes: [
+                            "typeof NaN",
+                            "9999999999999999",
+                            "Math.max()",
+                            "Math.min()",
+                            "Math.max() < Math.min()"
+                        ]
+                    },
+                    {
+                        title: "論理値と型変換",
+                        desc: "空配列はtruthyですが、比較時は...",
+                        codes: [
+                            "[] == ![]",
+                            "true + true"
+                        ]
+                    },
+                    {
+                        title: "Watman",
+                        desc: "有名なジョークコード。",
+                        codes: [
+                            "Array(16).join('wat' - 1) + ' Batman!'"
+                        ]
+                    }
+                ];
+
+                const container = document.getElementById('js-examples');
+
+                sections.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'indent';
+                    sectionDiv.style.marginBottom = '2em';
+                    
+                    const h3 = document.createElement('h3');
+                    h3.textContent = section.title;
+                    sectionDiv.appendChild(h3);
+
+                    if (section.desc) {
+                        const p = document.createElement('p');
+                        p.textContent = section.desc;
+                        sectionDiv.appendChild(p);
+                    }
+
+                    section.codes.forEach(code => {
+                        const div = document.createElement('div');
+                        div.className = 'indent';
+                        div.style.marginBottom = '1.5em';
+
+                        const codeEl = document.createElement('code');
+                        codeEl.style.fontWeight = 'bold';
+                        codeEl.style.fontSize = '1.2em';
+                        codeEl.textContent = code;
+
+                        const br = document.createElement('br');
+
+                        const btn = document.createElement('button');
+                        btn.title = '実行';
+                        btn.style.marginTop = '0.5em';
+                        btn.style.cursor = 'pointer';
+                        btn.style.width = '0';
+                        btn.style.height = '0';
+                        btn.style.border = 'none';
+                        btn.style.borderLeft = '12px solid var(--color-text-1)';
+                        btn.style.borderTop = '8px solid transparent';
+                        btn.style.borderBottom = '8px solid transparent';
+                        btn.style.backgroundColor = 'transparent';
+                        btn.style.padding = '0';
+                        btn.style.display = 'inline-block';
+                        btn.style.transition = 'border-left-color 0.2s';
+
+                        btn.onmouseover = () => btn.style.borderLeftColor = 'var(--color-accent-1)';
+                        btn.onmouseout = () => btn.style.borderLeftColor = 'var(--color-text-1)';
+                        
+                        const resultDiv = document.createElement('div');
+                        resultDiv.style.display = 'block';
+                        resultDiv.style.marginTop = '0.5em';
+                        resultDiv.style.padding = '8px 12px';
+                        resultDiv.style.backgroundColor = 'var(--color-bg-2)';
+                        resultDiv.style.color = 'var(--color-text-0)';
+                        resultDiv.style.fontFamily = 'monospace';
+                        resultDiv.style.borderRadius = '4px';
+                        resultDiv.style.fontSize = '1em';
+                        resultDiv.style.whiteSpace = 'pre-wrap';
+                        resultDiv.style.wordBreak = 'break-all';
+                        resultDiv.textContent = '// click to run';
+
+                        btn.onclick = () => {
+                            try {
+                                const result = eval(code);
+                                let displayResult = result;
+                                if (typeof result === 'string') {
+                                    displayResult = `"${result}"`;
+                                } else if (Array.isArray(result)) {
+                                    displayResult = `[${result}]`;
+                                }
+                                resultDiv.textContent = `=> ${displayResult}\n(${typeof result})`;
+                                resultDiv.style.color = 'var(--color-text-1)';
+                            } catch (e) {
+                                resultDiv.textContent = `Error: ${e.message}`;
+                                resultDiv.style.color = '#ff6b6b';
+                            }
+                        };
+
+                        div.appendChild(codeEl);
+                        div.appendChild(br);
+                        div.appendChild(btn);
+                        div.appendChild(resultDiv);
+                        sectionDiv.appendChild(div);
+                    });
+                    container.appendChild(sectionDiv);
+                });
+            </script>
+        </div>
+    </div>
+
+    <hr>
+    <p class="center">© 2024~ 371tti</p>
+    <p class="center"><a href="/">top_page</a>　-　<a href="/license">license</a></p>
+</div>
+</div>
+</body>
