@@ -25,7 +25,7 @@ impl SearchPage {
         let client = Client::builder()
             .pool_idle_timeout(Duration::from_secs(90))
             .tcp_keepalive(Some(Duration::from_secs(60)))
-            .timeout(Duration::from_secs(5))
+            .timeout(Duration::from_secs(10))
             .build()
             .expect("build reqwest client");
         Self {

@@ -14,6 +14,13 @@
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/tag.css">
     <script src="/menu.js"></script>
+    <style>
+        .query-matched {
+            background-color: var(--color-bg-1);
+            padding-top: 2mm;
+            padding-bottom: 2mm;
+        }
+    </style>
 </head>
 
 <body class="center-y">
@@ -37,7 +44,7 @@
         </div>
     </div>
     <hr>
-    <div class="box">
+    <div class="box" id="results-container">
         {{results}}
     </div>
     <hr>
@@ -45,6 +52,45 @@
     <p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
 </div>
 </div>
+
+<script>
+    // 検索結果をqueryとtokensに基づいてソート
+    document.addEventListener('DOMContentLoaded', function() {
+        const query = '{{query}}'.toLowerCase();
+        const tokensStr = '{{tokens}}';
+        const tokens = tokensStr.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
+        
+        const container = document.getElementById('results-container');
+        const results = Array.from(container.children);
+        
+        results.sort((a, b) => {
+            const titleA = a.querySelector('h3 a')?.textContent.toLowerCase() || '';
+            const titleB = b.querySelector('h3 a')?.textContent.toLowerCase() || '';
+            
+            // queryマッチを最優先でチェック
+            const aQueryMatch = titleA.includes(query);
+            const bQueryMatch = titleB.includes(query);
+            
+            // tokensマッチをチェック
+            const aTokenMatch = tokens.some(token => titleA.includes(token));
+            const bTokenMatch = tokens.some(token => titleB.includes(token));
+            
+            // マッチした要素にクラスを追加
+            if (aQueryMatch || aTokenMatch) a.classList.add('query-matched');
+            if (bQueryMatch || bTokenMatch) b.classList.add('query-matched');
+            
+            // ソート優先順位: query > tokens > その他
+            if (aQueryMatch && !bQueryMatch) return -1;
+            if (!aQueryMatch && bQueryMatch) return 1;
+            if (aTokenMatch && !bTokenMatch) return -1;
+            if (!aTokenMatch && bTokenMatch) return 1;
+            return 0;
+        });
+        
+        results.forEach(result => container.appendChild(result));
+    });
+</script>
+
 </body>
 
 </html>
