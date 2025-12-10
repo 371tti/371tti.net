@@ -168,6 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 { cmd: "Theme mono-dark", desc: "Change to mono-dark theme", action: () => this.changeTheme(['mono-dark']) },
                 { cmd: "Theme mono-white", desc: "Change to mono-white theme", action: () => this.changeTheme(['mono-white']) },
                 { cmd: "Theme paper", desc: "Change to paper theme", action: () => this.changeTheme(['paper']) },
+                { 
+                    cmd: "Config preload", 
+                    desc: "Configure prerender/prefetch level (0:off, 1:moderate, 2:local, 3:all)", 
+                    action: (args) => this.setPreloadConfig(args) 
+                },
             ];
 
             // テーマ設定を共通定義に置き換え
@@ -222,6 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // CSS アニメーション追加
             this.addAnimations();
+
+            // プリロード設定初期化
+            this.initPreloadConfig();
         }
 
         addAnimations() {
@@ -434,7 +442,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         desc: `Change to ${theme} theme`,
                         action: () => this.changeTheme([theme])
                     }));
-            } else {
+            }             // Config preload N の特別処理
+            else if (baseCmd.toLowerCase() === 'config' && (parts[1] || '').toLowerCase() === 'preload') {
+                const levelArg = parts[2] || '';
+                const options = [
+                    { level: 0, label: 'Off (no prerender/prefetch)' },
+                    { level: 1, label: 'Moderate (same-origin, moderate)' },
+                    { level: 2, label: 'Local origin all (same-origin, eager)' },
+                    { level: 3, label: 'Everything (eager + prefetch https)' },
+                ];
+                this.filteredCommands = options.map(opt => ({
+                    cmd: `Config preload ${opt.level}`,
+                    desc: `${opt.label} ${this.preloadLevel === opt.level ? '(current)' : ''}`,
+                    action: () => this.setPreloadConfig([String(opt.level)]),
+                }));
+            }
+            else {
                 this.filteredCommands = this.commandTree.filter(cmd =>
                     cmd.cmd.toLowerCase().includes(query.toLowerCase()) ||
                     cmd.desc.toLowerCase().includes(query.toLowerCase())
@@ -758,7 +781,109 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.accountBox.style.opacity = '0.55';
             }
         }
+
+        // ---- Preload / Speculation Rules 設定 ----
+
+        initPreloadConfig() {
+            // 保存されたレベルを読み込み（デフォルト 1）
+            const saved = parseInt(localStorage.getItem('preloadLevel') || '1', 10);
+            this.preloadLevel = Number.isNaN(saved) ? 1 : Math.min(Math.max(saved, 0), 3);
+
+            this.speculationSupported = HTMLScriptElement.supports?.('speculationrules') ?? false;
+            if (!this.speculationSupported) {
+                console.log('[Preload] speculationrules is not supported in this browser');
+                return;
+            }
+
+            // 既存の管理用 script があれば再利用
+            let s = document.querySelector('script[type="speculationrules"][data-managed="true"]');
+            if (!s) {
+                s = document.createElement('script');
+                s.type = 'speculationrules';
+                s.dataset.managed = 'true';
+                document.head.appendChild(s);
+            }
+            this.specScript = s;
+
+            this.applyPreloadConfig();
+        }
+
+        setPreloadConfig(args) {
+            const raw = args && args[0] ? String(args[0]) : '';
+            if (!raw) {
+                console.log('Usage: Config preload <0|1|2|3>');
+                console.log('  0: off (no prerender/prefetch)');
+                console.log('  1: moderate (same-origin, moderate)');
+                console.log('  2: local origin all (same-origin, eager)');
+                console.log('  3: everything (same-origin eager + prefetch https)');
+                return;
+            }
+
+            const level = parseInt(raw, 10);
+            if (Number.isNaN(level) || level < 0 || level > 3) {
+                console.log('Invalid preload level:', raw, '(expected 0,1,2,3)');
+                return;
+            }
+
+            this.preloadLevel = level;
+            localStorage.setItem('preloadLevel', String(level));
+            this.applyPreloadConfig();
+            console.log(`[Preload] level set to ${level}`);
+        }
+
+        applyPreloadConfig() {
+            if (!this.speculationSupported || !this.specScript) return;
+
+            let rules = {};
+
+            switch (this.preloadLevel) {
+                case 0:
+                    // 何もしない（ルール空）
+                    rules = {};
+                    break;
+                case 1:
+                    // moderate: 同一オリジンのリンクを moderate で prerender
+                    rules = {
+                        prerender: [{
+                            where: { href_matches: "/*" },
+                            eagerness: "moderate",
+                        }],
+                    };
+                    break;
+                case 2:
+                    // local origin all: 同一オリジンを eager で prerender
+                    rules = {
+                        prerender: [{
+                            where: { href_matches: "/*" },
+                            eagerness: "eager",
+                        }],
+                    };
+                    break;
+                case 3:
+                    // everything: 同一オリジン eager + それ以外を prefetch（ざっくり）
+                    rules = {
+                        prerender: [{
+                            where: { href_matches: "/*" },
+                            eagerness: "eager",
+                        }],
+                        prefetch: [{
+                            where: { href_matches: "https://*" },
+                            eagerness: "moderate",
+                        }],
+                    };
+                    break;
+            }
+
+            if (Object.keys(rules).length === 0) {
+                // 無効の場合は中身を空に
+                this.specScript.textContent = '';
+            } else {
+                this.specScript.textContent = JSON.stringify(rules);
+            }
+        }
+
     }
+    
 
     new ConsoleEmulator();
 });

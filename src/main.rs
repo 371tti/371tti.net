@@ -17,6 +17,8 @@ async fn main() {
     let context = SiteContext::new(CONFIG_PATH.into()).await;
     let mut app = Kurosabi::with_context(context);
 
+    app.get("/testmd", |c| async move { PageGenerator::base(c, include_str!("../data/pages/Hekade/test.html"), "About This Site", None) });
+
     app.get("/", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
 
     app.get("/terms", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/terms/index.html"), "Terms of Service", None)});
@@ -37,8 +39,9 @@ async fn main() {
     app.get("/index.html", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
     app.get("/index", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
     app.get("/menu.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/menu.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    app.get("/optimizer.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/optimizer.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/style.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/style.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/box-load-anime.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/box-load-anime.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    app.get("/page-anime.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/page-anime.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/modern-border.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/modern-border.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/modern-border.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/modern-border.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/tag.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/tag.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });

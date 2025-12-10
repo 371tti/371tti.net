@@ -1,0 +1,49 @@
+<body>
+<div class="full center scroll">
+<div class="card" id="content">
+    <div class="box article">
+        <h1>レートリミットって何気に必要です。</h1>
+        <hr>
+        <div class="indent">
+        <p>
+            開発者倫理とコスト面から、レートリミットは重要です。<br>
+            私はDiscordでAIボットを作ったときにAPI料金で破産しないために作りました。<br>
+            そのときに楽しくレートリミッターを作れたので記事にしときます。
+        </p>
+        </div>
+    </div>
+    <div class="box article">
+        <h2>Types of RareLimitter</h2>
+        <div class="indent">
+        <p>よく見かけるやつでいくつか種類あげます</p>
+        </div>
+    <div class="box article">
+        <h3>Flex_Window_Counter</h3>
+        <div class="indent">
+        <p>
+            「1分に最大60リクエスト」とかを実現する一番シンプルなやつ。<br>
+            時間を区切る窓で、現在時間の窓でカウントし、上限でリミット。<br>
+            時間経過で次の窓に写り、カウンタリセット、回復。<br>
+            状態としてカウンタが1つ。軽いね。
+        </p>
+        </div>
+    </div>
+    <div class="box article">
+        <h3>Sliding_Window_Log</h3>
+        <div class="indent">
+        <p>
+            上のやつの改良。<br>
+            「直近60秒以内で最大60リクエスト」を実現。<br>
+            Flex Window〜の窓境界をなくした。<br>
+            状態としてキューにアクセス時間を入れる。<br>
+            指定時間以内のアクセス時間をカウントしてリミット。<br>
+            時間経過で古いアクセスログは範囲外に落ちていって回復。<br>
+            状態としてアクセスログ。まぁメモリ使うし重い。
+        </p>
+        </div>
+    </div>
+    <hr>
+    <p class="center">© 2024~ 371tti</p>
+    <p class="center"><a href="/">top_page</a>　-　<a href="/terms">terms</a></p>
+</div>
+</body>

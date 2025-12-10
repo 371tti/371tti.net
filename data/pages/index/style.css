@@ -115,6 +115,15 @@ ul { list-style-type: none; margin: 0; }
 
 img, image { border-radius: 1mm; }
 
+.article {
+    letter-spacing: 0.1em;
+    line-height: 2.0em;
+    .indent {
+        border: none;
+        margin: 0;
+    }
+}
+
 @supports (display: flex) { .flex { display: flex; } }
 .flex { display: flex; }
 .flex-column { display: flex; flex-direction: column; }
