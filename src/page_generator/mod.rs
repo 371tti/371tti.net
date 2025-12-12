@@ -4,6 +4,7 @@ use regex::Regex;
 use crate::context::SiteContext;
 
 pub mod err;
+pub mod article;
 pub mod search;
 
 pub struct PageGenerator {

@@ -4,6 +4,7 @@ use wk_371tti_net::api::handler::auth::AuthAPI;
 use wk_371tti_net::api::handler::search::SearchAPI;
 use wk_371tti_net::api::handler::status::StatusAPI;
 use wk_371tti_net::page_generator::PageGenerator;
+use wk_371tti_net::page_generator::article::ArticlePage;
 use wk_371tti_net::page_generator::err::ErrPage;
 use wk_371tti_net::page_generator::search::SearchPage;
 use wk_371tti_net::context::SiteContext;
@@ -17,8 +18,7 @@ async fn main() {
     let context = SiteContext::new(CONFIG_PATH.into()).await;
     let mut app = Kurosabi::with_context(context);
 
-    app.get("/testmd", |c| async move { PageGenerator::base(c, include_str!("../data/pages/Hekade/test.html"), "About This Site", None) });
-
+    app.get("/blog/*", |c| async move { ArticlePage::page(c).await });
     app.get("/", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
 
     app.get("/terms", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/terms/index.html"), "Terms of Service", None)});
@@ -40,6 +40,7 @@ async fn main() {
     app.get("/index", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
     app.get("/menu.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/menu.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/optimizer.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/optimizer.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
+    app.get("/rw-code.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/rw-code.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/style.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/style.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/page-anime.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/page-anime.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
     app.get("/modern-border.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/modern-border.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
