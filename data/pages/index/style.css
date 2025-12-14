@@ -107,6 +107,11 @@ mark {
     border-radius: 1px; 
 }
 
+.math-display {
+    padding: 5mm 10mm;
+    font-size: 1.6em;
+}
+
 blockquote {
     background-color: var(--color-bg-1);
     color: var(--color-text-0);
@@ -116,26 +121,26 @@ blockquote {
 
 blockquote::before {
     content: "❝";
-    font-size: 2em;
+    font-size: 1.8em;
     position: absolute;
     left: 3mm;
-    top: 3mm;
+    top: 5mm;
     color: var(--color-text-0);
 }
 
 blockquote::after {
     content: "❞";
-    font-size: 2em;
+    font-size: 1.8em;
     position: absolute;
     right: 3mm;
-    bottom: 0mm;
+    bottom: 1mm;
     color: var(--color-text-0);
 }
 
 /* カスタムタイプのブロック引用 */
 blockquote.quote-note {
     all: revert;
-    background-color: #477f8d48;
+    background-color: #619aa848;
     color: var(--color-text-0);
     padding: 5mm 10mm;
     position: relative;
@@ -154,13 +159,13 @@ blockquote.quote-note::after {
 
 blockquote.quote-tip {
     all: revert;
-    background-color: #7a875f48;
+    background-color: #a3986448;
     color: var(--color-text-0);
     padding: 5mm 10mm;
     position: relative;
 }
 blockquote.quote-tip::before {
-    content: "!";
+    content: "💡︎";
     font-size: 1.2em;
     position: absolute;
     left: 3mm;
@@ -173,7 +178,7 @@ blockquote.quote-tip::after {
 
 blockquote.quote-warning {
     all: revert;
-    background-color: #875f5f48;
+    background-color: #b86a6a48;
     color: var(--color-text-0);
     padding: 5mm 10mm;
     position: relative;
@@ -385,7 +390,21 @@ a:hover:not(.button):not(.tag):not(.link_anime)::after {
         margin-bottom: 1em;
         list-style-position: inside;
     }
-
+    .img {
+        margin: 5mm auto;
+        display: flex;
+        justify-content: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 5mm 0;
+    }
+    th, td {
+        border: 1px solid var(--color-bg-2);
+        padding: 2mm 4mm;
+        text-align: left;
+    }
 }
 
 @supports (display: grid) {

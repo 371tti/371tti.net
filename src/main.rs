@@ -19,6 +19,8 @@ async fn main() {
     let mut app = Kurosabi::with_context(context);
 
     app.get("/blog/*", |c| async move { ArticlePage::page(c).await });
+    app.get("/blog/", |c| async move { ArticlePage::page(c).await });
+    app.get("/blog", |c| async move { ArticlePage::page(c).await });
     app.get("/", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
 
     app.get("/terms", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/terms/index.html"), "Terms of Service", None)});

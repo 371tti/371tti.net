@@ -123,5 +123,5 @@ Term 2
 
 [test@example.com](mailto:test@example.com)
 
-![画像テスト](https://example.com/img.png "画像タイトル")
+![画像テスト](https://placehold.jp/300x200.png "画像タイトル")
 

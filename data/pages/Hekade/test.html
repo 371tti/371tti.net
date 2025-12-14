@@ -1,267 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <link rel="icon" href="/favicon.ico">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="371tti.net format">
+    <meta property="og:description" content="371tti.net format">
+    <meta property="og:title" content="371tti.net format">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="/blog/format">
+    <meta property="og:image" content="/banner.gif">
+    <meta property="og:image:width" content="1500">
+    <meta property="og:image:height" content="500">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="371tti.net format">
+    <meta name="twitter:description" content="371tti.net format">
+    <meta name="twitter:image" content="/banner.gif">
+
+    <link rel="manifest" href="/manifest.json">
+
+
+    <title>371tti.net</title>
+    <script src="/load-screen.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/tag.css">
+    <script src="/menu.js"></script>
+</head>
+
+
 <body>
-<div class="full center scroll">
-<div class="card" id="content">
-    <div class="box">
-        <h1>Markdown Rendering Test</h1>
-        <hr>
-    </div>
-
-    <div class="article">
-
-        <!-- ===== SECTION: Headings ===== -->
-        <section id="Headings">
-            <h2>Headings</h2>
-            <div class="indent">
-                <h1>H1 見出し</h1>
-                <h2>H2 見出し</h2>
-                <h3>H3 見出し</h3>
-                <h4>H4 見出し</h4>
-                <h5>H5 見出し</h5>
-                <h6>H6 見出し</h6>
+    <div class="full center scroll">
+        <div class="card" id="content">
+            <div class="box">
+                <h1>Markdown Rendering Test</h1>
+                <hr>
             </div>
-        </section>
 
-        <!-- ===== SECTION: Text Styles ===== -->
-        <section id="Text_Styles">
-            <h2>Text Styles</h2>
-            <div class="indent">
-                <p>
-                    <strong>太字</strong>、<em>斜体</em>、<code>インラインコード</code>、<br>
-                    <del>取り消し線</del>、<br>
-                    <mark>ハイライト</mark>
-                </p>
+            <div class="article">
 
-                <blockquote>
-                    <p>これは引用です。  
-                    Markdown の <code>&gt;</code> で作られます。</p>
-                </blockquote>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: Lists ===== -->
-        <section id="Lists">
-            <h2>Lists</h2>
-            <div class="indent">
-                <h3>Unordered list</h3>
-                <ul>
-                    <li>りんご</li>
-                    <li>みかん
-                        <ul>
-                            <li>ネーブル</li>
-                            <li>はっさく</li>
-                        </ul>
-                    </li>
-                    <li>ぶどう</li>
-                </ul>
-
-                <h3>Ordered list</h3>
-                <ol>
-                    <li>手順1</li>
-                    <li>手順2</li>
-                    <li>手順3</li>
-                </ol>
-
-                <h3>Task list</h3>
-                <ul>
-                    <li><input type="checkbox" checked> タスク1</li>
-                    <li><input type="checkbox"> タスク2</li>
-                    <li><input type="checkbox"> タスク3</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: Code Blocks ===== -->
-        <section id="CodeBlocks">
-            <h2>Code Blocks</h2>
-                <pre><code class="language-rust">fn main() {
-    println!("Hello Markdown!");
-}</code></pre>
-
-                <pre><code class="language-js">console.log("Hello JS!");</code></pre>
-
-                <pre><code class="language-bash">$ echo "hello"</code></pre>
-
-                <pre><code class="language-rust">
-use kurosabi::Kurosabi;
-use wk_371tti_net::api::handler::aaa::AsciiArcAnimation;
-use wk_371tti_net::api::handler::auth::AuthAPI;
-use wk_371tti_net::api::handler::search::SearchAPI;
-use wk_371tti_net::api::handler::status::StatusAPI;
-use wk_371tti_net::page_generator::PageGenerator;
-use wk_371tti_net::page_generator::err::ErrPage;
-use wk_371tti_net::page_generator::search::SearchPage;
-use wk_371tti_net::context::SiteContext;
-
-pub const CONFIG_PATH: &str = "config.toml";
-
-#[tokio::main(flavor = "multi_thread", worker_threads = 16)]
-async fn main() {
-    env_logger::try_init_from_env(env_logger::Env::default().default_filter_or("debug")).unwrap_or_else(|_| ());
-
-    let context = SiteContext::new(CONFIG_PATH.into()).await;
-    let mut app = Kurosabi::with_context(context);
-
-    app.get("/testmd", |c| async move { PageGenerator::base(c, include_str!("../data/pages/Hekade/test.html"), "About This Site", None) });
-
-    app.get("/", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
-
-    app.get("/terms", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/terms/index.html"), "Terms of Service", None)});
-    app.get("/license", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/license/index.html"), "License", None) });
-    app.get("/tools", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/index.html"), "Tools", None) });
-    app.get("/tool/clock", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/clock.html"), "Clock", None) });
-    app.get("/tool/color", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/color.html"), "Color", None) });
-    app.get("/tool/math_synthesizer", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/math_synthesizer.html"), "Math Synthesizer", None) });
-    app.get("/tool/2d_code", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/2d_code.html"), "2D Code", None) });
-    app.get("/tool/show", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/SHOW.html"), "Show", None) });
-    app.get("/tool/utf-8_steganography", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/utf-8_steganography.html"), "UTF-8 Steganography", None) });
-    app.get("/tool/image_effector", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/image_effector.html"), "Image Effector", None) });
-    app.get("/game/speed_runner", |mut c| async move { c.res.html(include_str!("../data/pages/index/tools/games/speed_runner.html")); c });
-    app.get("/library/mandelbrot", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/tools/mandelbrot.html"), "Mandelbrot", None) });
-    app.get("/toy/js_for_hater", |c| async move { PageGenerator::base(c, include_str!("../data/pages/toy/js_for_hater.html"), "JS for Hater", None) });
-    app.get("/login", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/login/index.html"), "Login", None) });
-    app.get("/release", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/release/index.html"), "Release", None) });
-    app.get("/index.html", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
-    app.get("/index", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
-    app.get("/menu.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/menu.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/optimizer.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/optimizer.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/rw-code.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/rw-code.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/style.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/style.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/page-anime.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/page-anime.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/modern-border.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/modern-border.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/modern-border.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/modern-border.js")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/tag.css", |mut c| async move { c.res.css(include_str!("../data/pages/index/tag.css")); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/copyable.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/copyable.js")); c });
-    app.get("/load-screen.js", |mut c| async move { c.res.js(include_str!("../data/pages/index/load-screen.js")); c });
-    app.get("/371tti_icon.png", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/371tti_icon.png"), "image/png"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/banner.png", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/banner.png"), "image/png"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/banner.gif", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/banner.gif"), "image/gif"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/favicon.ico", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/favicon.ico"), "image/x-icon"); c });
-    app.get("/robots.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/robots.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/humans.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/humans.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/security.txt", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/security.txt"), "text/plain"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/manifest.json", |mut c| async move { c.res.data(include_bytes!("../data/pages/index/manifest.json"), "application/manifest+json"); c.res.header.set("Access-Control-Allow-Origin", "*"); c });
-    app.get("/status", |c| async move { PageGenerator::base(c, include_str!("../data/pages/status/index.html"), "Status", None) });
-    app.get("/hekade" , |c| async move { PageGenerator::base(c, include_str!("../data/pages/hekade/index.html"), "Hekade", None) });
-    app.get("/ref", |mut c| async move { c.res.set_status(302); c.res.header.set("Location", "/"); c });
-    app.get("/search/index/add/urls", |c| async move { PageGenerator::base(c, include_str!("../data/pages/search/search_index_add.html"), "Search Index Add URLs", None) });
-    app.get("/ping", |c| async move { StatusAPI::ping(c).await });
-    app.get("/aaa", |c| async move { AsciiArcAnimation::root(c).await });
-    app.get("/aaa/kaomoji", |c| async move { AsciiArcAnimation::kaomoji(c).await });
-    app.get("/aaa/cat", |c| async move { AsciiArcAnimation::cat(c).await });
-    app.get("/aaa/bad_apple", |c| async move { AsciiArcAnimation::bad_apple(c).await });
-    app.get("/teapot", |c| async move { ErrPage::status_page(c, 418, "") });
-    app.get("/thisisfine", |c| async move { ErrPage::status_page(c, 218, "") });
-    app.get("/777", |c| async move { ErrPage::status_page(c, 777, "") });
-    app.get("/search", |c| async move { SearchPage::page(c).await });
-    app.get("/api/search", |c| async move { SearchAPI::search(c).await });
-    app.post("/api/auth", |c| async move { AuthAPI::auth(c).await });
-    app.get("/api/session", |c| async move { AuthAPI::session(c).await });
-    app.post("/api/index", |c| async move { SearchAPI::index(c).await });
-    app.post("/api/meta", |c| async move { SearchAPI::meta(c).await });
-    app.get("/api/meta/*", |c| async move { SearchAPI::meta_get(c).await });
-    app.post("/api/token_freq", |c| async move { SearchAPI::token_freq(c).await });
-    app.get("/api/token_freq/*", |c| async move { SearchAPI::token_freq_get(c).await });
-    app.get("/api/status", |c| async move { StatusAPI::health(c).await });
-    app.not_found_handler(|c| async move { ErrPage::status_page(c, 404, "") });
-
-    let server = app.server()
-        .host([0, 0, 0, 0])
-        .port(85)
-        .thread(16)
-        .nodelay(true)
-        .queue_size(1000)
-        .build();
-
-    server.run_async().await;
+                <section id="1_見出し1">
+                    <h1>見出し1</h1>
+                    <div class="indent">
+                        <p>本文テスト。<strong>太字</strong>、<em>強調</em>、<del>取り消し</del>、H₂O。<br />数式インライン：<span
+                                class="math-inline"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                                    <msup>
+                                        <mi>a</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                    <mo>+</mo>
+                                    <msup>
+                                        <mi>b</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                    <mo>=</mo>
+                                    <msup>
+                                        <mi>c</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                </math></span><br />WikiLink: <a href="Rust">Rust</a> とパイプ版 <a
+                                href="Language">Rust言語</a></p>
+                    </div>
+                </section>
+                <section id="2_見出し2">
+                    <h2>見出し2</h2>
+                    <div class="indent">
+                        <p>段落テスト。<br />改行テスト<br />次の行。</p>
+                    </div>
+                </section>
+                <section id="3_見出し3">
+                    <h3>見出し3</h3>
+                </section>
+                <section id="2_Blockquote">
+                    <h2>Blockquote</h2>
+                    <blockquote>
+                        <div class="indent">
+                            <p>これは普通の引用です。</p>
+                        </div>
+                    </blockquote>
+                    <blockquote class="quote-note">
+                        <div class="indent">
+                            <p>これは Note タイプの GFM ブロック引用。</p>
+                        </div>
+                    </blockquote>
+                    <blockquote class="quote-tip">
+                        <div class="indent">
+                            <p>テスト用 TIP。</p>
+                        </div>
+                    </blockquote>
+                    <blockquote class="quote-warning">
+                        <div class="indent">
+                            <p>注意が必要。</p>
+                        </div>
+                    </blockquote>
+                </section>
+                <section id="2_List">
+                    <h2>List</h2>
+                </section>
+                <section id="3_Unordered">
+                    <h3>Unordered</h3>
+                    <ul>
+                        <li>item A</li>
+                        <li>item B<ul>
+                                <li>nested 1</li>
+                                <li>nested 2</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+                <section id="3_Ordered-(start=5)">
+                    <h3>Ordered (start=5)</h3>
+                    <ol start="5">
+                        <li>five</li>
+                        <li>six</li>
+                        <li>seven</li>
+                    </ol>
+                </section>
+                <section id="3_Task-list">
+                    <h3>Task list</h3>
+                    <ul>
+                        <li><input type="checkbox" disabled checked />完了タスク</li>
+                        <li><input type="checkbox" disabled />未完了タスク</li>
+                    </ul>
+                </section>
+                <section id="2_Code">
+                    <h2>Code</h2>
+                    <pre><code class="language-rust">fn main() {
+    println!(&quot;Hello, world!&quot;);
 }
-                </code></pre>
-        </section>
+</code></pre>
+                    <pre><code class="language-">Fenceなしコード
+そのまま扱われる
+</code></pre>
+                    <div class="indent">
+                        <p>Inline code: <code>let x = 10;</code></p>
+                    </div>
+                </section>
+                <section id="2_Table">
+                    <h2>Table</h2>
+                    <table>
+                        <thead>
+                            <td>名前</td>
+                            <td>年齢</td>
+                            <td>国籍</td>
+                        </thead>
+                        <tr>
+                            <td>Alice</td>
+                            <td>23</td>
+                            <td>🇯🇵</td>
+                        </tr>
+                        <tr>
+                            <td>Bob</td>
+                            <td>34</td>
+                            <td>🇺🇸</td>
+                        </tr>
+                        <tr>
+                            <td>Carol</td>
+                            <td>29</td>
+                            <td>🇩🇪</td>
+                        </tr>
+                    </table>
+                </section>
+                <section id="2_Math">
+                    <h2>Math</h2>
+                    <div class="indent">
+                        <p>インライン：<span class="math-inline"><math xmlns="http://www.w3.org/1998/Math/MathML"
+                                    display="inline">
+                                    <mi>E</mi>
+                                    <mo>=</mo>
+                                    <mi>m</mi>
+                                    <msup>
+                                        <mi>c</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                </math></span>
+                            ディスプレイ：</p>
+                    </div>
+                    <div class="indent">
+                        <p>
+                        <div class="math-display"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <msubsup>
+                                    <mo>∫</mo>
+                                    <mn>0</mn>
+                                    <mi mathvariant="normal">∞</mi>
+                                </msubsup>
+                                <msup>
+                                    <mi>e</mi>
+                                    <mrow>
+                                        <mo>-</mo>
+                                        <mi>x</mi>
+                                    </mrow>
+                                </msup>
+                                <mi>d</mi>
+                                <mi>x</mi>
+                                <mo>=</mo>
+                                <mn>1</mn>
+                            </math></div>
+                        </p>
+                    </div>
+                </section>
+                <section id="2_Footnote-test">
+                    <h2>Footnote test</h2>
+                    <div class="indent">
+                        <p>Markdown の脚注<sup class="footnote-ref">1</sup> をテスト。</p>
+                    </div>
+                    <div>
+                        <div class="indent">
+                            <p>これは脚注です。
+                                続きの行もテスト。</p>
+                        </div>
+                    </div>
+                </section>
+                <section id="2_Definition-List">
+                    <h2>Definition List</h2>
+                    <dl>
+                        <dt>Term 1</dt>
+                        <dd>Definition 1</dd>
+                        <dt>Term 2</dt>
+                        <dd>Definition 2</dd>
+                    </dl>
+                </section>
+                <section id="2_HTML-block-test">
+                    <h2>HTML block test</h2>
+                </section>
+                <section id="2_Link-types">
+                    <h2>Link types</h2>
+                    <div class="indent">
+                        <p><a href="https://example.com">通常リンク</a></p>
+                    </div>
+                    <div class="indent">
+                        <p><a href="https://example.com/auto">https://example.com/auto</a></p>
+                    </div>
+                    <div class="indent">
+                        <p><a href="/cdn-cgi/l/email-protection#afdbcadcdbefcad7cec2dfc3ca81ccc0c2"><span
+                                    class="__cf_email__"
+                                    data-cfemail="e490819790a4819c8589948881ca878b89">[email&#160;protected]</span></a>
+                        </p>
+                    </div>
+                    <div class="indent">
+                        <p>
+                        <div class="img"><img src="https://placehold.jp/300x200.png" alt="画像タイトル"></div>
+                        </p>
+                    </div>
+                </section>
 
-        <!-- ===== SECTION: Tables ===== -->
-        <section id="Tables">
-            <h2>Tables</h2>
-            <div class="indent">
-                <table>
-                    <thead>
-                        <tr><th>ID</th><th>Name</th><th>Score</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>1</td><td>Alice</td><td>90</td></tr>
-                        <tr><td>2</td><td>Bob</td><td>78</td></tr>
-                        <tr><td>3</td><td>Charlie</td><td>85</td></tr>
-                    </tbody>
-                </table>
             </div>
-        </section>
 
-        <!-- ===== SECTION: Images & Links ===== -->
-        <section id="Images_and_Links">
-            <h2>Images and Links</h2>
-            <div class="indent">
-                <p>リンクテスト：</p>
-                <p><a href="https://example.com">Example.com</a></p>
+            <hr>
+            <p class="center">© 2024~ 371tti</p>
+            <p class="center">
+                <a href="/">top_page</a> -
+                <a href="/terms">terms</a>
+            </p>
 
-                <p>画像テスト（表示されなくてもOK）：</p>
-                <img src="https://placehold.jp/150x80.png" alt="sample">
-            </div>
-        </section>
-
-        <!-- ===== SECTION: Horizontal Rule ===== -->
-        <section id="Horizontal_Rule">
-            <h2>Horizontal Rule</h2>
-            <div class="indent">
-                <p>--- で区切り線を表現</p>
-                <hr>
-                <hr>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: Math (LaTeX) ===== -->
-        <section id="Math">
-            <h2>Math (LaTeX)</h2>
-            <div class="indent">
-                <p>インライン: <span>\( E = mc^2 \)</span></p>
-
-                <p>ブロック数式:</p>
-                <div>
-                    \[
-                        \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-                    \]
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: Details (折りたたみ) ===== -->
-        <section id="Details_Tag">
-            <h2>Details Tag</h2>
-            <div class="indent">
-                <details>
-                    <summary>クリックで展開</summary>
-                    <p>Markdown では HTML の <code>&lt;details&gt;</code> がそのまま使える場合がある。</p>
-                </details>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: Footnotes ===== -->
-        <section id="Footnotes">
-            <h2>Footnotes</h2>
-            <div class="indent">
-                <p>脚注テスト<sup id="fnref1"><a href="#fn1">[1]</a></sup></p>
-
-                <p id="fn1"><small>[1] ここが脚注の本文。</small></p>
-            </div>
-        </section>
-
+            
+        </div>
     </div>
-
-    <hr>
-    <p class="center">© 2024~ 371tti</p>
-    <p class="center">
-        <a href="/">top_page</a> -
-        <a href="/terms">terms</a>
-    </p>
-
-</div>
-</div>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script defer
+        src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+        integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+        data-cf-beacon='{"version":"2024.11.0","token":"393dbb1f31214e13978162158bd4252f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}'
+        crossorigin="anonymous"></script>
 </body>
 <script src="/rw-code.js"></script>
+
+
+<link rel="stylesheet" href="/modern-border.css">
+<script src="/modern-border.js"></script>
+<link rel="stylesheet" href="/page-anime.css">
+<script src="/optimizer.js"></script>
+
+</html>

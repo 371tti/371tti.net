@@ -1,11 +1,19 @@
 use dashmap::DashMap;
+use gray_matter::engine::YAML;
 use kurosabi::kurosabi::Context;
+use latex2mathml::DisplayStyle;
 use pulldown_cmark::{CodeBlockKind, HeadingLevel, Options, Parser, Tag, TagEnd};
+use serde::Deserialize;
 
 use crate::{context::SiteContext, page_generator::{PageGenerator, err::ErrPage}, utils::html_escape};
 
 pub struct ArticlePage {
     pub cache: DashMap<String, String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ArticleMeta {
+    pub title: String,
 }
 
 impl ArticlePage {
@@ -18,15 +26,31 @@ impl ArticlePage {
     pub async fn page(mut c: Context<SiteContext>) -> Context<SiteContext> {
         let base = c.req.path.get_field("*").unwrap_or("".into());
         let safe_base = base.replace("../", ""); // ディレクトリトラバーサル対策
-        let path = format!("data/blog/{}.md", safe_base);
+        println!("Article requested: {}", safe_base);
+        let path = if safe_base.ends_with("/") || safe_base.is_empty() {
+            format!("data/blog/{}index.md", safe_base)
+        } else {
+            format!("data/blog/{}.md", safe_base)
+        };
+        
         let md = tokio::fs::read_to_string(&path).await;
         match md {
             Ok(md) => {
-                let mut md_to_html = MdToHTML::new(&safe_base);
-                md_to_html.convert(&md);
-                let html = md_to_html.generate();
-                let full_html = ArticlePage::addition(&html);
-                PageGenerator::base(c, &full_html, &safe_base, None)
+                let result = gray_matter::Matter::<YAML>::new().parse::<ArticleMeta>(&md);
+                match result {
+                    Ok(parsed) => {
+                        let title = parsed.data.as_ref().map_or("Untitled", |data| data.title.as_str());
+                        let mut md_to_html = MdToHTML::new(title);
+                        let md = parsed.content;
+                        md_to_html.convert(&md);
+                        let html = md_to_html.generate();
+                        let full_html = ArticlePage::addition(&html, title);
+                        PageGenerator::base(c, &full_html, &safe_base, None)
+                    }
+                    Err(_e) => {
+                        ErrPage::status_page(c, 500, "Failed to parse front matter")
+                    }
+                }
             }
             Err(_e) => {
                 ErrPage::status_page(c, 404, "Article Not Found")
@@ -34,14 +58,14 @@ impl ArticlePage {
         }
     }
 
-    pub fn addition(html: &str) -> String {
+    pub fn addition(html: &str, title: &str) -> String {
         format!(
 "
 <body>
 <div class=\"full center scroll\">
 <div class=\"card\" id=\"content\">
     <div class=\"box\">
-        <h1>Markdown Rendering Test</h1>
+        <h1>{}</h1>
         <hr>
     </div>
 
@@ -53,7 +77,7 @@ impl ArticlePage {
     <hr>
     <p class=\"center\">© 2024~ 371tti</p>
     <p class=\"center\">
-        <a href=\"/\">top_page</a> -
+        <a href=\"/\">top_page</a>　-　
         <a href=\"/terms\">terms</a>
     </p>
 
@@ -61,8 +85,8 @@ impl ArticlePage {
 </div>
 </body>
 <script src=\"/rw-code.js\"></script>
-"
-, html
+",
+title, html
         )
     }
 }
@@ -70,6 +94,7 @@ impl ArticlePage {
 struct MdToHTML {
     state: ConvertState,
     html: Vec<Section>,
+    stop_push: bool,
 }
 
 pub struct Section {
@@ -94,10 +119,14 @@ impl MdToHTML {
                 title: title.to_string(),
                 content: String::new(),
             }],
+            stop_push: false,
         }
     }
 
     fn push(&mut self, s: &str) {
+        if self.stop_push {
+            return;
+        }
         if let Some(last) = self.html.last_mut() {
             if self.state == ConvertState::InSectionTitleCollect {
                 last.title.push_str(s);
@@ -132,8 +161,8 @@ impl MdToHTML {
                 pulldown_cmark::Event::End(tag_end) => self.end_to_element(tag_end),
                 pulldown_cmark::Event::Text(cow_str) => self.push(&html_escape(&cow_str)),
                 pulldown_cmark::Event::Code(cow_str) => self.push(&format!("<code>{}</code>", html_escape(&cow_str))),
-                pulldown_cmark::Event::InlineMath(cow_str) => self.push(&format!("<span class=\"math-inline\">{}</span>", cow_str)),
-                pulldown_cmark::Event::DisplayMath(cow_str) => self.push(&format!("<div class=\"math-display\">{}</div>", cow_str)),
+                pulldown_cmark::Event::InlineMath(cow_str) => self.push(&format!("<span class=\"math-inline\">{}</span>", Self::latex_to_mathml(&cow_str, false))),
+                pulldown_cmark::Event::DisplayMath(cow_str) => self.push(&format!("<div class=\"math-display\">{}</div>", Self::latex_to_mathml(&cow_str, true))),
                 pulldown_cmark::Event::Html(_cow_str) => {}, // HTML は無視
                 pulldown_cmark::Event::InlineHtml(cow_str) => self.push(&cow_str),
                 pulldown_cmark::Event::FootnoteReference(cow_str) => self.push(&format!("<sup class=\"footnote-ref\">{}</sup>", cow_str)),
@@ -152,8 +181,9 @@ impl MdToHTML {
     }
 
     fn generate(self) -> String {
-        let len = self.html.iter().map(|s| s.content.len()).sum();
-        let mut out = String::with_capacity(len);
+        let len: usize= self.html.iter().map(|s| s.content.len()).sum();
+        let addition_len: usize = self.html.len() * 50; // セクションタグ分の余裕
+        let mut out = String::with_capacity(len + addition_len);
         for section in self.html {
             if section.content.is_empty() {
                 continue;
@@ -170,7 +200,7 @@ impl MdToHTML {
 
     fn tag_to_element(&mut self, tag: Tag) {
         match tag {
-            Tag::Paragraph => self.push("<p>"),
+            Tag::Paragraph => self.push("<div class=\"indent\"><p>"),
             Tag::Heading { level, .. } => {
                 let lvl = match level {
                     HeadingLevel::H1 => 1,
@@ -259,7 +289,8 @@ impl MdToHTML {
                 } else {
                     "".to_string()
                 };
-                self.push(&format!("<img src=\"{}\"{}{} />", html_escape(&dest_url), alt_str, id_str));
+                self.push(&format!("<div class=\"img\"><img src=\"{}\"{}{}>", html_escape(&dest_url), alt_str, id_str));
+                self.stop_push = true;
             },
             _ => {},
         }
@@ -267,7 +298,7 @@ impl MdToHTML {
 
     fn end_to_element(&mut self, tag: TagEnd) {
         match tag {
-            TagEnd::Paragraph => self.push("</p>"),
+            TagEnd::Paragraph => self.push("</p></div>"),
             TagEnd::Heading(heading_level) => {
                 let lvl = match heading_level {
                     HeadingLevel::H1 => 1,
@@ -305,8 +336,23 @@ impl MdToHTML {
             TagEnd::Superscript => self.push("</sup>"),
             TagEnd::Subscript => self.push("</sub>"),
             TagEnd::Link => self.push("</a>"),
-            TagEnd::Image => {},
+            TagEnd::Image => {
+                self.stop_push = false;
+                self.push("</div>");
+            },
             _ => {},
+        }
+    }
+
+    fn latex_to_mathml(latex: &str, is_block: bool) -> String {
+        let style = if is_block {
+            DisplayStyle::Block
+        } else {
+            DisplayStyle::Inline
+        };
+        match latex2mathml::latex_to_mathml(latex, style) {
+            Ok(mathml) => mathml,
+            Err(_) => format!("<span class=\"math-error\">Invalid LaTeX: {}</span>", html_escape(latex)),
         }
     }
 }
