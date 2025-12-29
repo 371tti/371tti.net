@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use dashmap::{mapref::one::RefMut, DashMap};
 use argon2::Argon2;
@@ -254,6 +254,8 @@ pub struct SessionsData {
     pub now_account_index: Option<usize>,
     pub created_at: DateTime<Utc>,
     pub last_accessed_at: DateTime<Utc>,
+    /// その他のデータ保存用領域
+    pub data_storage: HashMap<String, String>,
 }
 
 #[derive(Clone, Serialize)]

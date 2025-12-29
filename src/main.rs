@@ -1,6 +1,7 @@
 use kurosabi::Kurosabi;
 use wk_371tti_net::api::handler::aaa::AsciiArcAnimation;
 use wk_371tti_net::api::handler::auth::AuthAPI;
+use wk_371tti_net::api::handler::curl_chat::CurlChat;
 use wk_371tti_net::api::handler::search::SearchAPI;
 use wk_371tti_net::api::handler::status::StatusAPI;
 use wk_371tti_net::page_generator::PageGenerator;
@@ -22,6 +23,9 @@ async fn main() {
     app.get("/blog/", |c| async move { ArticlePage::page(c).await });
     app.get("/blog", |c| async move { ArticlePage::page(c).await });
     app.get("/", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/index.html"), "Home", None) });
+    app.get("/cc", |c| async move { CurlChat::root(c).await });
+    app.get("/cc/set_name/*", |c| async move { CurlChat::set_name(c).await });
+    app.get("/cc/send/*", |c| async move { CurlChat::send_msg(c).await });
 
     app.get("/terms", |c| async move {PageGenerator::base(c, include_str!("../data/pages/index/terms/index.html"), "Terms of Service", None)});
     app.get("/license", |c| async move { PageGenerator::base(c, include_str!("../data/pages/index/license/index.html"), "License", None) });

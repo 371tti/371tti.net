@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use chrono::Utc;
 
 use dashmap::DashMap;
@@ -38,6 +40,10 @@ impl Sessions {
 }
 
 impl SessionKey {
+    pub fn dummy() -> Self {
+        SessionKey([0u8; 32])
+    }
+
     pub fn new() -> Self {
         let mut key = [0u8; 32];
         getrandom::fill(&mut key).expect("generate random session key");
@@ -58,6 +64,16 @@ impl SessionKey {
     pub fn as_base64(&self) -> String {
         general_purpose::STANDARD.encode(&self.0)
     }
+
+    /// 外部に公開してもよい 先頭数文字を省略した形
+    pub fn to_safe_string(&self) -> String {
+        let b64 = self.as_base64();
+        if b64.len() <= 8 {
+            b64
+        } else {
+            format!("...{}", &b64[8..])
+        }
+    }
 }
 
 impl SessionsData {
@@ -67,6 +83,7 @@ impl SessionsData {
             now_account_index: None,
             created_at: Utc::now(),
             last_accessed_at: Utc::now(),
+            data_storage: HashMap::new(),
         }
     }
 

@@ -8,6 +8,7 @@ use log::info;
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 
+use crate::features::curl_chat::CurlChatState;
 use crate::health::HealthChecker;
 use crate::task;
 use crate::task::scheduler::{TaskID, TaskPriority, TaskScheduler};
@@ -43,9 +44,12 @@ pub struct SiteContext {
     pub scheduler: Arc<TaskScheduler>,
     /// health
     pub health: Arc<HealthChecker>,
+    // chat
+    pub curl_chat_state: Arc<CurlChatState>,
 
     /// Instant data
     pub user_id: Option<AccountID>,
+    pub new_session_connected: bool,
 }
 
 impl SiteContext {
@@ -70,6 +74,8 @@ impl SiteContext {
         let scheduler = Arc::new(TaskScheduler::new());
 
         let health = Arc::new(HealthChecker::new(&config));
+
+        let curl_chat_state = Arc::new(CurlChatState::new());
         
         let instance = Self { 
             ssr, 
@@ -80,6 +86,8 @@ impl SiteContext {
             scheduler,
             health,
             db_client,
+            curl_chat_state,
+            new_session_connected: false,
         };
         
         
@@ -147,6 +155,7 @@ impl ContextMiddleware<SiteContext> for SiteContext {
                     None,
                     None,
                 );
+            ctx.c.new_session_connected = true;
         }
 
         ctx
