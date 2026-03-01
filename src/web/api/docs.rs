@@ -11,14 +11,12 @@ use crate::{markdown::PageMeta, web::templates::TemplateService};
 #[derive(Clone)]
 pub struct DocsRouter {
     base_dir: String,
-    templates: TemplateService,
 }
 
 impl DocsRouter {
-    pub fn new(base_dir: impl Into<String>, templates: TemplateService) -> Self {
+    pub fn new(base_dir: impl Into<String>) -> Self {
         Self {
             base_dir: base_dir.into(),
-            templates,
         }
     }
 
@@ -45,15 +43,15 @@ impl DocsRouter {
             DocKind::Markdown => {
                 let mut buf = String::new();
                 let _bytes = file.file.read_to_string(&mut buf).await?;
-                let (meta, content_md) = self.templates.parse_front_matter(buf, path);
-                let html = self.templates.render_common_page(content_md, meta);
+                let (meta, content_md) = TemplateService::parse_front_matter(buf, path);
+                let html = TemplateService::render_common_page(content_md, meta);
                 Ok(Some(html))
             }
             DocKind::Html => {
                 let mut buf = String::new();
                 let _bytes = file.file.read_to_string(&mut buf).await?;
-                let (meta, content_html) = self.templates.parse_front_matter(buf, path);
-                let html = self.templates.render_common_html(content_html, meta);
+                let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
+                let html = TemplateService::render_common_html(content_html, meta);
                 Ok(Some(html))
             }
             DocKind::Other => Ok(None),
@@ -75,8 +73,8 @@ impl DocsRouter {
                     } else {
                         let mut buf = String::new();
                         let _ = file.file.read_to_string(&mut buf).await;
-                        let (meta, content_html) = self.templates.parse_front_matter(buf, path);
-                        return Ok(self.templates.render_common_html(content_html, meta));
+                        let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
+                        return Ok(TemplateService::render_common_html(content_html, meta));
                     }
                 }
                 Err(_) => { let _ = path_with_index.pop(); }
@@ -130,7 +128,7 @@ impl DocsRouter {
 
         let (meta, opt_md) = match &index_md {
             Some(md) => {
-                let (m, c) = self.templates.parse_front_matter(md.clone(), path);
+                let (m, c) = TemplateService::parse_front_matter(md.clone(), path);
                 (m, Some(c))
             }
             None => (
@@ -213,7 +211,7 @@ impl DocsRouter {
             Some(content) => format!("\n\n---\n\n{}", content),
             None => "".to_string(),
         });
-        Ok(self.templates.render_common_page(md, meta))
+        Ok(TemplateService::render_common_page(md, meta))
     }
 }
 

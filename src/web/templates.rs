@@ -1,21 +1,11 @@
 use gray_matter::{Matter, engine::YAML};
-use crate::{VERSION, markdown::PageMeta, render::MarkdownRenderer};
+use crate::{VERSION, markdown::PageMeta};
 
-#[derive(Clone)]
-pub struct TemplateService {
-    renderer: MarkdownRenderer,
-}
-
-impl Default for TemplateService {
-    fn default() -> Self {
-        Self {
-            renderer: MarkdownRenderer::default(),
-        }
-    }
-}
+#[derive(Clone, Default)]
+pub struct TemplateService;
 
 impl TemplateService {
-    pub fn render_common_page(&self, md: String, meta: PageMeta) -> String {
+    pub fn render_common_page(md: String, meta: PageMeta) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -33,7 +23,7 @@ impl TemplateService {
                 md
             )
         };
-        let content = self.renderer.render(&md);
+        let content = crate::render::md_to_html_gfm_highlight(&md);
         format!(
             include_str!("../../data/static/index.html"),
             title = title,
@@ -44,7 +34,7 @@ impl TemplateService {
         )
     }
 
-    pub fn render_common_html(&self, html: String, meta: PageMeta) -> String {
+    pub fn render_common_html(html: String, meta: PageMeta) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -58,7 +48,13 @@ impl TemplateService {
         )
     }
 
-    pub fn parse_front_matter(&self, md: String, path: &[&str]) -> (PageMeta, String) {
+    pub fn render_temp_html(html: String) -> String {
+        let (meta, content_html) = Self::parse_front_matter(html, &[]);
+        let html = TemplateService::render_common_html(content_html, meta);
+        html
+    }
+
+    pub fn parse_front_matter(md: String, path: &[&str]) -> (PageMeta, String) {
         let matter = Matter::<YAML>::new();
         let result = matter.parse::<PageMeta>(&md);
         match result {

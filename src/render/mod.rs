@@ -404,7 +404,7 @@ pub fn inject_quote_alerts<'a>(arena: &'a comrak::Arena<'a>, root: &'a AstNode<'
 pub struct MarkdownRenderer;
 
 impl MarkdownRenderer {
-    pub fn render(&self, md: &str) -> String {
+    pub fn render(md: &str) -> String {
         md_to_html_gfm_highlight(md)
     }
 }

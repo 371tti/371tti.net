@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     config::BASE_DIR,
-    web::{analyzer::Counter, api::{DocsRouter, LsAPI, LsResponse}, templates::TemplateService},
+    web::{analyzer::Counter, api::{DocsRouter, LsAPI, LsResponse}},
 };
 
 #[derive(Clone)]
@@ -29,7 +29,6 @@ impl SiteContext {
                 ls_api: LsAPI::new(BASE_DIR),
                 docs_router: DocsRouter::new(
                     BASE_DIR,
-                    TemplateService::default(),
                 ),
                 counter: Counter::new(),
             })
