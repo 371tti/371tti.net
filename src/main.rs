@@ -13,11 +13,12 @@ async fn main() -> std::io::Result<()> {
         .format_timestamp_millis()
         .init();
     let context = SiteContext::new().await?;
+    let config = &context.shared.clone().config;
     let builder: KurosabiTokioServerBuilder<SiteContext> =
         KurosabiTokioServerBuilder::with_context(context);
     builder
-        .bind([0, 0, 0, 0])
-        .port(85)
+        .bind(config.get_host())
+        .port(config.port)
         .router_and_build(|conn| async move {
             let conn = match conn.req.method() {
                 HttpMethod::GET => match conn.path_segs().as_ref() {

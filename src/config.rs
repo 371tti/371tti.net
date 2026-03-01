@@ -36,6 +36,25 @@ impl Default for Config {
 }
 
 impl Config {
+    pub fn get_host(&self) -> [u8; 4] {
+        let segments: Vec<&str> = self.host.split('.').collect();
+        if segments.len() != 4 {
+            error!("Invalid host format in config: '{}', defaulting to '0.0.0.0'", self.host);
+            return [0, 0, 0, 0];
+        }
+        let mut result = [0u8; 4];
+        for (i, segment) in segments.iter().enumerate() {
+            match segment.parse::<u8>() {
+                Ok(val) => result[i] = val,
+                Err(e) => {
+                    error!("Invalid host segment '{}' in config: {}, defaulting to '0.0.0.0'", segment, e);
+                    return [0, 0, 0, 0];
+                }
+            }
+        }
+        result
+    }
+
     pub fn load_or_create() -> std::io::Result<Self> {
         let config_path = Path::new(crate::CONFIG_FILE_NAME);
         if config_path.exists() {
