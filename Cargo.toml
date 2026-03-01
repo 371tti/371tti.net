@@ -18,6 +18,7 @@ chrono = "0.4.44"
 serde_yaml = "0.9.34"
 tar = "0.4.44"
 zstd = "0.13.3"
+flate2 = "1.0"
 reqwest = { version = "0.12", default-features = false, features = [
     "blocking",
     "rustls-tls",

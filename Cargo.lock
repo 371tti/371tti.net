@@ -2534,6 +2534,7 @@ dependencies = [
  "comrak",
  "dashmap",
  "env_logger",
+ "flate2",
  "gray_matter",
  "kurosabi",
  "log",

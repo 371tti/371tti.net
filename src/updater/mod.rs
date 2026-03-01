@@ -1,4 +1,4 @@
-use std::io::{self, Read};
+use std::io::{self, Cursor, Read};
 use std::path::{Component, Path, PathBuf};
 /// base_dir(name) と content_repo_url を受け取る
 /// base_dir.tmp を作成して urlからzipをダウンロードしてtar crate + zstd crate で解凍して展開する(cli依存しない)
@@ -8,6 +8,7 @@ use std::path::{Component, Path, PathBuf};
 /// use std::fmt;
 use std::{fmt, fs};
 
+use flate2::read::GzDecoder;
 use log::{debug, info, warn};
 use reqwest::StatusCode;
 use reqwest::blocking::Client;
@@ -30,6 +31,7 @@ pub enum UpdateError {
     HttpStatus { url: String, status: StatusCode },
     InvalidBaseDir(String),
     InvalidArchivePath(PathBuf),
+    UnsupportedArchiveFormat(String),
 }
 
 impl fmt::Display for UpdateError {
@@ -40,6 +42,7 @@ impl fmt::Display for UpdateError {
             Self::HttpStatus { url, status } => write!(f, "http status error: {status} ({url})"),
             Self::InvalidBaseDir(s) => write!(f, "invalid base_dir: {s}"),
             Self::InvalidArchivePath(p) => write!(f, "invalid archive path: {}", p.display()),
+            Self::UnsupportedArchiveFormat(s) => write!(f, "unsupported archive format: {s}"),
         }
     }
 }
@@ -85,6 +88,10 @@ impl UpdateService {
     }
 
     fn archive_url(content_repo_url: &str, hash: &str) -> String {
+        if let Some((owner, repo)) = Self::parse_github_owner_repo(content_repo_url) {
+            return format!("https://codeload.github.com/{owner}/{repo}/tar.gz/{hash}");
+        }
+
         format!(
             "{}/archive/{}.tar.zst",
             Self::trim_url(content_repo_url),
@@ -169,10 +176,10 @@ impl UpdateService {
         Ok(())
     }
 
-    fn extract_tar_zst_strip_first<R: Read>(reader: R, dest: &Path) -> Result<(), UpdateError> {
-        let decoder = zstd::stream::read::Decoder::new(reader)?;
-        let mut archive = tar::Archive::new(decoder);
-
+    fn extract_tar_strip_first<R: Read>(
+        archive: &mut tar::Archive<R>,
+        dest: &Path,
+    ) -> Result<(), UpdateError> {
         for entry in archive.entries()? {
             let mut entry = entry?;
             let in_path = entry.path()?.to_path_buf();
@@ -205,10 +212,36 @@ impl UpdateService {
         Ok(())
     }
 
+    fn extract_archive_strip_first(
+        reader: impl Read,
+        dest: &Path,
+        archive_url: &str,
+    ) -> Result<(), UpdateError> {
+        let mut bytes = Vec::new();
+        let mut source = reader;
+        source.read_to_end(&mut bytes)?;
+
+        if archive_url.ends_with(".tar.zst") {
+            let decoder = zstd::stream::read::Decoder::new(Cursor::new(bytes))?;
+            let mut archive = tar::Archive::new(decoder);
+            return Self::extract_tar_strip_first(&mut archive, dest);
+        }
+
+        if archive_url.contains("/tar.gz/") || archive_url.ends_with(".tar.gz") {
+            let decoder = GzDecoder::new(Cursor::new(bytes));
+            let mut archive = tar::Archive::new(decoder);
+            return Self::extract_tar_strip_first(&mut archive, dest);
+        }
+
+        Err(UpdateError::UnsupportedArchiveFormat(
+            archive_url.to_string(),
+        ))
+    }
+
     /// base_dir と content_repo_url を使って更新する
     /// - branch の最新コミットを API から取得する
     /// - current_hash は前回適用済みハッシュ
-    /// - archive/{hash}.tar.zst を使用
+    /// - archive は github(codeload tar.gz) または独自配信(tar.zst)を使用
     /// - hash が同じなら更新しない
     pub fn update_content(
         base_dir: &Path,
@@ -255,7 +288,10 @@ impl UpdateService {
 
         let arc_url = Self::archive_url(content_repo_url, &latest_hash);
         info!("downloading archive: {}", arc_url);
-        let mut resp = client.get(&arc_url).send()?;
+        let mut resp = client
+            .get(&arc_url)
+            .header(USER_AGENT, "wk-371tti-net-updater")
+            .send()?;
         if !resp.status().is_success() {
             warn!(
                 "archive download failed: {} status={}",
@@ -269,7 +305,7 @@ impl UpdateService {
         }
 
         info!("extracting archive into {}", tmp_dir.display());
-        Self::extract_tar_zst_strip_first(&mut resp, &tmp_dir)?;
+        Self::extract_archive_strip_first(&mut resp, &tmp_dir, &arc_url)?;
 
         if base_dir.exists() {
             Self::move_git_metadata_if_exists(base_dir, &tmp_dir)?;
