@@ -33,7 +33,7 @@ pub struct SystemInfo {
 
 impl SystemInfo {
     pub fn text(&self) -> String {
-        format!("sys ver {} - content hash {}", self.system_version, &self.content_hash[..7])
+        format!("{}+contents.git.{}", self.system_version, &self.content_hash[..7])
     }
 }
 
