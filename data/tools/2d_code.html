@@ -7,453 +7,452 @@ is_complete: true
 ---
 
 
-<body>
-    <main>
-        <h1>2D Code Toolkit</h1>
-        <p style="color: var(--text-color-1); margin-bottom: 1.5rem;">
-            テキストから2Dコードを生成したり、コードを読み取ったりします
-        </p>
 
-        <div class="box">
-            <h2 class="h">生成</h2>
-            <div class="indent">
-                <label class="block" style="gap: 0.5rem;">
-                    <span>コード種別</span>
-                    <select id="code-type">
-                        <option value="qrcode">QRコード</option>
-                        <option value="datamatrix">Data Matrix</option>
-                        <option value="pdf417">PDF417</option>
+<main>
+    <h1>2D Code Toolkit</h1>
+    <p style="color: var(--text-color-1); margin-bottom: 1.5rem;">
+        テキストから2Dコードを生成したり、コードを読み取ったりします
+    </p>
+
+    <div class="box">
+        <h2 class="h">生成</h2>
+        <div class="indent">
+            <label class="block" style="gap: 0.5rem;">
+                <span>コード種別</span>
+                <select id="code-type">
+                    <option value="qrcode">QRコード</option>
+                    <option value="datamatrix">Data Matrix</option>
+                    <option value="pdf417">PDF417</option>
+                </select>
+            </label>
+            <label class="block" style="gap: 0.5rem;">
+                <span>テンプレート</span>
+                <select id="code-template">
+                    <option value="">テンプレートを選択...</option>
+                    <option value="https://">URL (https://)</option>
+                    <option value="mailto:">メール (mailto:)</option>
+                    <option value="tel:">電話 (tel:)</option>
+                    <option value="sms:">SMS (sms:)</option>
+                    <option value="geo:35.6804,139.7690">地図 (geo:緯度,経度)</option>
+                    <option value="WIFI:S:SSID;T:WPA;P:password;H:false;;">Wi-Fi (WIFI)</option>
+                </select>
+            </label>
+            <label class="block" style="gap: 0.5rem;">
+                <span>エンコードするテキスト</span>
+                <textarea id="matrix-input" rows="4" style="width: 100%;"></textarea>
+            </label>
+            <label class="block" style="gap: 0.5rem;">
+                <span>スケール (1-10)</span>
+                <input id="matrix-scale" type="range" min="1" max="10" value="4" />
+                <span id="scale-value">4</span>
+            </label>
+            <div id="code-options" class="flex" style="gap: 1rem; flex-wrap: wrap;">
+                <label class="block code-option" data-types="qrcode">
+                    <span>誤り訂正レベル</span>
+                    <select id="qr-ecc">
+                        <option value="L">L (7%)</option>
+                        <option value="M" selected>M (15%)</option>
+                        <option value="Q">Q (25%)</option>
+                        <option value="H">H (30%)</option>
                     </select>
                 </label>
-                <label class="block" style="gap: 0.5rem;">
-                    <span>テンプレート</span>
-                    <select id="code-template">
-                        <option value="">テンプレートを選択...</option>
-                        <option value="https://">URL (https://)</option>
-                        <option value="mailto:">メール (mailto:)</option>
-                        <option value="tel:">電話 (tel:)</option>
-                        <option value="sms:">SMS (sms:)</option>
-                        <option value="geo:35.6804,139.7690">地図 (geo:緯度,経度)</option>
-                        <option value="WIFI:S:SSID;T:WPA;P:password;H:false;;">Wi-Fi (WIFI)</option>
+                <label class="block code-option" data-types="datamatrix">
+                    <span>シンボル形状</span>
+                    <select id="dm-shape">
+                        <option value="">自動</option>
+                        <option value="square">正方形優先</option>
+                        <option value="rectangle">長方形優先</option>
                     </select>
                 </label>
+                <label class="block code-option" data-types="pdf417">
+                    <span>列数 (1-30)</span>
+                    <input id="pdf-columns" type="number" min="1" max="30" value="4" />
+                </label>
+            </div>
+            <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
                 <label class="block" style="gap: 0.5rem;">
-                    <span>エンコードするテキスト</span>
-                    <textarea id="matrix-input" rows="4" style="width: 100%;"></textarea>
+                    <span>コード色</span>
+                    <input id="code-foreground" type="color" value="#000000" />
                 </label>
                 <label class="block" style="gap: 0.5rem;">
-                    <span>スケール (1-10)</span>
-                    <input id="matrix-scale" type="range" min="1" max="10" value="4" />
-                    <span id="scale-value">4</span>
+                    <span>背景色</span>
+                    <input id="code-background" type="color" value="#ffffff" />
                 </label>
-                <div id="code-options" class="flex" style="gap: 1rem; flex-wrap: wrap;">
-                    <label class="block code-option" data-types="qrcode">
-                        <span>誤り訂正レベル</span>
-                        <select id="qr-ecc">
-                            <option value="L">L (7%)</option>
-                            <option value="M" selected>M (15%)</option>
-                            <option value="Q">Q (25%)</option>
-                            <option value="H">H (30%)</option>
-                        </select>
-                    </label>
-                    <label class="block code-option" data-types="datamatrix">
-                        <span>シンボル形状</span>
-                        <select id="dm-shape">
-                            <option value="">自動</option>
-                            <option value="square">正方形優先</option>
-                            <option value="rectangle">長方形優先</option>
-                        </select>
-                    </label>
-                    <label class="block code-option" data-types="pdf417">
-                        <span>列数 (1-30)</span>
-                        <input id="pdf-columns" type="number" min="1" max="30" value="4" />
-                    </label>
-                </div>
-                <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
-                    <label class="block" style="gap: 0.5rem;">
-                        <span>コード色</span>
-                        <input id="code-foreground" type="color" value="#000000" />
-                    </label>
-                    <label class="block" style="gap: 0.5rem;">
-                        <span>背景色</span>
-                        <input id="code-background" type="color" value="#ffffff" />
-                    </label>
-                </div>
-                <div style="text-align: center;">
-                    <a id="generate-btn" class="button" href="#">コードを生成</a>
-                </div>
-                <canvas id="matrix-canvas"
-                    style="margin: 1rem auto; display: block; max-width: 100%; background: var(--background-color-1);"></canvas>
-                <div id="generator-status" style="text-align: center; color: var(--text-color-0);"></div>
-                <div style="text-align: center;">
-                    <a id="download-btn" class="button" href="#">PNGをダウンロード</a>
-                </div>
+            </div>
+            <div style="text-align: center;">
+                <a id="generate-btn" class="button" href="#">コードを生成</a>
+            </div>
+            <canvas id="matrix-canvas"
+                style="margin: 1rem auto; display: block; max-width: 100%; background: var(--background-color-1);"></canvas>
+            <div id="generator-status" style="text-align: center; color: var(--text-color-0);"></div>
+            <div style="text-align: center;">
+                <a id="download-btn" class="button" href="#">PNGをダウンロード</a>
             </div>
         </div>
+    </div>
 
-        <div class="box" style="margin-top: 2rem;">
-            <h2 class="h">カメラで読み込み</h2>
-            <div class="indent">
-                <label class="block" style="gap: 0.5rem;">
-                    <span>テキストエンコーディング</span>
-                    <select id="decode-encoding">
-                        <option value="auto">自動</option>
-                        <option value="utf-8">UTF-8</option>
-                        <option value="shift_jis">Shift_JIS</option>
-                        <option value="iso-8859-1">ISO-8859-1</option>
-                        <option value="windows-1252">Windows-1252</option>
-                    </select>
-                </label>
-                <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
-                    <a id="start-camera" class="button" href="#">カメラを起動</a>
-                    <a id="stop-camera" class="button" href="#">停止</a>
-                </div>
-                <video id="camera-preview" playsinline muted
-                    style="width: 100%; max-width: 320px; margin: 0 auto; background: var(--background-color-1); border-radius: 0.5rem;"></video>
-                <div id="camera-result" style="text-align: center; color: var(--text-color-0);">スキャン結果: -</div>
+    <div class="box" style="margin-top: 2rem;">
+        <h2 class="h">カメラで読み込み</h2>
+        <div class="indent">
+            <label class="block" style="gap: 0.5rem;">
+                <span>テキストエンコーディング</span>
+                <select id="decode-encoding">
+                    <option value="auto">自動</option>
+                    <option value="utf-8">UTF-8</option>
+                    <option value="shift_jis">Shift_JIS</option>
+                    <option value="iso-8859-1">ISO-8859-1</option>
+                    <option value="windows-1252">Windows-1252</option>
+                </select>
+            </label>
+            <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
+                <a id="start-camera" class="button" href="#">カメラを起動</a>
+                <a id="stop-camera" class="button" href="#">停止</a>
             </div>
+            <video id="camera-preview" playsinline muted
+                style="width: 100%; max-width: 320px; margin: 0 auto; background: var(--background-color-1); border-radius: 0.5rem;"></video>
+            <div id="camera-result" style="text-align: center; color: var(--text-color-0);">スキャン結果: -</div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <script>
-        const state = {
-            reader: null,
-            cameraControls: null,
-        };
+<script>
+    const state = {
+        reader: null,
+        cameraControls: null,
+    };
 
-        const CDN_SOURCES = {
-            bwip: 'https://cdn.jsdelivr.net/npm/bwip-js/dist/bwip-js-min.js',
-            zxing: 'https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js',
-        };
+    const CDN_SOURCES = {
+        bwip: 'https://cdn.jsdelivr.net/npm/bwip-js/dist/bwip-js-min.js',
+        zxing: 'https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js',
+    };
 
-        function setLinkDisabled(link, disabled) {
-            link.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-            link.dataset.disabled = disabled ? 'true' : 'false';
-            link.style.pointerEvents = disabled ? 'none' : '';
-            link.tabIndex = disabled ? -1 : 0;
-        }
+    function setLinkDisabled(link, disabled) {
+        link.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        link.dataset.disabled = disabled ? 'true' : 'false';
+        link.style.pointerEvents = disabled ? 'none' : '';
+        link.tabIndex = disabled ? -1 : 0;
+    }
 
-        function isLinkDisabled(link) {
-            return link.dataset.disabled === 'true';
-        }
+    function isLinkDisabled(link) {
+        return link.dataset.disabled === 'true';
+    }
 
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const existing = document.querySelector(`script[src="${src}"]`);
-                if (existing) {
-                    if (existing.dataset.loaded === 'true') {
-                        resolve();
-                    } else {
-                        existing.addEventListener('load', resolve, { once: true });
-                        existing.addEventListener('error', () => reject(new Error(`${src} の読み込みに失敗しました。`)), { once: true });
-                    }
-                    return;
-                }
-
-                const script = document.createElement('script');
-                script.src = src;
-                script.async = true;
-                script.addEventListener('load', () => {
-                    script.dataset.loaded = 'true';
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                if (existing.dataset.loaded === 'true') {
                     resolve();
-                }, { once: true });
-                script.addEventListener('error', () => reject(new Error(`${src} の読み込みに失敗しました。`)), { once: true });
-                document.head.appendChild(script);
-            });
-        }
-
-        async function ensureLibraries() {
-            const loaders = [];
-
-            if (!window.BwipJS) {
-                loaders.push(loadScript(CDN_SOURCES.bwip));
-            }
-            if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
-                loaders.push(loadScript(CDN_SOURCES.zxing));
-            }
-
-            if (loaders.length) {
-                await Promise.all(loaders);
-            }
-
-            window.BwipJS = window.BwipJS || window.BWIPJS || window.bwipjs;
-
-            if (!window.BwipJS) {
-                throw new Error('BwipJSが読み込まれていません。');
-            }
-            if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
-                throw new Error('ZXingライブラリが読み込まれていません。');
-            }
-        }
-
-        function decodeTextWithEncoding(decodeResult, encoding) {
-            if (!decodeResult) {
-                return '';
-            }
-            if (!encoding || encoding === 'auto') {
-                const text = decodeResult.getText();
-                if (text) {
-                    return text;
+                } else {
+                    existing.addEventListener('load', resolve, { once: true });
+                    existing.addEventListener('error', () => reject(new Error(`${src} の読み込みに失敗しました。`)), { once: true });
                 }
+                return;
             }
-            const rawBytes = decodeResult.getRawBytes?.();
-            if (rawBytes && rawBytes.length) {
-                try {
-                    const decoder = new TextDecoder(encoding === 'auto' ? 'utf-8' : encoding, { fatal: false });
-                    return decoder.decode(rawBytes);
-                } catch (error) {
-                    console.error(error);
-                }
-            }
-            return decodeResult.getText();
+
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.addEventListener('load', () => {
+                script.dataset.loaded = 'true';
+                resolve();
+            }, { once: true });
+            script.addEventListener('error', () => reject(new Error(`${src} の読み込みに失敗しました。`)), { once: true });
+            document.head.appendChild(script);
+        });
+    }
+
+    async function ensureLibraries() {
+        const loaders = [];
+
+        if (!window.BwipJS) {
+            loaders.push(loadScript(CDN_SOURCES.bwip));
+        }
+        if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
+            loaders.push(loadScript(CDN_SOURCES.zxing));
         }
 
-        function renderScanResult(target, label, text, format) {
-            target.innerHTML = '';
-            const prefix = document.createElement('span');
-            prefix.textContent = `${label}: `;
-            target.appendChild(prefix);
-            const trimmed = text.trim();
-            if (/^(https?:|mailto:|tel:|sms:|geo:)/i.test(trimmed)) {
-                const anchor = document.createElement('a');
-                anchor.href = trimmed;
-                anchor.textContent = trimmed;
-                if (/^https?:/i.test(trimmed)) {
-                    anchor.target = '_blank';
-                    anchor.rel = 'noopener';
-                }
-                target.appendChild(anchor);
-            } else {
-                target.appendChild(document.createTextNode(text));
-            }
-            const suffix = document.createElement('span');
-            suffix.textContent = ` (種別: ${format})`;
-            target.appendChild(suffix);
+        if (loaders.length) {
+            await Promise.all(loaders);
         }
 
-        async function selectVideoDeviceId() {
-            if (!navigator.mediaDevices || !state.reader?.listVideoInputDevices) {
-                return undefined;
+        window.BwipJS = window.BwipJS || window.BWIPJS || window.bwipjs;
+
+        if (!window.BwipJS) {
+            throw new Error('BwipJSが読み込まれていません。');
+        }
+        if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
+            throw new Error('ZXingライブラリが読み込まれていません。');
+        }
+    }
+
+    function decodeTextWithEncoding(decodeResult, encoding) {
+        if (!decodeResult) {
+            return '';
+        }
+        if (!encoding || encoding === 'auto') {
+            const text = decodeResult.getText();
+            if (text) {
+                return text;
             }
+        }
+        const rawBytes = decodeResult.getRawBytes?.();
+        if (rawBytes && rawBytes.length) {
             try {
-                const devices = await state.reader.listVideoInputDevices();
-                if (!devices?.length) {
-                    return undefined;
-                }
-                const rearCamera = devices.find((device) => /back|rear|environment/i.test(device.label));
-                return (rearCamera ?? devices[0]).deviceId;
+                const decoder = new TextDecoder(encoding === 'auto' ? 'utf-8' : encoding, { fatal: false });
+                return decoder.decode(rawBytes);
             } catch (error) {
                 console.error(error);
-                return undefined;
             }
         }
+        return decodeResult.getText();
+    }
 
-        function setupGenerator() {
-            const typeSelect = document.getElementById('code-type');
-            const templateSelect = document.getElementById('code-template');
-            const input = document.getElementById('matrix-input');
-            const scaleInput = document.getElementById('matrix-scale');
-            const scaleValue = document.getElementById('scale-value');
-            const foregroundInput = document.getElementById('code-foreground');
-            const backgroundInput = document.getElementById('code-background');
-            const optionGroups = document.querySelectorAll('.code-option');
-            const qrEcc = document.getElementById('qr-ecc');
-            const dmShape = document.getElementById('dm-shape');
-            const pdfColumns = document.getElementById('pdf-columns');
-            const generateLink = document.getElementById('generate-btn');
-            const downloadLink = document.getElementById('download-btn');
-            const canvas = document.getElementById('matrix-canvas');
-            const status = document.getElementById('generator-status');
-            const download = document.getElementById('download-btn');
-            const canvasCtx = canvas.getContext('2d', { willReadFrequently: true }) || null;
-
-            const parseColor = (value, fallbackHex) => {
-                const hex = (value ?? '').trim().replace(/^#/, '').toUpperCase();
-                if (/^[0-9A-F]{6}$/.test(hex)) {
-                    return { hex, css: `#${hex}` };
-                }
-                const fb = fallbackHex.toUpperCase();
-                return { hex: fb, css: `#${fb}` };
-            };
-
-            const containsNonAscii = (value) => /[^\x00-\x7F]/.test(value ?? '');
-
-            const updateOptionVisibility = () => {
-                const currentType = typeSelect.value;
-                optionGroups.forEach((group) => {
-                    const allowed = group.dataset.types?.split(',') ?? [];
-                    group.style.display = allowed.includes(currentType) ? 'flex' : 'none';
-                });
-            };
-
-            typeSelect.addEventListener('change', updateOptionVisibility);
-            scaleInput.addEventListener('input', () => {
-                scaleValue.textContent = scaleInput.value;
-            });
-            templateSelect.addEventListener('change', () => {
-                const template = templateSelect.value;
-                if (template) {
-                    input.value = template;
-                    templateSelect.value = '';
-                    input.focus();
-                    input.setSelectionRange(input.value.length, input.value.length);
-                }
-            });
-
-            const generate = () => {
-                const text = input.value;
-                const type = typeSelect.value;
-                const typeLabel = typeSelect.options[typeSelect.selectedIndex]?.textContent ?? type;
-                const foreground = foregroundInput.value;
-                const background = backgroundInput.value;
-                status.style.color = 'var(--text-color-0)';
-
-                if (!text.trim()) {
-                    status.style.color = 'var(--alert-color-0, #ff5f5f)';
-                    status.textContent = 'テキストを入力してください。';
-                    setLinkDisabled(downloadLink, true);
-                    if (canvasCtx) {
-                        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-                    }
-                    canvas.style.backgroundColor = 'transparent';
-                    return;
-                }
-                try {
-                    const fg = parseColor(foreground, '000000');
-                    const bg = parseColor(background, 'FFFFFF');
-                    const options = {
-                        bcid: type,
-                        text,
-                        scale: Number(scaleInput.value),
-                        padding: 10,
-                        barcolor: fg.hex,
-                        backgroundcolor: bg.hex,
-                    };
-                    if (type === 'qrcode') {
-                        options.eclevel = qrEcc.value;
-                    } else if (type === 'datamatrix') {
-                        if (dmShape.value) {
-                            options.format = dmShape.value;
-                        }
-                        if (containsNonAscii(text)) {
-                            options.eci = 26;
-                        }
-                    } else if (type === 'pdf417') {
-                        const columns = Math.min(Math.max(Number(pdfColumns.value) || 4, 1), 30);
-                        options.columns = columns;
-                    }
-                    BwipJS.toCanvas(canvas, options);
-                    canvas.style.backgroundColor = bg.css;
-                    status.textContent = `${typeLabel}生成完了 (${canvas.width}×${canvas.height}px)`;
-                    setLinkDisabled(downloadLink, false);
-                } catch (error) {
-                    console.error(error);
-                    status.style.color = 'var(--alert-color-0, #ff5f5f)';
-                    status.textContent = '生成に失敗しました。入力内容をご確認ください。';
-                    setLinkDisabled(downloadLink, true);
-                }
-            };
-
-            generateLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (isLinkDisabled(generateLink)) return;
-                generate();
-            });
-            input.addEventListener('keydown', (event) => {
-                if (event.ctrlKey && event.key === 'Enter') {
-                    generate();
-                }
-            });
-
-            downloadLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (isLinkDisabled(downloadLink)) return;
-                const link = document.createElement('a');
-                link.href = document.getElementById('matrix-canvas').toDataURL('image/png');
-                link.download = `${typeSelect.value}_${Date.now()}.png`;
-                link.click();
-            });
-            setLinkDisabled(downloadLink, true);
-            updateOptionVisibility();
+    function renderScanResult(target, label, text, format) {
+        target.innerHTML = '';
+        const prefix = document.createElement('span');
+        prefix.textContent = `${label}: `;
+        target.appendChild(prefix);
+        const trimmed = text.trim();
+        if (/^(https?:|mailto:|tel:|sms:|geo:)/i.test(trimmed)) {
+            const anchor = document.createElement('a');
+            anchor.href = trimmed;
+            anchor.textContent = trimmed;
+            if (/^https?:/i.test(trimmed)) {
+                anchor.target = '_blank';
+                anchor.rel = 'noopener';
+            }
+            target.appendChild(anchor);
+        } else {
+            target.appendChild(document.createTextNode(text));
         }
+        const suffix = document.createElement('span');
+        suffix.textContent = ` (種別: ${format})`;
+        target.appendChild(suffix);
+    }
 
-        function setupCameraDecoder() {
-            const startLink = document.getElementById('start-camera');
-            const stopLink = document.getElementById('stop-camera');
-            const video = document.getElementById('camera-preview');
-            const result = document.getElementById('camera-result');
-            const encodingSelect = document.getElementById('decode-encoding');
+    async function selectVideoDeviceId() {
+        if (!navigator.mediaDevices || !state.reader?.listVideoInputDevices) {
+            return undefined;
+        }
+        try {
+            const devices = await state.reader.listVideoInputDevices();
+            if (!devices?.length) {
+                return undefined;
+            }
+            const rearCamera = devices.find((device) => /back|rear|environment/i.test(device.label));
+            return (rearCamera ?? devices[0]).deviceId;
+        } catch (error) {
+            console.error(error);
+            return undefined;
+        }
+    }
 
-            const stopCamera = () => {
-                if (state.cameraControls) {
-                    state.cameraControls.stop();
-                    state.cameraControls = null;
-                }
-                setLinkDisabled(startLink, false);
-                setLinkDisabled(stopLink, true);
-                result.textContent = 'スキャン結果: -';
-                result.style.color = 'var(--text-color-0)';
-            };
+    function setupGenerator() {
+        const typeSelect = document.getElementById('code-type');
+        const templateSelect = document.getElementById('code-template');
+        const input = document.getElementById('matrix-input');
+        const scaleInput = document.getElementById('matrix-scale');
+        const scaleValue = document.getElementById('scale-value');
+        const foregroundInput = document.getElementById('code-foreground');
+        const backgroundInput = document.getElementById('code-background');
+        const optionGroups = document.querySelectorAll('.code-option');
+        const qrEcc = document.getElementById('qr-ecc');
+        const dmShape = document.getElementById('dm-shape');
+        const pdfColumns = document.getElementById('pdf-columns');
+        const generateLink = document.getElementById('generate-btn');
+        const downloadLink = document.getElementById('download-btn');
+        const canvas = document.getElementById('matrix-canvas');
+        const status = document.getElementById('generator-status');
+        const download = document.getElementById('download-btn');
+        const canvasCtx = canvas.getContext('2d', { willReadFrequently: true }) || null;
 
-            startLink.addEventListener('click', async (event) => {
-                event.preventDefault();
-                if (isLinkDisabled(startLink)) return;
-                setLinkDisabled(startLink, true);
-                setLinkDisabled(stopLink, false);
-                result.style.color = 'var(--text-color-0)';
-                result.textContent = 'スキャン中...';
+        const parseColor = (value, fallbackHex) => {
+            const hex = (value ?? '').trim().replace(/^#/, '').toUpperCase();
+            if (/^[0-9A-F]{6}$/.test(hex)) {
+                return { hex, css: `#${hex}` };
+            }
+            const fb = fallbackHex.toUpperCase();
+            return { hex: fb, css: `#${fb}` };
+        };
 
-                try {
-                    if (!navigator.mediaDevices?.getUserMedia) {
-                        throw new Error('このブラウザはカメラに対応していません。');
-                    }
+        const containsNonAscii = (value) => /[^\x00-\x7F]/.test(value ?? '');
 
-                    let deviceId = await selectVideoDeviceId();
-                    if (!deviceId) {
-                        const warmupStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-                        warmupStream.getTracks().forEach((track) => track.stop());
-                        deviceId = await selectVideoDeviceId();
-                    }
-
-                    state.cameraControls = await state.reader.decodeFromVideoDevice(deviceId ?? undefined, video, (decodeResult, error) => {
-                        if (decodeResult) {
-                            const format = decodeResult.getBarcodeFormat?.().toString?.() ?? '不明';
-                            const text = decodeTextWithEncoding(decodeResult, encodingSelect.value);
-                            renderScanResult(result, 'スキャン結果', text, format);
-                            result.style.color = 'var(--accent-color-0, #2ecc71)';
-                        }
-                        if (error && !(error instanceof ZXing.NotFoundException)) {
-                            console.error(error);
-                        }
-                    });
-                } catch (error) {
-                    console.error(error);
-                    result.style.color = 'var(--alert-color-0, #ff5f5f)';
-                    result.textContent = 'カメラの起動に失敗しました。';
-                    stopCamera();
-                }
+        const updateOptionVisibility = () => {
+            const currentType = typeSelect.value;
+            optionGroups.forEach((group) => {
+                const allowed = group.dataset.types?.split(',') ?? [];
+                group.style.display = allowed.includes(currentType) ? 'flex' : 'none';
             });
+        };
 
-            stopLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (isLinkDisabled(stopLink)) return;
-                stopCamera();
-            });
+        typeSelect.addEventListener('change', updateOptionVisibility);
+        scaleInput.addEventListener('input', () => {
+            scaleValue.textContent = scaleInput.value;
+        });
+        templateSelect.addEventListener('change', () => {
+            const template = templateSelect.value;
+            if (template) {
+                input.value = template;
+                templateSelect.value = '';
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+        });
 
+        const generate = () => {
+            const text = input.value;
+            const type = typeSelect.value;
+            const typeLabel = typeSelect.options[typeSelect.selectedIndex]?.textContent ?? type;
+            const foreground = foregroundInput.value;
+            const background = backgroundInput.value;
+            status.style.color = 'var(--text-color-0)';
+
+            if (!text.trim()) {
+                status.style.color = 'var(--alert-color-0, #ff5f5f)';
+                status.textContent = 'テキストを入力してください。';
+                setLinkDisabled(downloadLink, true);
+                if (canvasCtx) {
+                    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                canvas.style.backgroundColor = 'transparent';
+                return;
+            }
+            try {
+                const fg = parseColor(foreground, '000000');
+                const bg = parseColor(background, 'FFFFFF');
+                const options = {
+                    bcid: type,
+                    text,
+                    scale: Number(scaleInput.value),
+                    padding: 10,
+                    barcolor: fg.hex,
+                    backgroundcolor: bg.hex,
+                };
+                if (type === 'qrcode') {
+                    options.eclevel = qrEcc.value;
+                } else if (type === 'datamatrix') {
+                    if (dmShape.value) {
+                        options.format = dmShape.value;
+                    }
+                    if (containsNonAscii(text)) {
+                        options.eci = 26;
+                    }
+                } else if (type === 'pdf417') {
+                    const columns = Math.min(Math.max(Number(pdfColumns.value) || 4, 1), 30);
+                    options.columns = columns;
+                }
+                BwipJS.toCanvas(canvas, options);
+                canvas.style.backgroundColor = bg.css;
+                status.textContent = `${typeLabel}生成完了 (${canvas.width}×${canvas.height}px)`;
+                setLinkDisabled(downloadLink, false);
+            } catch (error) {
+                console.error(error);
+                status.style.color = 'var(--alert-color-0, #ff5f5f)';
+                status.textContent = '生成に失敗しました。入力内容をご確認ください。';
+                setLinkDisabled(downloadLink, true);
+            }
+        };
+
+        generateLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isLinkDisabled(generateLink)) return;
+            generate();
+        });
+        input.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.key === 'Enter') {
+                generate();
+            }
+        });
+
+        downloadLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isLinkDisabled(downloadLink)) return;
+            const link = document.createElement('a');
+            link.href = document.getElementById('matrix-canvas').toDataURL('image/png');
+            link.download = `${typeSelect.value}_${Date.now()}.png`;
+            link.click();
+        });
+        setLinkDisabled(downloadLink, true);
+        updateOptionVisibility();
+    }
+
+    function setupCameraDecoder() {
+        const startLink = document.getElementById('start-camera');
+        const stopLink = document.getElementById('stop-camera');
+        const video = document.getElementById('camera-preview');
+        const result = document.getElementById('camera-result');
+        const encodingSelect = document.getElementById('decode-encoding');
+
+        const stopCamera = () => {
+            if (state.cameraControls) {
+                state.cameraControls.stop();
+                state.cameraControls = null;
+            }
             setLinkDisabled(startLink, false);
             setLinkDisabled(stopLink, true);
-        }
+            result.textContent = 'スキャン結果: -';
+            result.style.color = 'var(--text-color-0)';
+        };
 
-        (async () => {
+        startLink.addEventListener('click', async (event) => {
+            event.preventDefault();
+            if (isLinkDisabled(startLink)) return;
+            setLinkDisabled(startLink, true);
+            setLinkDisabled(stopLink, false);
+            result.style.color = 'var(--text-color-0)';
+            result.textContent = 'スキャン中...';
+
             try {
-                await ensureLibraries();
-                state.reader = new ZXing.BrowserMultiFormatReader();
-                setupGenerator();
-                setupCameraDecoder();
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    throw new Error('このブラウザはカメラに対応していません。');
+                }
+
+                let deviceId = await selectVideoDeviceId();
+                if (!deviceId) {
+                    const warmupStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+                    warmupStream.getTracks().forEach((track) => track.stop());
+                    deviceId = await selectVideoDeviceId();
+                }
+
+                state.cameraControls = await state.reader.decodeFromVideoDevice(deviceId ?? undefined, video, (decodeResult, error) => {
+                    if (decodeResult) {
+                        const format = decodeResult.getBarcodeFormat?.().toString?.() ?? '不明';
+                        const text = decodeTextWithEncoding(decodeResult, encodingSelect.value);
+                        renderScanResult(result, 'スキャン結果', text, format);
+                        result.style.color = 'var(--accent-color-0, #2ecc71)';
+                    }
+                    if (error && !(error instanceof ZXing.NotFoundException)) {
+                        console.error(error);
+                    }
+                });
             } catch (error) {
                 console.error(error);
-                alert(error.message);
+                result.style.color = 'var(--alert-color-0, #ff5f5f)';
+                result.textContent = 'カメラの起動に失敗しました。';
+                stopCamera();
             }
-        })();
-    </script>
-</body>
+        });
+
+        stopLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isLinkDisabled(stopLink)) return;
+            stopCamera();
+        });
+
+        setLinkDisabled(startLink, false);
+        setLinkDisabled(stopLink, true);
+    }
+
+    (async () => {
+        try {
+            await ensureLibraries();
+            state.reader = new ZXing.BrowserMultiFormatReader();
+            setupGenerator();
+            setupCameraDecoder();
+        } catch (error) {
+            console.error(error);
+            alert(error.message);
+        }
+    })();
+</script>

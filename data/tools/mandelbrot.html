@@ -6,8 +6,9 @@ authors:
 is_complete: true
 ---
 
-    <style>
-    html, body {
+<style>
+    html,
+    body {
         height: 100%;
         margin: 0;
         background: #000;
@@ -24,11 +25,10 @@ is_complete: true
         touch-action: none;
     }
 </style>
-<body>
-    <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
 
-    <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
-    <script type="module">
+<script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
+<script type="module">
     Decimal.set({ precision: 60, rounding: Decimal.ROUND_HALF_EVEN, toExpNeg: -80, toExpPos: 80 });
 
     const SPLIT = 134217729;
@@ -314,7 +314,7 @@ is_complete: true
             }
         };
         `;
-        
+
         const blob = new Blob([workerCode], { type: 'application/javascript' });
         return new Worker(URL.createObjectURL(blob));
     }
@@ -323,25 +323,25 @@ is_complete: true
         constructor(canvas) {
             this.canvas = canvas;
             this.ctx = canvas.getContext('2d', { alpha: false, desynchronized: true, willReadFrequently: false });
-            
+
             this.centerX = new Decimal(-0.5);
             this.centerY = new Decimal(0.0);
             this.zoom = new Decimal(3);
-            
+
             this.renderPasses = [64, 32, 16, 8, 4, 2, 1, 0.5, 0.25, 0.125];
             this.blockSize = 64;
             this.rendering = false;
             this.renderToken = 0;
-            
+
             this.refOrbit = null;
             this.refCenter = null;
-            
+
             this.minIter = 600;
             this.dynamicIter = this.minIter;
             this.iterSmoothing = 0.2;
             this.initialWidth = new Decimal(3);
             this.maxIterCap = 131072;
-            
+
             // Worker pool
             const workerCount = Math.max(navigator.hardwareConcurrency || 4, 8);
             this.workers = [];
@@ -350,7 +350,7 @@ is_complete: true
                 this.workers.push(createPerturbationWorker());
                 this.workerBusy.push(false);
             }
-            
+
             this.resize();
         }
 
@@ -367,29 +367,29 @@ is_complete: true
         computeReferenceOrbit() {
             const maxIter = this.referenceOrbitDepth();
             const orbit = [];
-            
+
             let Zr = new Decimal(0);
             let Zi = new Decimal(0);
             const cx = this.centerX;
             const cy = this.centerY;
-            
+
             for (let i = 0; i < maxIter; i++) {
                 const Zr2 = Zr.mul(Zr);
                 const Zi2 = Zi.mul(Zi);
                 const mag2 = Zr2.plus(Zi2);
-                
+
                 if (mag2.gt(1e20)) break;
-                
+
                 const zrDD = decimalToDoubleDouble(Zr);
                 const ziDD = decimalToDoubleDouble(Zi);
                 orbit.push([zrDD[0], zrDD[1], ziDD[0], ziDD[1]]);
-                
+
                 const newZi = Zr.mul(Zi).mul(2).plus(cy);
                 const newZr = Zr2.minus(Zi2).plus(cx);
                 Zr = newZr;
                 Zi = newZi;
             }
-            
+
             if (orbit.length === 0) {
                 const cxDD = decimalToDoubleDouble(this.centerX);
                 const cyDD = decimalToDoubleDouble(this.centerY);
@@ -460,14 +460,14 @@ is_complete: true
                     if (currentToken !== this.renderToken) {
                         return;
                     }
-                    
+
                     const downSample = passes[pass];
                     await this.renderPassBlocked(downSample, currentToken);
-                    
+
                     if (currentToken !== this.renderToken) {
                         return;
                     }
-                    
+
                     if (pass < passes.length - 1) {
                         await new Promise(resolve => setTimeout(resolve, 16));
                     }
@@ -490,7 +490,7 @@ is_complete: true
             const maxIterSnapshot = this.effectiveMaxIter();
             const magnification = this.initialWidth.div(this.zoom);
             const useHighPrecision = magnification.gt(HIGH_PRECISION_THRESHOLD);
-            
+
             const W = Math.floor(this.canvas.width / downSample);
             const H = Math.floor(this.canvas.height / downSample);
             const zoom = this.zoom.toNumber();
@@ -498,7 +498,7 @@ is_complete: true
             const blocksX = Math.ceil(W / blockSize);
             const blocksY = Math.ceil(H / blockSize);
             const totalBlocks = blocksX * blocksY;
-            
+
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = W;
             tempCanvas.height = H;
@@ -510,7 +510,7 @@ is_complete: true
                 imageData.data[i + 2] = 0;
                 imageData.data[i + 3] = 255;
             }
-            
+
             const jobs = [];
             for (let by = 0; by < blocksY; by++) {
                 for (let bx = 0; bx < blocksX; bx++) {
@@ -529,14 +529,14 @@ is_complete: true
                     });
                 }
             }
-            
+
             let nextJobIndex = 0;
             const jobPromises = jobs.map(job => new Promise(resolve => { job.resolve = resolve; }));
-            
+
             const launchJob = (workerIdx) => {
                 if (token !== this.renderToken) return;
                 if (nextJobIndex >= jobs.length) return;
-                
+
                 const job = jobs[nextJobIndex++];
                 const worker = this.workers[workerIdx];
                 const payload = {
@@ -550,16 +550,16 @@ is_complete: true
                     blockSize,
                     useHighPrecision
                 };
-                
+
                 const onMessage = (e) => {
                     worker.removeEventListener('message', onMessage);
-                    
+
                     if (token !== this.renderToken) {
                         job.resolve();
                         launchJob(workerIdx);
                         return;
                     }
-                    
+
                     const msg = e.data;
                     if (msg && msg.error) {
                         console.error('Worker error:', msg.error, 'block', job.blockX, job.blockY);
@@ -567,7 +567,7 @@ is_complete: true
                         launchJob(workerIdx);
                         return;
                     }
-                    
+
                     try {
                         const { data, blockW, blockH } = msg || {};
                         const startX = job.startX;
@@ -595,11 +595,11 @@ is_complete: true
                     } catch (err) {
                         console.error('Block merge error:', err);
                     }
-                    
+
                     job.resolve();
                     launchJob(workerIdx);
                 };
-                
+
                 worker.addEventListener('message', onMessage);
                 try {
                     worker.postMessage(payload);
@@ -610,15 +610,15 @@ is_complete: true
                     launchJob(workerIdx);
                 }
             };
-            
+
             for (let i = 0; i < this.workers.length && i < jobs.length; i++) {
                 launchJob(i);
             }
-            
+
             await Promise.all(jobPromises);
-            
+
             if (token !== this.renderToken) return;
-            
+
             try {
                 tempCtx.putImageData(imageData, 0, 0);
                 this.ctx.save();
@@ -643,17 +643,17 @@ is_complete: true
             const rect = this.canvas.getBoundingClientRect();
             const relX = (clientX - rect.left) / rect.width - 0.5;
             const relY = (clientY - rect.top) / rect.height - 0.5;
-            
+
             const aspect = rect.width / rect.height;
             const oldHeight = this.zoom;
             const oldWidth = oldHeight.mul(aspect);
             const offsetX = oldWidth.mul(relX);
             const offsetY = oldHeight.mul(relY);
-            
+
             this.centerX = this.centerX.plus(offsetX.mul(new Decimal(1).minus(factor)));
             this.centerY = this.centerY.plus(offsetY.mul(new Decimal(1).minus(factor)));
             this.zoom = this.zoom.mul(factor);
-            
+
             // 参照軌道をクリア（移動したので）
             this.refOrbit = null;
         }
@@ -662,13 +662,13 @@ is_complete: true
             this.cancelActiveRender();
             const rect = this.canvas.getBoundingClientRect();
             const aspect = rect.width / rect.height;
-            
+
             const pixelSizeX = this.zoom.mul(aspect).div(rect.width);
             const pixelSizeY = this.zoom.div(rect.height);
-            
+
             this.centerX = this.centerX.minus(pixelSizeX.mul(dx));
             this.centerY = this.centerY.minus(pixelSizeY.mul(dy));
-            
+
             // 参照軌道をクリア（移動したので）
             this.refOrbit = null;
         }
@@ -754,5 +754,4 @@ is_complete: true
     // 初期レンダリング
     renderer.resize();
     scheduleRender(0);
-    </script>
-</body>
+</script>

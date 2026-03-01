@@ -69,715 +69,713 @@ is_complete: true
     }
 </style>
 
-<body>
-    <main>
-        <div id="content">
+<main>
+    <div id="content">
 
-            <h1>Image Effector</h1>
+        <h1>Image Effector</h1>
 
 
-            <p style="color: var(--color-text-0); margin-bottom: 1.5rem;">
-                画像を読み込み、任意のエフェクトノードを並べて装飾・加工できるツールです。<br>
-                入力 → エフェクトノード群 → 出力 の順で処理されます。
-            </p>
+        <p style="color: var(--color-text-0); margin-bottom: 1.5rem;">
+            画像を読み込み、任意のエフェクトノードを並べて装飾・加工できるツールです。<br>
+            入力 → エフェクトノード群 → 出力 の順で処理されます。
+        </p>
 
-            <div class="box">
-                <h2 class="h">入力画像</h2>
-                <div class="indent">
-                    <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
-                        <label class="block" style="min-width: 220px; gap: 0.5rem;">
-                            <span>ファイルを選択</span>
-                            <input id="image-file" type="file" accept="image/*">
-                        </label><br>
-                        <label class="block" style="min-width: 260px; gap: 0.5rem;">
-                            <span>画像URL</span>
-                            <input id="image-url" type="url" placeholder="https://example.com/image.png">
-                        </label>
-                        <a id="load-url" class="button" href="#" style="align-self: flex-end;">URL を読み込む</a>
-                        <a id="reset-image" class="button" href="#" style="align-self: flex-end;">画像をリセット</a>
-                    </div>
-                    <small id="image-meta" style="display: block; margin-top: 0.5rem;">画像は読み込まれていません</small>
+        <div class="box">
+            <h2 class="h">入力画像</h2>
+            <div class="indent">
+                <div class="flex" style="gap: 1rem; flex-wrap: wrap;">
+                    <label class="block" style="min-width: 220px; gap: 0.5rem;">
+                        <span>ファイルを選択</span>
+                        <input id="image-file" type="file" accept="image/*">
+                    </label><br>
+                    <label class="block" style="min-width: 260px; gap: 0.5rem;">
+                        <span>画像URL</span>
+                        <input id="image-url" type="url" placeholder="https://example.com/image.png">
+                    </label>
+                    <a id="load-url" class="button" href="#" style="align-self: flex-end;">URL を読み込む</a>
+                    <a id="reset-image" class="button" href="#" style="align-self: flex-end;">画像をリセット</a>
                 </div>
-            </div>
-
-            <div class="box" style="margin-top: 2rem;">
-                <h2 class="h">エフェクトノード</h2>
-                <div class="indent">
-                    <div class="effect-toolbar">
-                        <a class="button" href="#" data-add-node="convolution">畳み込みノード</a>
-                        <a class="button" href="#" data-add-node="rgb">RGB ノード</a>
-                        <a class="button" href="#" data-add-node="resize">画像サイズ変更ノード</a>
-                        <a class="button" href="#" data-add-node="brightnessContrast">LC ノード</a>
-                        <a class="button" href="#" data-add-node="hsl">HSL ノード</a>
-                        <a class="button" href="#" data-add-node="gamma">ガンマ補正ノード</a>
-                        <a class="button" href="#" data-add-node="threshold">２値化ノード</a>
-                        <a class="button" href="#" id="clear-nodes" style="margin-left:auto;">すべてのノードを削除</a>
-                    </div>
-                    <div id="effect-nodes"></div>
-                </div>
-            </div>
-
-            <div class="box" style="margin-top: 2rem;">
-                <h2 class="h">プレビューと出力</h2>
-                <div class="indent">
-                    <div class="flex" style="gap: 1.5rem; flex-wrap: wrap; justify-content: center;">
-                        <div style="flex: 1 1 360px; min-width: 280px;">
-                            <h3 style="margin-bottom: 0.5rem;">入力プレビュー</h3>
-                            <canvas id="source-canvas"
-                                style="width: 100%; max-width: 520px; height: auto; background: var(--color-bg-1); cursor: zoom-in; border: 1px solid var(--color-bg-2);"></canvas>
-                            <div class="overlay-btn-hint">タップ／クリックで画面いっぱいに表示</div>
-                        </div>
-                        <div style="flex: 1 1 360px; min-width: 280px;">
-                            <h3 style="margin-bottom: 0.5rem;">出力プレビュー</h3>
-                            <canvas id="result-canvas"
-                                style="width: 100%; max-width: 520px; height: auto; background: var(--color-bg-1); cursor: zoom-in; border: 1px solid var(--color-bg-2);"></canvas>
-                            <div class="overlay-btn-hint">タップ／クリックで画面いっぱいに表示</div>
-                        </div>
-                    </div>
-                    <div class="flex" style="gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; align-items: center;">
-                        <label class="block" style="min-width: 220px; gap: 0.5rem;">
-                            <span>プレビュー縮小率 (%)</span>
-                            <input id="preview-scale" type="range" min="10" max="100" value="100">
-                            <small id="preview-scale-value">100%</small>
-                        </label>
-                        <a id="refresh-preview" class="button" href="#">プレビューを更新</a>
-                        <label class="block" style="min-width: 200px; gap: 0.5rem;">
-                            <span>出力フォーマット</span>
-                            <select id="output-format">
-                                <option value="png">PNG</option>
-                                <option value="jpeg">JPEG</option>
-                            </select>
-                        </label>
-                        <label id="jpeg-quality-row" class="block"
-                            style="min-width: 200px; gap: 0.5rem; display: none;">
-                            <span>JPEG 品質 (%)</span>
-                            <input id="jpeg-quality" type="range" min="10" max="100" value="90">
-                            <small id="jpeg-quality-value">90%</small>
-                        </label>
-                    </div>
-                    <div class="flex" style="gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <a id="apply-effects" class="button" href="#">処理を実行 (プレビュー更新)</a>
-                        <a id="download-result" class="button" href="#">結果をダウンロード</a>
-                        <a id="write-back" class="button" href="#">結果を書き戻す</a>
-                    </div>
-                    <div id="status" style="margin-top: 1rem; color: var(--color-text-0);">画像を読み込んでエフェクトを設定してください。</div>
-                </div>
+                <small id="image-meta" style="display: block; margin-top: 0.5rem;">画像は読み込まれていません</small>
             </div>
         </div>
-    </main>
 
-    <script>
-        (() => {
-            const state = {
-                sourceBitmap: null,
-                sourceLabel: '',
-                nodes: [],
-                nextNodeId: 1,
-                pendingRender: null,
-            };
+        <div class="box" style="margin-top: 2rem;">
+            <h2 class="h">エフェクトノード</h2>
+            <div class="indent">
+                <div class="effect-toolbar">
+                    <a class="button" href="#" data-add-node="convolution">畳み込みノード</a>
+                    <a class="button" href="#" data-add-node="rgb">RGB ノード</a>
+                    <a class="button" href="#" data-add-node="resize">画像サイズ変更ノード</a>
+                    <a class="button" href="#" data-add-node="brightnessContrast">LC ノード</a>
+                    <a class="button" href="#" data-add-node="hsl">HSL ノード</a>
+                    <a class="button" href="#" data-add-node="gamma">ガンマ補正ノード</a>
+                    <a class="button" href="#" data-add-node="threshold">２値化ノード</a>
+                    <a class="button" href="#" id="clear-nodes" style="margin-left:auto;">すべてのノードを削除</a>
+                </div>
+                <div id="effect-nodes"></div>
+            </div>
+        </div>
 
-            const KERNEL_PRESETS = {
-                identity: {
-                    label: 'Identity',
-                    size: 3,
-                    kernel: [
-                        0, 0, 0,
-                        0, 1, 0,
-                        0, 0, 0,
-                    ],
-                    divisor: 1,
-                    bias: 0,
-                },
-                boxBlur: {
-                    label: 'Box Blur',
-                    size: 3,
-                    kernel: [
-                        1, 1, 1,
-                        1, 1, 1,
-                        1, 1, 1,
-                    ],
-                    divisor: 9,
-                    bias: 0,
-                },
-                gaussian: {
-                    label: 'Gaussian Blur',
-                    size: 5,
-                    kernel: [
-                        1, 4, 6, 4, 1,
-                        4, 16, 24, 16, 4,
-                        6, 24, 36, 24, 6,
-                        4, 16, 24, 16, 4,
-                        1, 4, 6, 4, 1,
-                    ],
-                    divisor: 256,
-                    bias: 0,
-                },
-                sharpen: {
-                    label: 'Sharpen',
-                    size: 3,
-                    kernel: [
-                        0, -1, 0,
-                        -1, 5, -1,
-                        0, -1, 0,
-                    ],
-                    divisor: 1,
-                    bias: 0,
-                },
-                edge: {
-                    label: 'Edge Detect',
-                    size: 3,
-                    kernel: [
-                        -1, -1, -1,
-                        -1, 8, -1,
-                        -1, -1, -1,
-                    ],
-                    divisor: 1,
-                    bias: 0,
-                },
-                emboss: {
-                    label: 'Emboss',
-                    size: 3,
-                    kernel: [
-                        -2, -1, 0,
-                        -1, 1, 1,
-                        0, 1, 2,
-                    ],
-                    divisor: 1,
-                    bias: 128,
-                },
-            };
+        <div class="box" style="margin-top: 2rem;">
+            <h2 class="h">プレビューと出力</h2>
+            <div class="indent">
+                <div class="flex" style="gap: 1.5rem; flex-wrap: wrap; justify-content: center;">
+                    <div style="flex: 1 1 360px; min-width: 280px;">
+                        <h3 style="margin-bottom: 0.5rem;">入力プレビュー</h3>
+                        <canvas id="source-canvas"
+                            style="width: 100%; max-width: 520px; height: auto; background: var(--color-bg-1); cursor: zoom-in; border: 1px solid var(--color-bg-2);"></canvas>
+                        <div class="overlay-btn-hint">タップ／クリックで画面いっぱいに表示</div>
+                    </div>
+                    <div style="flex: 1 1 360px; min-width: 280px;">
+                        <h3 style="margin-bottom: 0.5rem;">出力プレビュー</h3>
+                        <canvas id="result-canvas"
+                            style="width: 100%; max-width: 520px; height: auto; background: var(--color-bg-1); cursor: zoom-in; border: 1px solid var(--color-bg-2);"></canvas>
+                        <div class="overlay-btn-hint">タップ／クリックで画面いっぱいに表示</div>
+                    </div>
+                </div>
+                <div class="flex" style="gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; align-items: center;">
+                    <label class="block" style="min-width: 220px; gap: 0.5rem;">
+                        <span>プレビュー縮小率 (%)</span>
+                        <input id="preview-scale" type="range" min="10" max="100" value="100">
+                        <small id="preview-scale-value">100%</small>
+                    </label>
+                    <a id="refresh-preview" class="button" href="#">プレビューを更新</a>
+                    <label class="block" style="min-width: 200px; gap: 0.5rem;">
+                        <span>出力フォーマット</span>
+                        <select id="output-format">
+                            <option value="png">PNG</option>
+                            <option value="jpeg">JPEG</option>
+                        </select>
+                    </label>
+                    <label id="jpeg-quality-row" class="block" style="min-width: 200px; gap: 0.5rem; display: none;">
+                        <span>JPEG 品質 (%)</span>
+                        <input id="jpeg-quality" type="range" min="10" max="100" value="90">
+                        <small id="jpeg-quality-value">90%</small>
+                    </label>
+                </div>
+                <div class="flex" style="gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                    <a id="apply-effects" class="button" href="#">処理を実行 (プレビュー更新)</a>
+                    <a id="download-result" class="button" href="#">結果をダウンロード</a>
+                    <a id="write-back" class="button" href="#">結果を書き戻す</a>
+                </div>
+                <div id="status" style="margin-top: 1rem; color: var(--color-text-0);">画像を読み込んでエフェクトを設定してください。</div>
+            </div>
+        </div>
+    </div>
+</main>
 
-            const elements = {
-                fileInput: document.getElementById('image-file'),
-                urlInput: document.getElementById('image-url'),
-                loadUrlLink: document.getElementById('load-url'),
-                resetLink: document.getElementById('reset-image'),
-                imageMeta: document.getElementById('image-meta'),
-                effectNodes: document.getElementById('effect-nodes'),
-                addNodeButtons: document.querySelectorAll('[data-add-node]'),
-                clearNodesButton: document.getElementById('clear-nodes'),
-                sourceCanvas: document.getElementById('source-canvas'),
-                resultCanvas: document.getElementById('result-canvas'),
-                previewScale: document.getElementById('preview-scale'),
-                previewScaleValue: document.getElementById('preview-scale-value'),
-                refreshPreview: document.getElementById('refresh-preview'),
-                applyEffects: document.getElementById('apply-effects'),
-                downloadResult: document.getElementById('download-result'),
-                writeBack: document.getElementById('write-back'),
-                outputFormat: document.getElementById('output-format'),
-                jpegQualityRow: document.getElementById('jpeg-quality-row'),
-                jpegQuality: document.getElementById('jpeg-quality'),
-                jpegQualityValue: document.getElementById('jpeg-quality-value'),
-                status: document.getElementById('status'),
-            };
+<script>
+    (() => {
+        const state = {
+            sourceBitmap: null,
+            sourceLabel: '',
+            nodes: [],
+            nextNodeId: 1,
+            pendingRender: null,
+        };
 
-            const sourceCtx = elements.sourceCanvas.getContext('2d');
-            const resultCtx = elements.resultCanvas.getContext('2d');
-            const scratchCanvas = document.createElement('canvas');
-            const scratchCtx = scratchCanvas.getContext('2d');
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            const ALLOWED_KERNEL_SIZES = [3, 5, 7];
+        const KERNEL_PRESETS = {
+            identity: {
+                label: 'Identity',
+                size: 3,
+                kernel: [
+                    0, 0, 0,
+                    0, 1, 0,
+                    0, 0, 0,
+                ],
+                divisor: 1,
+                bias: 0,
+            },
+            boxBlur: {
+                label: 'Box Blur',
+                size: 3,
+                kernel: [
+                    1, 1, 1,
+                    1, 1, 1,
+                    1, 1, 1,
+                ],
+                divisor: 9,
+                bias: 0,
+            },
+            gaussian: {
+                label: 'Gaussian Blur',
+                size: 5,
+                kernel: [
+                    1, 4, 6, 4, 1,
+                    4, 16, 24, 16, 4,
+                    6, 24, 36, 24, 6,
+                    4, 16, 24, 16, 4,
+                    1, 4, 6, 4, 1,
+                ],
+                divisor: 256,
+                bias: 0,
+            },
+            sharpen: {
+                label: 'Sharpen',
+                size: 3,
+                kernel: [
+                    0, -1, 0,
+                    -1, 5, -1,
+                    0, -1, 0,
+                ],
+                divisor: 1,
+                bias: 0,
+            },
+            edge: {
+                label: 'Edge Detect',
+                size: 3,
+                kernel: [
+                    -1, -1, -1,
+                    -1, 8, -1,
+                    -1, -1, -1,
+                ],
+                divisor: 1,
+                bias: 0,
+            },
+            emboss: {
+                label: 'Emboss',
+                size: 3,
+                kernel: [
+                    -2, -1, 0,
+                    -1, 1, 1,
+                    0, 1, 2,
+                ],
+                divisor: 1,
+                bias: 128,
+            },
+        };
 
-            function createIdentityKernel(size) {
-                const total = size * size;
-                const kernel = new Array(total).fill(0);
-                kernel[Math.floor(total / 2)] = 1;
-                return kernel;
+        const elements = {
+            fileInput: document.getElementById('image-file'),
+            urlInput: document.getElementById('image-url'),
+            loadUrlLink: document.getElementById('load-url'),
+            resetLink: document.getElementById('reset-image'),
+            imageMeta: document.getElementById('image-meta'),
+            effectNodes: document.getElementById('effect-nodes'),
+            addNodeButtons: document.querySelectorAll('[data-add-node]'),
+            clearNodesButton: document.getElementById('clear-nodes'),
+            sourceCanvas: document.getElementById('source-canvas'),
+            resultCanvas: document.getElementById('result-canvas'),
+            previewScale: document.getElementById('preview-scale'),
+            previewScaleValue: document.getElementById('preview-scale-value'),
+            refreshPreview: document.getElementById('refresh-preview'),
+            applyEffects: document.getElementById('apply-effects'),
+            downloadResult: document.getElementById('download-result'),
+            writeBack: document.getElementById('write-back'),
+            outputFormat: document.getElementById('output-format'),
+            jpegQualityRow: document.getElementById('jpeg-quality-row'),
+            jpegQuality: document.getElementById('jpeg-quality'),
+            jpegQualityValue: document.getElementById('jpeg-quality-value'),
+            status: document.getElementById('status'),
+        };
+
+        const sourceCtx = elements.sourceCanvas.getContext('2d');
+        const resultCtx = elements.resultCanvas.getContext('2d');
+        const scratchCanvas = document.createElement('canvas');
+        const scratchCtx = scratchCanvas.getContext('2d');
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        const ALLOWED_KERNEL_SIZES = [3, 5, 7];
+
+        function createIdentityKernel(size) {
+            const total = size * size;
+            const kernel = new Array(total).fill(0);
+            kernel[Math.floor(total / 2)] = 1;
+            return kernel;
+        }
+
+        function computeAutoDivisor(kernel) {
+            const sum = kernel.reduce((acc, value) => acc + value, 0);
+            return Math.abs(sum) > 1e-6 ? sum : 1;
+        }
+
+        function chunkKernel(values, size) {
+            const rows = [];
+            for (let y = 0; y < size; y += 1) {
+                rows.push(values.slice(y * size, (y + 1) * size));
+            }
+            return rows;
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(max, Math.max(min, value));
+        }
+
+        function createSliderWithNumber({ labelText, min, max, step, initial, suffix = '', layout = 'block', onChange }) {
+            const wrapper = document.createElement('div');
+            wrapper.className = layout === 'inline' ? 'dual-input' : 'block';
+            wrapper.style.gap = '0.3rem';
+
+            let label;
+            if (layout !== 'inline') {
+                label = document.createElement('span');
+                label.textContent = labelText;
+                wrapper.appendChild(label);
             }
 
-            function computeAutoDivisor(kernel) {
-                const sum = kernel.reduce((acc, value) => acc + value, 0);
-                return Math.abs(sum) > 1e-6 ? sum : 1;
+            const controls = document.createElement('div');
+            controls.className = 'dual-input';
+
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = `${min}`;
+            slider.max = `${max}`;
+            slider.step = `${step}`;
+
+            const number = document.createElement('input');
+            number.type = 'number';
+            number.min = `${min}`;
+            number.max = `${max}`;
+            number.step = `${step}`;
+
+            const suffixSpan = suffix ? document.createElement('span') : null;
+            if (suffixSpan) {
+                suffixSpan.textContent = suffix;
             }
 
-            function chunkKernel(values, size) {
-                const rows = [];
-                for (let y = 0; y < size; y += 1) {
-                    rows.push(values.slice(y * size, (y + 1) * size));
+            const sync = (value, trigger = false) => {
+                const clamped = clamp(value, min, max);
+                slider.value = `${clamped}`;
+                number.value = `${clamped}`;
+                if (trigger && typeof onChange === 'function') {
+                    onChange(clamped);
                 }
-                return rows;
+            };
+
+            slider.addEventListener('input', () => {
+                sync(Number.parseFloat(slider.value), true);
+            });
+
+            number.addEventListener('input', () => {
+                const value = Number.parseFloat(number.value);
+                if (!Number.isFinite(value)) return;
+                sync(value, true);
+            });
+
+            sync(initial, false);
+
+            controls.appendChild(slider);
+            controls.appendChild(number);
+            if (suffixSpan) controls.appendChild(suffixSpan);
+
+            if (layout === 'inline') {
+                const inlineLabel = document.createElement('span');
+                inlineLabel.textContent = labelText;
+                inlineLabel.style.minWidth = '120px';
+                inlineLabel.style.display = 'inline-flex';
+                inlineLabel.style.alignItems = 'center';
+                inlineLabel.style.gap = '0.3rem';
+                wrapper.appendChild(inlineLabel);
             }
 
-            function clamp(value, min, max) {
-                return Math.min(max, Math.max(min, value));
+            wrapper.appendChild(controls);
+
+            return {
+                element: wrapper,
+                setValue: (value) => sync(value, false),
+            };
+        }
+
+        function setStatus(message, ok = true) {
+            elements.status.textContent = message;
+            elements.status.style.color = ok ? 'var(--color-text-0)' : 'var(--alert-color-0, #ff5f5f)';
+        }
+
+        function updateImageMeta(label) {
+            if (!state.sourceBitmap) {
+                elements.imageMeta.textContent = '画像は読み込まれていません';
+                return;
             }
+            elements.imageMeta.textContent = `${label} | ${state.sourceBitmap.width} × ${state.sourceBitmap.height}`;
+        }
 
-            function createSliderWithNumber({ labelText, min, max, step, initial, suffix = '', layout = 'block', onChange }) {
-                const wrapper = document.createElement('div');
-                wrapper.className = layout === 'inline' ? 'dual-input' : 'block';
-                wrapper.style.gap = '0.3rem';
+        function loadImageFromFile(file) {
+            if (!file) return;
+            createImageBitmap(file).then((bitmap) => {
+                setSourceBitmap(bitmap, file.name || 'アップロード画像');
+            }).catch((error) => {
+                console.error(error);
+                setStatus('画像の読み込みに失敗しました。', false);
+            });
+        }
 
-                let label;
-                if (layout !== 'inline') {
-                    label = document.createElement('span');
-                    label.textContent = labelText;
-                    wrapper.appendChild(label);
-                }
+        function loadImageFromUrl(url) {
+            if (!url) return;
+            setStatus('画像を取得中...', true);
+            fetch(url, { mode: 'cors' })
+                .then((response) => {
+                    if (!response.ok) throw new Error('Fetch failed');
+                    return response.blob();
+                })
+                .then(createImageBitmap)
+                .then((bitmap) => {
+                    setSourceBitmap(bitmap, url);
+                    setStatus('画像を読み込みました。', true);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    setStatus('画像URLの読み込みに失敗しました。CORSポリシーに注意してください。', false);
+                });
+        }
+
+        function setSourceBitmap(bitmap, label) {
+            state.sourceBitmap = bitmap;
+            state.sourceLabel = label || '画像';
+            updateImageMeta(state.sourceLabel);
+            schedulePreviewRender();
+        }
+
+        function resetImage() {
+            state.sourceBitmap = null;
+            state.sourceLabel = '';
+            elements.sourceCanvas.width = 0;
+            elements.sourceCanvas.height = 0;
+            elements.resultCanvas.width = 0;
+            elements.resultCanvas.height = 0;
+            updateImageMeta('');
+            setStatus('画像を読み込んでエフェクトを設定してください。', true);
+        }
+
+        function addNode(type) {
+            const node = createNode(type);
+            state.nodes.push(node);
+            renderNodes();
+            schedulePreviewRender();
+        }
+
+        function clearNodes() {
+            state.nodes = [];
+            renderNodes();
+            schedulePreviewRender();
+        }
+
+        function removeNode(id) {
+            state.nodes = state.nodes.filter((node) => node.id !== id);
+            renderNodes();
+            schedulePreviewRender();
+        }
+
+        function createNode(type) {
+            if (type === 'convolution') {
+                const preset = KERNEL_PRESETS.sharpen;
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        preset: 'sharpen',
+                        size: preset.size,
+                        kernel: [...preset.kernel],
+                        divisor: preset.divisor,
+                        bias: preset.bias,
+                        autoNormalize: true,
+                    },
+                };
+            }
+            if (type === 'rgb') {
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        rScale: 1,
+                        gScale: 1,
+                        bScale: 1,
+                        rOffset: 0,
+                        gOffset: 0,
+                        bOffset: 0,
+                    },
+                };
+            }
+            if (type === 'resize') {
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        mode: 'percent',
+                        widthPercent: 100,
+                        heightPercent: 100,
+                        widthPx: null,
+                        heightPx: null,
+                        keepAspect: true,
+                        pixelAnchor: 'width',
+                    },
+                };
+            }
+            if (type === 'brightnessContrast') {
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        brightness: 0,
+                        contrast: 0,
+                    },
+                };
+            }
+            if (type === 'hsl') {
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        hue: 0,
+                        saturation: 0,
+                        lightness: 0,
+                    },
+                };
+            }
+            if (type === 'gamma') {
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        gamma: 1,
+                    },
+                };
+            }
+            if (type === 'threshold') {
+                return {
+                    id: state.nextNodeId++,
+                    type,
+                    params: {
+                        level: 128,
+                        invert: false,
+                    },
+                };
+            }
+            throw new Error(`Unknown node type: ${type}`);
+        }
+
+        function renderNodes() {
+            elements.effectNodes.innerHTML = '';
+            state.nodes.forEach((node, index) => {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'indent effect-node';
+                nodeElement.style.marginTop = index > 0 ? '1rem' : '0';
+
+                const header = document.createElement('div');
+                header.className = 'flex';
+                header.style.gap = '0.5rem';
+                header.style.alignItems = 'center';
+                const title = document.createElement('h3');
+                title.textContent = formatNodeTitle(node.type, index + 1);
+                title.style.margin = '0';
+                header.appendChild(title);
+                const removeBtn = document.createElement('a');
+                removeBtn.href = '#';
+                removeBtn.className = 'button';
+                removeBtn.textContent = '削除';
+                removeBtn.style.marginLeft = 'auto';
+                removeBtn.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    removeNode(node.id);
+                });
+                header.appendChild(removeBtn);
+                nodeElement.appendChild(header);
 
                 const controls = document.createElement('div');
-                controls.className = 'dual-input';
+                controls.className = 'effect-node-controls';
+                renderNodeControls(node, controls);
+                nodeElement.appendChild(controls);
 
-                const slider = document.createElement('input');
-                slider.type = 'range';
-                slider.min = `${min}`;
-                slider.max = `${max}`;
-                slider.step = `${step}`;
+                elements.effectNodes.appendChild(nodeElement);
+            });
+        }
 
-                const number = document.createElement('input');
-                number.type = 'number';
-                number.min = `${min}`;
-                number.max = `${max}`;
-                number.step = `${step}`;
+        function formatNodeTitle(type, index) {
+            switch (type) {
+                case 'convolution':
+                    return `畳み込み #${index}`;
+                case 'rgb':
+                    return `RGB 編集 #${index}`;
+                case 'resize':
+                    return `画像サイズ変更 #${index}`;
+                case 'brightnessContrast':
+                    return `明るさ・コントラスト #${index}`;
+                case 'hsl':
+                    return `色相・彩度・明度 #${index}`;
+                case 'gamma':
+                    return `ガンマ補正 #${index}`;
+                case 'threshold':
+                    return `２値化 #${index}`;
+                default:
+                    return `ノード #${index}`;
+            }
+        }
 
-                const suffixSpan = suffix ? document.createElement('span') : null;
-                if (suffixSpan) {
-                    suffixSpan.textContent = suffix;
-                }
+        function renderNodeControls(node, container) {
+            if (node.type === 'convolution') {
+                renderConvolutionControls(node, container);
+            } else if (node.type === 'rgb') {
+                renderRgbControls(node, container);
+            } else if (node.type === 'resize') {
+                renderResizeControls(node, container);
+            } else if (node.type === 'brightnessContrast') {
+                renderBrightnessContrastControls(node, container);
+            } else if (node.type === 'hsl') {
+                renderHslControls(node, container);
+            } else if (node.type === 'gamma') {
+                renderGammaControls(node, container);
+            } else if (node.type === 'threshold') {
+                renderThresholdControls(node, container);
+            }
+        }
 
-                const sync = (value, trigger = false) => {
-                    const clamped = clamp(value, min, max);
-                    slider.value = `${clamped}`;
-                    number.value = `${clamped}`;
-                    if (trigger && typeof onChange === 'function') {
-                        onChange(clamped);
-                    }
-                };
-
-                slider.addEventListener('input', () => {
-                    sync(Number.parseFloat(slider.value), true);
-                });
-
-                number.addEventListener('input', () => {
-                    const value = Number.parseFloat(number.value);
-                    if (!Number.isFinite(value)) return;
-                    sync(value, true);
-                });
-
-                sync(initial, false);
-
-                controls.appendChild(slider);
-                controls.appendChild(number);
-                if (suffixSpan) controls.appendChild(suffixSpan);
-
-                if (layout === 'inline') {
-                    const inlineLabel = document.createElement('span');
-                    inlineLabel.textContent = labelText;
-                    inlineLabel.style.minWidth = '120px';
-                    inlineLabel.style.display = 'inline-flex';
-                    inlineLabel.style.alignItems = 'center';
-                    inlineLabel.style.gap = '0.3rem';
-                    wrapper.appendChild(inlineLabel);
-                }
-
-                wrapper.appendChild(controls);
-
-                return {
-                    element: wrapper,
-                    setValue: (value) => sync(value, false),
-                };
+        function renderConvolutionControls(node, container) {
+            if (!ALLOWED_KERNEL_SIZES.includes(node.params.size)) {
+                node.params.size = 3;
+            }
+            if (!Array.isArray(node.params.kernel) || node.params.kernel.length !== node.params.size * node.params.size) {
+                node.params.kernel = createIdentityKernel(node.params.size);
+            }
+            if (typeof node.params.autoNormalize !== 'boolean') {
+                node.params.autoNormalize = true;
+            }
+            if (!Number.isFinite(node.params.divisor) || node.params.divisor === 0) {
+                node.params.divisor = node.params.autoNormalize ? computeAutoDivisor(node.params.kernel) : 1;
+            }
+            if (!Number.isFinite(node.params.bias)) {
+                node.params.bias = 0;
             }
 
-            function setStatus(message, ok = true) {
-                elements.status.textContent = message;
-                elements.status.style.color = ok ? 'var(--color-text-0)' : 'var(--alert-color-0, #ff5f5f)';
-            }
+            let presetSelect;
+            let sizeSelect;
+            let autoNormalizeInput;
+            let divisorInput;
+            let biasInput;
+            let kernelJsonInput;
+            let kernelGrid;
 
-            function updateImageMeta(label) {
-                if (!state.sourceBitmap) {
-                    elements.imageMeta.textContent = '画像は読み込まれていません';
-                    return;
-                }
-                elements.imageMeta.textContent = `${label} | ${state.sourceBitmap.width} × ${state.sourceBitmap.height}`;
-            }
-
-            function loadImageFromFile(file) {
-                if (!file) return;
-                createImageBitmap(file).then((bitmap) => {
-                    setSourceBitmap(bitmap, file.name || 'アップロード画像');
-                }).catch((error) => {
-                    console.error(error);
-                    setStatus('画像の読み込みに失敗しました。', false);
-                });
-            }
-
-            function loadImageFromUrl(url) {
-                if (!url) return;
-                setStatus('画像を取得中...', true);
-                fetch(url, { mode: 'cors' })
-                    .then((response) => {
-                        if (!response.ok) throw new Error('Fetch failed');
-                        return response.blob();
-                    })
-                    .then(createImageBitmap)
-                    .then((bitmap) => {
-                        setSourceBitmap(bitmap, url);
-                        setStatus('画像を読み込みました。', true);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        setStatus('画像URLの読み込みに失敗しました。CORSポリシーに注意してください。', false);
-                    });
-            }
-
-            function setSourceBitmap(bitmap, label) {
-                state.sourceBitmap = bitmap;
-                state.sourceLabel = label || '画像';
-                updateImageMeta(state.sourceLabel);
-                schedulePreviewRender();
-            }
-
-            function resetImage() {
-                state.sourceBitmap = null;
-                state.sourceLabel = '';
-                elements.sourceCanvas.width = 0;
-                elements.sourceCanvas.height = 0;
-                elements.resultCanvas.width = 0;
-                elements.resultCanvas.height = 0;
-                updateImageMeta('');
-                setStatus('画像を読み込んでエフェクトを設定してください。', true);
-            }
-
-            function addNode(type) {
-                const node = createNode(type);
-                state.nodes.push(node);
-                renderNodes();
-                schedulePreviewRender();
-            }
-
-            function clearNodes() {
-                state.nodes = [];
-                renderNodes();
-                schedulePreviewRender();
-            }
-
-            function removeNode(id) {
-                state.nodes = state.nodes.filter((node) => node.id !== id);
-                renderNodes();
-                schedulePreviewRender();
-            }
-
-            function createNode(type) {
-                if (type === 'convolution') {
-                    const preset = KERNEL_PRESETS.sharpen;
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            preset: 'sharpen',
-                            size: preset.size,
-                            kernel: [...preset.kernel],
-                            divisor: preset.divisor,
-                            bias: preset.bias,
-                            autoNormalize: true,
-                        },
-                    };
-                }
-                if (type === 'rgb') {
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            rScale: 1,
-                            gScale: 1,
-                            bScale: 1,
-                            rOffset: 0,
-                            gOffset: 0,
-                            bOffset: 0,
-                        },
-                    };
-                }
-                if (type === 'resize') {
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            mode: 'percent',
-                            widthPercent: 100,
-                            heightPercent: 100,
-                            widthPx: null,
-                            heightPx: null,
-                            keepAspect: true,
-                            pixelAnchor: 'width',
-                        },
-                    };
-                }
-                if (type === 'brightnessContrast') {
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            brightness: 0,
-                            contrast: 0,
-                        },
-                    };
-                }
-                if (type === 'hsl') {
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            hue: 0,
-                            saturation: 0,
-                            lightness: 0,
-                        },
-                    };
-                }
-                if (type === 'gamma') {
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            gamma: 1,
-                        },
-                    };
-                }
-                if (type === 'threshold') {
-                    return {
-                        id: state.nextNodeId++,
-                        type,
-                        params: {
-                            level: 128,
-                            invert: false,
-                        },
-                    };
-                }
-                throw new Error(`Unknown node type: ${type}`);
-            }
-
-            function renderNodes() {
-                elements.effectNodes.innerHTML = '';
-                state.nodes.forEach((node, index) => {
-                    const nodeElement = document.createElement('div');
-                    nodeElement.className = 'indent effect-node';
-                    nodeElement.style.marginTop = index > 0 ? '1rem' : '0';
-
-                    const header = document.createElement('div');
-                    header.className = 'flex';
-                    header.style.gap = '0.5rem';
-                    header.style.alignItems = 'center';
-                    const title = document.createElement('h3');
-                    title.textContent = formatNodeTitle(node.type, index + 1);
-                    title.style.margin = '0';
-                    header.appendChild(title);
-                    const removeBtn = document.createElement('a');
-                    removeBtn.href = '#';
-                    removeBtn.className = 'button';
-                    removeBtn.textContent = '削除';
-                    removeBtn.style.marginLeft = 'auto';
-                    removeBtn.addEventListener('click', (event) => {
-                        event.preventDefault();
-                        removeNode(node.id);
-                    });
-                    header.appendChild(removeBtn);
-                    nodeElement.appendChild(header);
-
-                    const controls = document.createElement('div');
-                    controls.className = 'effect-node-controls';
-                    renderNodeControls(node, controls);
-                    nodeElement.appendChild(controls);
-
-                    elements.effectNodes.appendChild(nodeElement);
-                });
-            }
-
-            function formatNodeTitle(type, index) {
-                switch (type) {
-                    case 'convolution':
-                        return `畳み込み #${index}`;
-                    case 'rgb':
-                        return `RGB 編集 #${index}`;
-                    case 'resize':
-                        return `画像サイズ変更 #${index}`;
-                    case 'brightnessContrast':
-                        return `明るさ・コントラスト #${index}`;
-                    case 'hsl':
-                        return `色相・彩度・明度 #${index}`;
-                    case 'gamma':
-                        return `ガンマ補正 #${index}`;
-                    case 'threshold':
-                        return `２値化 #${index}`;
-                    default:
-                        return `ノード #${index}`;
+            function updateKernelJsonPreview() {
+                if (kernelJsonInput) {
+                    kernelJsonInput.value = JSON.stringify(chunkKernel(node.params.kernel, node.params.size));
                 }
             }
 
-            function renderNodeControls(node, container) {
-                if (node.type === 'convolution') {
-                    renderConvolutionControls(node, container);
-                } else if (node.type === 'rgb') {
-                    renderRgbControls(node, container);
-                } else if (node.type === 'resize') {
-                    renderResizeControls(node, container);
-                } else if (node.type === 'brightnessContrast') {
-                    renderBrightnessContrastControls(node, container);
-                } else if (node.type === 'hsl') {
-                    renderHslControls(node, container);
-                } else if (node.type === 'gamma') {
-                    renderGammaControls(node, container);
-                } else if (node.type === 'threshold') {
-                    renderThresholdControls(node, container);
-                }
-            }
+            const presetLabel = document.createElement('label');
+            presetLabel.className = 'block';
+            presetLabel.style.gap = '0.5rem';
+            const presetSpan = document.createElement('span');
+            presetSpan.textContent = 'プリセット';
+            presetLabel.appendChild(presetSpan);
+            presetSelect = document.createElement('select');
+            presetSelect.style.minWidth = '180px';
+            presetSelect.innerHTML = '<option value="custom">カスタム</option>' +
+                Object.entries(KERNEL_PRESETS).map(([key, value]) => `<option value="${key}">${value.label}</option>`).join('');
+            presetSelect.value = node.params.preset && KERNEL_PRESETS[node.params.preset] ? node.params.preset : 'custom';
+            presetLabel.appendChild(presetSelect);
+            container.appendChild(presetLabel);
 
-            function renderConvolutionControls(node, container) {
-                if (!ALLOWED_KERNEL_SIZES.includes(node.params.size)) {
-                    node.params.size = 3;
-                }
-                if (!Array.isArray(node.params.kernel) || node.params.kernel.length !== node.params.size * node.params.size) {
-                    node.params.kernel = createIdentityKernel(node.params.size);
-                }
-                if (typeof node.params.autoNormalize !== 'boolean') {
-                    node.params.autoNormalize = true;
-                }
-                if (!Number.isFinite(node.params.divisor) || node.params.divisor === 0) {
-                    node.params.divisor = node.params.autoNormalize ? computeAutoDivisor(node.params.kernel) : 1;
-                }
-                if (!Number.isFinite(node.params.bias)) {
-                    node.params.bias = 0;
-                }
+            const sizeLabel = document.createElement('label');
+            sizeLabel.className = 'block';
+            sizeLabel.style.gap = '0.5rem';
+            const sizeSpan = document.createElement('span');
+            sizeSpan.textContent = 'カーネルサイズ';
+            sizeLabel.appendChild(sizeSpan);
+            sizeSelect = document.createElement('select');
+            sizeSelect.style.minWidth = '140px';
+            ALLOWED_KERNEL_SIZES.forEach((size) => {
+                const option = document.createElement('option');
+                option.value = `${size}`;
+                option.textContent = `${size} × ${size}`;
+                sizeSelect.appendChild(option);
+            });
+            sizeSelect.value = `${node.params.size}`;
+            sizeLabel.appendChild(sizeSelect);
+            container.appendChild(sizeLabel);
 
-                let presetSelect;
-                let sizeSelect;
-                let autoNormalizeInput;
-                let divisorInput;
-                let biasInput;
-                let kernelJsonInput;
-                let kernelGrid;
+            const autoNormalizeLabel = document.createElement('label');
+            autoNormalizeLabel.className = 'block';
+            autoNormalizeLabel.style.gap = '0.5rem';
+            autoNormalizeInput = document.createElement('input');
+            autoNormalizeInput.type = 'checkbox';
+            autoNormalizeInput.checked = node.params.autoNormalize;
+            autoNormalizeLabel.appendChild(autoNormalizeInput);
+            autoNormalizeLabel.appendChild(document.createTextNode('自動正規化 (カーネルの合計値で除算)'));
+            container.appendChild(autoNormalizeLabel);
 
-                function updateKernelJsonPreview() {
-                    if (kernelJsonInput) {
-                        kernelJsonInput.value = JSON.stringify(chunkKernel(node.params.kernel, node.params.size));
-                    }
-                }
+            const autoTip = document.createElement('small');
+            autoTip.className = 'mini-label';
+            autoTip.textContent = '合計が 0 の場合は 1 で除算します。';
+            container.appendChild(autoTip);
 
-                const presetLabel = document.createElement('label');
-                presetLabel.className = 'block';
-                presetLabel.style.gap = '0.5rem';
-                const presetSpan = document.createElement('span');
-                presetSpan.textContent = 'プリセット';
-                presetLabel.appendChild(presetSpan);
-                presetSelect = document.createElement('select');
-                presetSelect.style.minWidth = '180px';
-                presetSelect.innerHTML = '<option value="custom">カスタム</option>' +
-                    Object.entries(KERNEL_PRESETS).map(([key, value]) => `<option value="${key}">${value.label}</option>`).join('');
-                presetSelect.value = node.params.preset && KERNEL_PRESETS[node.params.preset] ? node.params.preset : 'custom';
-                presetLabel.appendChild(presetSelect);
-                container.appendChild(presetLabel);
+            const kernelWrapper = document.createElement('div');
+            kernelWrapper.innerHTML = '<span class="mini-label">カーネル係数</span>';
+            kernelGrid = document.createElement('div');
+            kernelGrid.className = 'kernel-grid';
+            kernelWrapper.appendChild(kernelGrid);
+            container.appendChild(kernelWrapper);
 
-                const sizeLabel = document.createElement('label');
-                sizeLabel.className = 'block';
-                sizeLabel.style.gap = '0.5rem';
-                const sizeSpan = document.createElement('span');
-                sizeSpan.textContent = 'カーネルサイズ';
-                sizeLabel.appendChild(sizeSpan);
-                sizeSelect = document.createElement('select');
-                sizeSelect.style.minWidth = '140px';
-                ALLOWED_KERNEL_SIZES.forEach((size) => {
-                    const option = document.createElement('option');
-                    option.value = `${size}`;
-                    option.textContent = `${size} × ${size}`;
-                    sizeSelect.appendChild(option);
-                });
-                sizeSelect.value = `${node.params.size}`;
-                sizeLabel.appendChild(sizeSelect);
-                container.appendChild(sizeLabel);
+            const divisorLabel = document.createElement('label');
+            divisorLabel.className = 'block';
+            divisorLabel.style.gap = '0.5rem';
+            const divisorSpan = document.createElement('span');
+            divisorSpan.textContent = '除算値';
+            divisorLabel.appendChild(divisorSpan);
+            divisorInput = document.createElement('input');
+            divisorInput.type = 'number';
+            divisorInput.step = '0.1';
+            divisorInput.value = `${node.params.divisor}`;
+            divisorInput.disabled = node.params.autoNormalize;
+            divisorLabel.appendChild(divisorInput);
+            container.appendChild(divisorLabel);
 
-                const autoNormalizeLabel = document.createElement('label');
-                autoNormalizeLabel.className = 'block';
-                autoNormalizeLabel.style.gap = '0.5rem';
-                autoNormalizeInput = document.createElement('input');
-                autoNormalizeInput.type = 'checkbox';
-                autoNormalizeInput.checked = node.params.autoNormalize;
-                autoNormalizeLabel.appendChild(autoNormalizeInput);
-                autoNormalizeLabel.appendChild(document.createTextNode('自動正規化 (カーネルの合計値で除算)'));
-                container.appendChild(autoNormalizeLabel);
+            const biasLabel = document.createElement('label');
+            biasLabel.className = 'block';
+            biasLabel.style.gap = '0.5rem';
+            const biasSpan = document.createElement('span');
+            biasSpan.textContent = 'バイアス';
+            biasLabel.appendChild(biasSpan);
+            biasInput = document.createElement('input');
+            biasInput.type = 'number';
+            biasInput.step = '1';
+            biasInput.value = `${node.params.bias}`;
+            biasLabel.appendChild(biasInput);
+            container.appendChild(biasLabel);
 
-                const autoTip = document.createElement('small');
-                autoTip.className = 'mini-label';
-                autoTip.textContent = '合計が 0 の場合は 1 で除算します。';
-                container.appendChild(autoTip);
+            const jsonDetails = document.createElement('details');
+            const jsonSummary = document.createElement('summary');
+            jsonSummary.textContent = 'フィルタ配列を直接編集 (JSON)';
+            jsonSummary.style.cursor = 'pointer';
+            jsonDetails.appendChild(jsonSummary);
+            const jsonInner = document.createElement('div');
+            jsonInner.className = 'indent';
+            jsonInner.style.marginTop = '1rem';
+            const jsonLabel = document.createElement('label');
+            jsonLabel.className = 'block';
+            jsonLabel.style.gap = '0.5rem';
+            jsonLabel.innerHTML = '<span>[[]] 形式のJSON</span>';
+            kernelJsonInput = document.createElement('textarea');
+            kernelJsonInput.rows = 4;
+            kernelJsonInput.style.width = '100%';
+            kernelJsonInput.style.fontFamily = 'monospace';
+            jsonLabel.appendChild(kernelJsonInput);
+            jsonInner.appendChild(jsonLabel);
+            const jsonButtons = document.createElement('div');
+            jsonButtons.className = 'flex';
+            jsonButtons.style.gap = '1rem';
+            jsonButtons.style.flexWrap = 'wrap';
+            const applyJsonBtn = document.createElement('a');
+            applyJsonBtn.href = '#';
+            applyJsonBtn.className = 'button';
+            applyJsonBtn.textContent = '配列を反映';
+            const copyJsonBtn = document.createElement('a');
+            copyJsonBtn.href = '#';
+            copyJsonBtn.className = 'button';
+            copyJsonBtn.textContent = '配列をコピー';
+            jsonButtons.appendChild(applyJsonBtn);
+            jsonButtons.appendChild(copyJsonBtn);
+            jsonInner.appendChild(jsonButtons);
+            jsonDetails.appendChild(jsonInner);
+            container.appendChild(jsonDetails);
 
-                const kernelWrapper = document.createElement('div');
-                kernelWrapper.innerHTML = '<span class="mini-label">カーネル係数</span>';
-                kernelGrid = document.createElement('div');
-                kernelGrid.className = 'kernel-grid';
-                kernelWrapper.appendChild(kernelGrid);
-                container.appendChild(kernelWrapper);
-
-                const divisorLabel = document.createElement('label');
-                divisorLabel.className = 'block';
-                divisorLabel.style.gap = '0.5rem';
-                const divisorSpan = document.createElement('span');
-                divisorSpan.textContent = '除算値';
-                divisorLabel.appendChild(divisorSpan);
-                divisorInput = document.createElement('input');
-                divisorInput.type = 'number';
-                divisorInput.step = '0.1';
-                divisorInput.value = `${node.params.divisor}`;
-                divisorInput.disabled = node.params.autoNormalize;
-                divisorLabel.appendChild(divisorInput);
-                container.appendChild(divisorLabel);
-
-                const biasLabel = document.createElement('label');
-                biasLabel.className = 'block';
-                biasLabel.style.gap = '0.5rem';
-                const biasSpan = document.createElement('span');
-                biasSpan.textContent = 'バイアス';
-                biasLabel.appendChild(biasSpan);
-                biasInput = document.createElement('input');
-                biasInput.type = 'number';
-                biasInput.step = '1';
-                biasInput.value = `${node.params.bias}`;
-                biasLabel.appendChild(biasInput);
-                container.appendChild(biasLabel);
-
-                const jsonDetails = document.createElement('details');
-                const jsonSummary = document.createElement('summary');
-                jsonSummary.textContent = 'フィルタ配列を直接編集 (JSON)';
-                jsonSummary.style.cursor = 'pointer';
-                jsonDetails.appendChild(jsonSummary);
-                const jsonInner = document.createElement('div');
-                jsonInner.className = 'indent';
-                jsonInner.style.marginTop = '1rem';
-                const jsonLabel = document.createElement('label');
-                jsonLabel.className = 'block';
-                jsonLabel.style.gap = '0.5rem';
-                jsonLabel.innerHTML = '<span>[[]] 形式のJSON</span>';
-                kernelJsonInput = document.createElement('textarea');
-                kernelJsonInput.rows = 4;
-                kernelJsonInput.style.width = '100%';
-                kernelJsonInput.style.fontFamily = 'monospace';
-                jsonLabel.appendChild(kernelJsonInput);
-                jsonInner.appendChild(jsonLabel);
-                const jsonButtons = document.createElement('div');
-                jsonButtons.className = 'flex';
-                jsonButtons.style.gap = '1rem';
-                jsonButtons.style.flexWrap = 'wrap';
-                const applyJsonBtn = document.createElement('a');
-                applyJsonBtn.href = '#';
-                applyJsonBtn.className = 'button';
-                applyJsonBtn.textContent = '配列を反映';
-                const copyJsonBtn = document.createElement('a');
-                copyJsonBtn.href = '#';
-                copyJsonBtn.className = 'button';
-                copyJsonBtn.textContent = '配列をコピー';
-                jsonButtons.appendChild(applyJsonBtn);
-                jsonButtons.appendChild(copyJsonBtn);
-                jsonInner.appendChild(jsonButtons);
-                jsonDetails.appendChild(jsonInner);
-                container.appendChild(jsonDetails);
-
-                const descriptionDetails = document.createElement('details');
-                const descriptionSummary = document.createElement('summary');
-                descriptionSummary.textContent = '畳み込みフィルタのヒント';
-                descriptionSummary.style.cursor = 'pointer';
-                descriptionDetails.appendChild(descriptionSummary);
-                const descriptionBody = document.createElement('div');
-                descriptionBody.className = 'indent';
-                descriptionBody.style.marginTop = '1rem';
-                descriptionBody.style.color = 'var(--color-text-0)';
-                descriptionBody.innerHTML = `
+            const descriptionDetails = document.createElement('details');
+            const descriptionSummary = document.createElement('summary');
+            descriptionSummary.textContent = '畳み込みフィルタのヒント';
+            descriptionSummary.style.cursor = 'pointer';
+            descriptionDetails.appendChild(descriptionSummary);
+            const descriptionBody = document.createElement('div');
+            descriptionBody.className = 'indent';
+            descriptionBody.style.marginTop = '1rem';
+            descriptionBody.style.color = 'var(--color-text-0)';
+            descriptionBody.innerHTML = `
                     <p>畳み込みは周囲のピクセルとの重み付き加算でぼかし・シャープ化・エッジ検出などを実現します。</p>
                     <ul>
                         <li><strong>Identity</strong>: 元画像そのまま</li>
@@ -789,1467 +787,1466 @@ is_complete: true
                     </ul>
                     <p>詳しい解説は <a href="https://youtu.be/CHx6uHnWErY?si=7icT7-tsWRTgCabf" target="_blank" rel="noopener">3Blue1Brown さんの動画</a> が参考になります。</p>
                 `;
-                descriptionDetails.appendChild(descriptionBody);
-                container.appendChild(descriptionDetails);
+            descriptionDetails.appendChild(descriptionBody);
+            container.appendChild(descriptionDetails);
 
-                function refreshKernelGrid() {
-                    kernelGrid.innerHTML = '';
-                    kernelGrid.style.gridTemplateColumns = `repeat(${node.params.size}, minmax(60px, 1fr))`;
-                    for (let i = 0; i < node.params.size * node.params.size; i += 1) {
-                        const input = document.createElement('input');
-                        input.type = 'number';
-                        input.step = '0.1';
-                        input.value = `${node.params.kernel[i] ?? 0}`;
-                        input.addEventListener('input', () => {
-                            const value = Number.parseFloat(input.value);
-                            node.params.kernel[i] = Number.isFinite(value) ? value : 0;
-                            node.params.preset = 'custom';
-                            presetSelect.value = 'custom';
-                            if (node.params.autoNormalize) {
-                                node.params.divisor = computeAutoDivisor(node.params.kernel);
-                                divisorInput.value = `${node.params.divisor}`;
-                            }
-                            updateKernelJsonPreview();
-                            schedulePreviewRender();
-                        });
-                        kernelGrid.appendChild(input);
-                    }
-                    if (node.params.autoNormalize) {
-                        node.params.divisor = computeAutoDivisor(node.params.kernel);
-                        divisorInput.value = `${node.params.divisor}`;
-                    }
-                    updateKernelJsonPreview();
-                }
-
-                presetSelect.addEventListener('change', (event) => {
-                    const value = event.target.value;
-                    if (value === 'custom') {
+            function refreshKernelGrid() {
+                kernelGrid.innerHTML = '';
+                kernelGrid.style.gridTemplateColumns = `repeat(${node.params.size}, minmax(60px, 1fr))`;
+                for (let i = 0; i < node.params.size * node.params.size; i += 1) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = '0.1';
+                    input.value = `${node.params.kernel[i] ?? 0}`;
+                    input.addEventListener('input', () => {
+                        const value = Number.parseFloat(input.value);
+                        node.params.kernel[i] = Number.isFinite(value) ? value : 0;
                         node.params.preset = 'custom';
-                        return;
-                    }
-                    const preset = KERNEL_PRESETS[value];
-                    if (!preset) return;
-                    node.params.preset = value;
-                    node.params.size = preset.size;
-                    node.params.kernel = [...preset.kernel];
-                    node.params.bias = preset.bias;
-                    node.params.divisor = preset.divisor;
-                    node.params.autoNormalize = true;
-                    sizeSelect.value = `${preset.size}`;
-                    autoNormalizeInput.checked = true;
-                    divisorInput.disabled = true;
-                    divisorInput.value = `${node.params.divisor}`;
-                    biasInput.value = `${node.params.bias}`;
-                    refreshKernelGrid();
-                    schedulePreviewRender();
-                });
-
-                sizeSelect.addEventListener('change', () => {
-                    const newSize = Number.parseInt(sizeSelect.value, 10);
-                    if (!ALLOWED_KERNEL_SIZES.includes(newSize)) return;
-                    if (node.params.size === newSize) return;
-                    node.params.size = newSize;
-                    node.params.kernel = createIdentityKernel(newSize);
-                    node.params.preset = 'custom';
-                    presetSelect.value = 'custom';
-                    if (node.params.autoNormalize) {
-                        node.params.divisor = computeAutoDivisor(node.params.kernel);
-                        divisorInput.value = `${node.params.divisor}`;
-                    }
-                    refreshKernelGrid();
-                    schedulePreviewRender();
-                });
-
-                autoNormalizeInput.addEventListener('change', () => {
-                    node.params.autoNormalize = autoNormalizeInput.checked;
-                    divisorInput.disabled = node.params.autoNormalize;
-                    if (node.params.autoNormalize) {
-                        node.params.divisor = computeAutoDivisor(node.params.kernel);
-                        divisorInput.value = `${node.params.divisor}`;
-                    }
-                    schedulePreviewRender();
-                });
-
-                divisorInput.addEventListener('input', () => {
-                    const rawValue = Number.parseFloat(divisorInput.value);
-                    const safeValue = Number.isFinite(rawValue) && Math.abs(rawValue) > 1e-6 ? rawValue : 1;
-                    divisorInput.value = `${safeValue}`;
-                    node.params.divisor = safeValue;
-                    if (node.params.autoNormalize) {
-                        node.params.autoNormalize = false;
-                        autoNormalizeInput.checked = false;
-                        divisorInput.disabled = false;
-                    }
-                    node.params.preset = 'custom';
-                    presetSelect.value = 'custom';
-                    schedulePreviewRender();
-                });
-
-                biasInput.addEventListener('input', () => {
-                    const value = Number.parseFloat(biasInput.value);
-                    node.params.bias = Number.isFinite(value) ? value : 0;
-                    node.params.preset = 'custom';
-                    presetSelect.value = 'custom';
-                    schedulePreviewRender();
-                });
-
-                applyJsonBtn.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    try {
-                        const parsed = JSON.parse(kernelJsonInput.value);
-                        if (!Array.isArray(parsed) || parsed.length === 0) {
-                            throw new Error('invalid');
-                        }
-                        const size = parsed.length;
-                        if (!ALLOWED_KERNEL_SIZES.includes(size)) {
-                            throw new Error('size');
-                        }
-                        if (!parsed.every((row) => Array.isArray(row) && row.length === size)) {
-                            throw new Error('shape');
-                        }
-                        node.params.size = size;
-                        node.params.kernel = parsed.flat().map((value) => Number.parseFloat(value) || 0);
-                        node.params.preset = 'custom';
-                        sizeSelect.value = `${size}`;
                         presetSelect.value = 'custom';
                         if (node.params.autoNormalize) {
                             node.params.divisor = computeAutoDivisor(node.params.kernel);
-                        } else if (!Number.isFinite(node.params.divisor) || node.params.divisor === 0) {
-                            node.params.divisor = 1;
+                            divisorInput.value = `${node.params.divisor}`;
                         }
-                        divisorInput.value = `${node.params.divisor}`;
-                        refreshKernelGrid();
+                        updateKernelJsonPreview();
                         schedulePreviewRender();
-                        setStatus('JSON からカーネルを読み込みました。');
-                    } catch (error) {
-                        console.error(error);
-                        setStatus('カーネルJSONの解析に失敗しました。サイズは 3,5,7 の正方配列にしてください。', false);
-                    }
-                });
+                    });
+                    kernelGrid.appendChild(input);
+                }
+                if (node.params.autoNormalize) {
+                    node.params.divisor = computeAutoDivisor(node.params.kernel);
+                    divisorInput.value = `${node.params.divisor}`;
+                }
+                updateKernelJsonPreview();
+            }
 
-                copyJsonBtn.addEventListener('click', async (event) => {
-                    event.preventDefault();
-                    const jsonText = JSON.stringify(chunkKernel(node.params.kernel, node.params.size));
-                    try {
-                        if (navigator.clipboard?.writeText) {
-                            await navigator.clipboard.writeText(jsonText);
-                        } else {
-                            const temp = document.createElement('textarea');
-                            temp.value = jsonText;
-                            temp.style.position = 'fixed';
-                            temp.style.opacity = '0';
-                            document.body.appendChild(temp);
-                            temp.focus();
-                            temp.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(temp);
-                        }
-                        setStatus('カーネルをクリップボードにコピーしました。');
-                    } catch (error) {
-                        console.error(error);
-                        setStatus('クリップボードへのコピーに失敗しました。', false);
-                    }
-                });
-
+            presetSelect.addEventListener('change', (event) => {
+                const value = event.target.value;
+                if (value === 'custom') {
+                    node.params.preset = 'custom';
+                    return;
+                }
+                const preset = KERNEL_PRESETS[value];
+                if (!preset) return;
+                node.params.preset = value;
+                node.params.size = preset.size;
+                node.params.kernel = [...preset.kernel];
+                node.params.bias = preset.bias;
+                node.params.divisor = preset.divisor;
+                node.params.autoNormalize = true;
+                sizeSelect.value = `${preset.size}`;
+                autoNormalizeInput.checked = true;
+                divisorInput.disabled = true;
+                divisorInput.value = `${node.params.divisor}`;
+                biasInput.value = `${node.params.bias}`;
                 refreshKernelGrid();
-            }
+                schedulePreviewRender();
+            });
 
-            function renderRgbControls(node, container) {
-                const defaults = {
-                    rScale: 1,
-                    gScale: 1,
-                    bScale: 1,
-                    rOffset: 0,
-                    gOffset: 0,
-                    bOffset: 0,
-                };
-                Object.entries(defaults).forEach(([key, value]) => {
-                    if (!Number.isFinite(node.params[key])) {
-                        node.params[key] = value;
-                    }
-                });
-
-                const tip = document.createElement('small');
-                tip.className = 'mini-label';
-                tip.textContent = '倍率100%で変化なし、オフセット0で基準色です。';
-                container.appendChild(tip);
-
-                const channelConfigs = [
-                    { label: '赤チャンネル', color: '#ff7676', scaleKey: 'rScale', offsetKey: 'rOffset' },
-                    { label: '緑チャンネル', color: '#7bd88f', scaleKey: 'gScale', offsetKey: 'gOffset' },
-                    { label: '青チャンネル', color: '#77aaff', scaleKey: 'bScale', offsetKey: 'bOffset' },
-                ];
-
-                const channelControls = [];
-
-                channelConfigs.forEach((channel) => {
-                    const section = document.createElement('div');
-                    section.className = 'indent';
-                    section.style.borderLeft = `4px solid ${channel.color}`;
-                    section.style.paddingLeft = '0.75rem';
-                    section.style.marginTop = '0.75rem';
-
-                    const heading = document.createElement('span');
-                    heading.className = 'channel-heading';
-                    heading.textContent = channel.label;
-                    heading.style.color = channel.color;
-                    section.appendChild(heading);
-
-                    const scaleControl = createSliderWithNumber({
-                        labelText: '倍率 (%)',
-                        min: 0,
-                        max: 400,
-                        step: 1,
-                        initial: Math.round(node.params[channel.scaleKey] * 100),
-                        suffix: '%',
-                        onChange: (displayValue) => {
-                            node.params[channel.scaleKey] = clamp(displayValue / 100, 0, 4);
-                            schedulePreviewRender();
-                        },
-                    });
-
-                    const offsetControl = createSliderWithNumber({
-                        labelText: 'オフセット (0=変化なし)',
-                        min: -255,
-                        max: 255,
-                        step: 1,
-                        initial: node.params[channel.offsetKey],
-                        onChange: (value) => {
-                            node.params[channel.offsetKey] = clamp(value, -255, 255);
-                            schedulePreviewRender();
-                        },
-                    });
-
-                    section.appendChild(scaleControl.element);
-                    section.appendChild(offsetControl.element);
-                    channelControls.push({ scaleControl, offsetControl });
-
-                    container.appendChild(section);
-                });
-
-                const resetRow = document.createElement('div');
-                resetRow.className = 'flex';
-                resetRow.style.gap = '1rem';
-                resetRow.style.flexWrap = 'wrap';
-                resetRow.style.marginTop = '1rem';
-                const resetButton = document.createElement('a');
-                resetButton.href = '#';
-                resetButton.className = 'button';
-                resetButton.textContent = 'RGB値をリセット';
-                resetButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    channelConfigs.forEach((channel, index) => {
-                        node.params[channel.scaleKey] = 1;
-                        node.params[channel.offsetKey] = 0;
-                        channelControls[index].scaleControl.setValue(100);
-                        channelControls[index].offsetControl.setValue(0);
-                    });
-                    schedulePreviewRender();
-                });
-                resetRow.appendChild(resetButton);
-                container.appendChild(resetRow);
-            }
-
-            function renderResizeControls(node, container) {
-                if (node.params.mode !== 'percent' && node.params.mode !== 'pixel') {
-                    node.params.mode = 'percent';
+            sizeSelect.addEventListener('change', () => {
+                const newSize = Number.parseInt(sizeSelect.value, 10);
+                if (!ALLOWED_KERNEL_SIZES.includes(newSize)) return;
+                if (node.params.size === newSize) return;
+                node.params.size = newSize;
+                node.params.kernel = createIdentityKernel(newSize);
+                node.params.preset = 'custom';
+                presetSelect.value = 'custom';
+                if (node.params.autoNormalize) {
+                    node.params.divisor = computeAutoDivisor(node.params.kernel);
+                    divisorInput.value = `${node.params.divisor}`;
                 }
+                refreshKernelGrid();
+                schedulePreviewRender();
+            });
 
-                const ensurePercent = (value) => {
-                    if (!Number.isFinite(value)) return 100;
-                    return clamp(Math.round(value), 1, 1000);
-                };
-
-                node.params.widthPercent = ensurePercent(node.params.widthPercent);
-                node.params.heightPercent = ensurePercent(node.params.heightPercent);
-
-                const defaultWidth = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? 1;
-                const defaultHeight = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? 1;
-
-                if (!Number.isFinite(node.params.widthPx) || node.params.widthPx <= 0) {
-                    node.params.widthPx = Math.max(1, Math.round(defaultWidth));
+            autoNormalizeInput.addEventListener('change', () => {
+                node.params.autoNormalize = autoNormalizeInput.checked;
+                divisorInput.disabled = node.params.autoNormalize;
+                if (node.params.autoNormalize) {
+                    node.params.divisor = computeAutoDivisor(node.params.kernel);
+                    divisorInput.value = `${node.params.divisor}`;
                 }
-                if (!Number.isFinite(node.params.heightPx) || node.params.heightPx <= 0) {
-                    node.params.heightPx = Math.max(1, Math.round(defaultHeight));
+                schedulePreviewRender();
+            });
+
+            divisorInput.addEventListener('input', () => {
+                const rawValue = Number.parseFloat(divisorInput.value);
+                const safeValue = Number.isFinite(rawValue) && Math.abs(rawValue) > 1e-6 ? rawValue : 1;
+                divisorInput.value = `${safeValue}`;
+                node.params.divisor = safeValue;
+                if (node.params.autoNormalize) {
+                    node.params.autoNormalize = false;
+                    autoNormalizeInput.checked = false;
+                    divisorInput.disabled = false;
                 }
-                if (typeof node.params.keepAspect !== 'boolean') {
-                    node.params.keepAspect = true;
-                }
-                if (typeof node.params.pixelAnchor !== 'string') {
-                    node.params.pixelAnchor = 'width';
-                }
+                node.params.preset = 'custom';
+                presetSelect.value = 'custom';
+                schedulePreviewRender();
+            });
 
-                let widthPercentInput;
-                let heightPercentInput;
-                let widthPxInput;
-                let heightPxInput;
+            biasInput.addEventListener('input', () => {
+                const value = Number.parseFloat(biasInput.value);
+                node.params.bias = Number.isFinite(value) ? value : 0;
+                node.params.preset = 'custom';
+                presetSelect.value = 'custom';
+                schedulePreviewRender();
+            });
 
-                const getAspectRatio = () => {
-                    const w = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? node.params.widthPx ?? 1;
-                    const h = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? node.params.heightPx ?? 1;
-                    if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(h) || h <= 0) {
-                        return 1;
-                    }
-                    return w / h;
-                };
-
-                const percentGroup = document.createElement('div');
-                percentGroup.className = 'indent';
-
-                const pixelGroup = document.createElement('div');
-                pixelGroup.className = 'indent';
-
-                const updateVisibility = () => {
-                    const isPercent = node.params.mode === 'percent';
-                    percentGroup.style.display = isPercent ? 'block' : 'none';
-                    pixelGroup.style.display = isPercent ? 'none' : 'block';
-                };
-
-                const updateDisabledStates = () => {
-                    if (heightPercentInput) {
-                        heightPercentInput.disabled = node.params.keepAspect;
-                    }
-                    if (heightPxInput) {
-                        heightPxInput.disabled = node.params.keepAspect;
-                    }
-                };
-
-                const syncHeightPercent = () => {
-                    if (!heightPercentInput) return;
-                    node.params.heightPercent = node.params.widthPercent;
-                    heightPercentInput.value = `${node.params.heightPercent}`;
-                };
-
-                const syncHeightPx = () => {
-                    if (!heightPxInput) return;
-                    const aspect = getAspectRatio();
-                    const newHeight = Math.max(1, Math.round(node.params.widthPx / (aspect || 1)));
-                    node.params.heightPx = newHeight;
-                    heightPxInput.value = `${newHeight}`;
-                };
-
-                const syncWidthPx = () => {
-                    if (!widthPxInput) return;
-                    const aspect = getAspectRatio();
-                    const newWidth = Math.max(1, Math.round(node.params.heightPx * aspect));
-                    node.params.widthPx = newWidth;
-                    widthPxInput.value = `${newWidth}`;
-                };
-
-                const modeLabel = document.createElement('label');
-                modeLabel.className = 'block';
-                modeLabel.style.gap = '0.5rem';
-                const modeSpan = document.createElement('span');
-                modeSpan.textContent = 'サイズ指定方法';
-                modeLabel.appendChild(modeSpan);
-                const modeSelect = document.createElement('select');
-                modeSelect.style.minWidth = '180px';
-                modeSelect.innerHTML = '<option value="percent">拡大率 (%)</option><option value="pixel">ピクセル数 (px)</option>';
-                modeSelect.value = node.params.mode;
-                modeLabel.appendChild(modeSelect);
-                container.appendChild(modeLabel);
-
-                const info = document.createElement('small');
-                info.className = 'mini-label';
-                if (Number.isFinite(node.params.lastInputWidth) && Number.isFinite(node.params.lastInputHeight)) {
-                    info.textContent = `現在の入力サイズ: ${node.params.lastInputWidth} × ${node.params.lastInputHeight} px`;
-                } else {
-                    info.textContent = '現在の入力サイズ: 未取得 (プレビューを更新すると計測されます)';
-                }
-                container.appendChild(info);
-
-                const widthPercentWrap = document.createElement('label');
-                widthPercentWrap.className = 'block';
-                widthPercentWrap.style.gap = '0.5rem';
-                widthPercentWrap.innerHTML = '<span>横方向拡大率 (%)</span>';
-                widthPercentInput = document.createElement('input');
-                widthPercentInput.type = 'number';
-                widthPercentInput.min = '1';
-                widthPercentInput.max = '1000';
-                widthPercentInput.step = '1';
-                widthPercentInput.value = `${node.params.widthPercent}`;
-                widthPercentInput.addEventListener('input', () => {
-                    let value = Number.parseFloat(widthPercentInput.value);
-                    if (!Number.isFinite(value)) value = node.params.widthPercent;
-                    value = clamp(value, 1, 1000);
-                    node.params.widthPercent = value;
-                    widthPercentInput.value = `${value}`;
-                    if (node.params.keepAspect) {
-                        syncHeightPercent();
-                    }
-                    schedulePreviewRender();
-                });
-                widthPercentWrap.appendChild(widthPercentInput);
-                percentGroup.appendChild(widthPercentWrap);
-
-                const heightPercentWrap = document.createElement('label');
-                heightPercentWrap.className = 'block';
-                heightPercentWrap.style.gap = '0.5rem';
-                heightPercentWrap.innerHTML = '<span>縦方向拡大率 (%)</span>';
-                heightPercentInput = document.createElement('input');
-                heightPercentInput.type = 'number';
-                heightPercentInput.min = '1';
-                heightPercentInput.max = '1000';
-                heightPercentInput.step = '1';
-                heightPercentInput.value = `${node.params.heightPercent}`;
-                heightPercentInput.addEventListener('input', () => {
-                    let value = Number.parseFloat(heightPercentInput.value);
-                    if (!Number.isFinite(value)) value = node.params.heightPercent;
-                    value = clamp(value, 1, 1000);
-                    node.params.heightPercent = value;
-                    heightPercentInput.value = `${value}`;
-                    schedulePreviewRender();
-                });
-                heightPercentWrap.appendChild(heightPercentInput);
-                percentGroup.appendChild(heightPercentWrap);
-
-                container.appendChild(percentGroup);
-
-                const widthPxWrap = document.createElement('label');
-                widthPxWrap.className = 'block';
-                widthPxWrap.style.gap = '0.5rem';
-                widthPxWrap.innerHTML = '<span>横幅 (px)</span>';
-                widthPxInput = document.createElement('input');
-                widthPxInput.type = 'number';
-                widthPxInput.min = '1';
-                widthPxInput.max = '20000';
-                widthPxInput.step = '1';
-                widthPxInput.value = `${node.params.widthPx}`;
-                widthPxInput.addEventListener('input', () => {
-                    let value = Number.parseFloat(widthPxInput.value);
-                    if (!Number.isFinite(value)) value = node.params.widthPx;
-                    value = clamp(value, 1, 20000);
-                    node.params.pixelAnchor = 'width';
-                    node.params.widthPx = value;
-                    widthPxInput.value = `${value}`;
-                    if (node.params.keepAspect) {
-                        syncHeightPx();
-                    }
-                    schedulePreviewRender();
-                });
-                widthPxWrap.appendChild(widthPxInput);
-                pixelGroup.appendChild(widthPxWrap);
-
-                const heightPxWrap = document.createElement('label');
-                heightPxWrap.className = 'block';
-                heightPxWrap.style.gap = '0.5rem';
-                heightPxWrap.innerHTML = '<span>縦幅 (px)</span>';
-                heightPxInput = document.createElement('input');
-                heightPxInput.type = 'number';
-                heightPxInput.min = '1';
-                heightPxInput.max = '20000';
-                heightPxInput.step = '1';
-                heightPxInput.value = `${node.params.heightPx}`;
-                heightPxInput.addEventListener('input', () => {
-                    let value = Number.parseFloat(heightPxInput.value);
-                    if (!Number.isFinite(value)) value = node.params.heightPx;
-                    value = clamp(value, 1, 20000);
-                    node.params.pixelAnchor = 'height';
-                    node.params.heightPx = value;
-                    heightPxInput.value = `${value}`;
-                    if (node.params.keepAspect) {
-                        syncWidthPx();
-                    }
-                    schedulePreviewRender();
-                });
-                heightPxWrap.appendChild(heightPxInput);
-                pixelGroup.appendChild(heightPxWrap);
-
-                container.appendChild(pixelGroup);
-
-                const toggleWrap = document.createElement('label');
-                toggleWrap.className = 'block';
-                toggleWrap.style.gap = '0.5rem';
-                const toggle = document.createElement('input');
-                toggle.type = 'checkbox';
-                toggle.checked = node.params.keepAspect;
-                toggle.addEventListener('change', () => {
-                    node.params.keepAspect = toggle.checked;
-                    updateDisabledStates();
-                    if (node.params.keepAspect) {
-                        if (node.params.mode === 'percent') {
-                            syncHeightPercent();
-                        } else {
-                            node.params.pixelAnchor = 'width';
-                            syncHeightPx();
-                        }
-                    }
-                    schedulePreviewRender();
-                });
-                toggleWrap.appendChild(toggle);
-                toggleWrap.appendChild(document.createTextNode('縦横比を維持する'));
-                container.appendChild(toggleWrap);
-
-                modeSelect.addEventListener('change', () => {
-                    const newMode = modeSelect.value === 'pixel' ? 'pixel' : 'percent';
-                    if (newMode === node.params.mode) {
-                        updateVisibility();
-                        updateDisabledStates();
-                        return;
-                    }
-
-                    if (newMode === 'pixel') {
-                        const refW = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? defaultWidth;
-                        const refH = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? defaultHeight;
-                        if (Number.isFinite(refW) && refW > 0) {
-                            node.params.widthPx = Math.max(1, Math.round(refW * (node.params.widthPercent / 100)));
-                        }
-                        if (Number.isFinite(refH) && refH > 0) {
-                            node.params.heightPx = Math.max(1, Math.round(refH * (node.params.heightPercent / 100)));
-                        }
-                        widthPxInput.value = `${node.params.widthPx}`;
-                        heightPxInput.value = `${node.params.heightPx}`;
-                    } else {
-                        const refW = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? node.params.widthPx;
-                        const refH = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? node.params.heightPx;
-                        if (Number.isFinite(refW) && refW > 0) {
-                            node.params.widthPercent = ensurePercent((node.params.widthPx / refW) * 100);
-                        }
-                        if (Number.isFinite(refH) && refH > 0) {
-                            node.params.heightPercent = ensurePercent((node.params.heightPx / refH) * 100);
-                        }
-                        widthPercentInput.value = `${node.params.widthPercent}`;
-                        heightPercentInput.value = `${node.params.heightPercent}`;
-                    }
-
-                    node.params.mode = newMode;
-                    updateVisibility();
-                    updateDisabledStates();
-                    schedulePreviewRender();
-                });
-
-                updateVisibility();
-                updateDisabledStates();
-            }
-
-            function renderBrightnessContrastControls(node, container) {
-                if (!Number.isFinite(node.params.brightness)) node.params.brightness = 0;
-                if (!Number.isFinite(node.params.contrast)) node.params.contrast = 0;
-
-                const tip = document.createElement('small');
-                tip.className = 'mini-label';
-                tip.textContent = '明るさは全体の輝度を上下させ、コントラストは明暗差を強調・緩和します。';
-                container.appendChild(tip);
-
-                const brightnessControl = createSliderWithNumber({
-                    labelText: '明るさ調整 (%)',
-                    min: -100,
-                    max: 100,
-                    step: 1,
-                    initial: node.params.brightness,
-                    suffix: '%',
-                    onChange: (value) => {
-                        node.params.brightness = clamp(value, -100, 100);
-                        schedulePreviewRender();
-                    },
-                });
-
-                const contrastControl = createSliderWithNumber({
-                    labelText: 'コントラスト調整 (%)',
-                    min: -100,
-                    max: 100,
-                    step: 1,
-                    initial: node.params.contrast,
-                    suffix: '%',
-                    onChange: (value) => {
-                        node.params.contrast = clamp(value, -100, 100);
-                        schedulePreviewRender();
-                    },
-                });
-
-                container.appendChild(brightnessControl.element);
-                container.appendChild(contrastControl.element);
-
-                const resetRow = document.createElement('div');
-                resetRow.className = 'flex';
-                resetRow.style.gap = '1rem';
-                resetRow.style.flexWrap = 'wrap';
-                const resetButton = document.createElement('a');
-                resetButton.href = '#';
-                resetButton.className = 'button';
-                resetButton.textContent = '明るさ・コントラストをリセット';
-                resetButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    node.params.brightness = 0;
-                    node.params.contrast = 0;
-                    brightnessControl.setValue(0);
-                    contrastControl.setValue(0);
-                    schedulePreviewRender();
-                });
-                resetRow.appendChild(resetButton);
-                container.appendChild(resetRow);
-            }
-
-            function renderHslControls(node, container) {
-                if (!Number.isFinite(node.params.hue)) node.params.hue = 0;
-                if (!Number.isFinite(node.params.saturation)) node.params.saturation = 0;
-                if (!Number.isFinite(node.params.lightness)) node.params.lightness = 0;
-
-                const tip = document.createElement('small');
-                tip.className = 'mini-label';
-                tip.textContent = '色相は色味 (°)、彩度は鮮やかさ、明度は明るさのバランスを調整します。';
-                container.appendChild(tip);
-
-                const hueControl = createSliderWithNumber({
-                    labelText: '色相 (°)',
-                    min: -180,
-                    max: 180,
-                    step: 1,
-                    initial: node.params.hue,
-                    suffix: '°',
-                    onChange: (value) => {
-                        node.params.hue = clamp(value, -180, 180);
-                        schedulePreviewRender();
-                    },
-                });
-
-                const saturationControl = createSliderWithNumber({
-                    labelText: '彩度 (%)',
-                    min: -100,
-                    max: 100,
-                    step: 1,
-                    initial: node.params.saturation,
-                    suffix: '%',
-                    onChange: (value) => {
-                        node.params.saturation = clamp(value, -100, 100);
-                        schedulePreviewRender();
-                    },
-                });
-
-                const lightnessControl = createSliderWithNumber({
-                    labelText: '明度 (%)',
-                    min: -100,
-                    max: 100,
-                    step: 1,
-                    initial: node.params.lightness,
-                    suffix: '%',
-                    onChange: (value) => {
-                        node.params.lightness = clamp(value, -100, 100);
-                        schedulePreviewRender();
-                    },
-                });
-
-                container.appendChild(hueControl.element);
-                container.appendChild(saturationControl.element);
-                container.appendChild(lightnessControl.element);
-
-                const resetRow = document.createElement('div');
-                resetRow.className = 'flex';
-                resetRow.style.gap = '1rem';
-                resetRow.style.flexWrap = 'wrap';
-                const resetButton = document.createElement('a');
-                resetButton.href = '#';
-                resetButton.className = 'button';
-                resetButton.textContent = 'HSL 値をリセット';
-                resetButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    node.params.hue = 0;
-                    node.params.saturation = 0;
-                    node.params.lightness = 0;
-                    hueControl.setValue(0);
-                    saturationControl.setValue(0);
-                    lightnessControl.setValue(0);
-                    schedulePreviewRender();
-                });
-                resetRow.appendChild(resetButton);
-                container.appendChild(resetRow);
-            }
-
-            function renderGammaControls(node, container) {
-                if (!Number.isFinite(node.params.gamma) || node.params.gamma <= 0) {
-                    node.params.gamma = 1;
-                }
-
-                const tip = document.createElement('small');
-                tip.className = 'mini-label';
-                tip.textContent = 'ガンマ補正で暗部／明部のバランスを調整します。1で変化なし。';
-                container.appendChild(tip);
-
-                const gammaControl = createSliderWithNumber({
-                    labelText: 'ガンマ値',
-                    min: 0.1,
-                    max: 5,
-                    step: 0.05,
-                    initial: Number(node.params.gamma.toFixed(2)),
-                    onChange: (value) => {
-                        node.params.gamma = clamp(value, 0.1, 5);
-                        schedulePreviewRender();
-                    },
-                });
-
-                const gammaNumber = gammaControl.element.querySelector('input[type="number"]');
-                if (gammaNumber) {
-                    gammaNumber.step = '0.05';
-                }
-
-                container.appendChild(gammaControl.element);
-
-                const resetRow = document.createElement('div');
-                resetRow.className = 'flex';
-                resetRow.style.gap = '1rem';
-                resetRow.style.flexWrap = 'wrap';
-                const resetButton = document.createElement('a');
-                resetButton.href = '#';
-                resetButton.className = 'button';
-                resetButton.textContent = 'ガンマをリセット';
-                resetButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    node.params.gamma = 1;
-                    gammaControl.setValue(1);
-                    schedulePreviewRender();
-                });
-                resetRow.appendChild(resetButton);
-                container.appendChild(resetRow);
-            }
-
-            function renderThresholdControls(node, container) {
-                if (!Number.isFinite(node.params.level)) node.params.level = 128;
-                node.params.level = clamp(node.params.level, 0, 255);
-                if (typeof node.params.invert !== 'boolean') node.params.invert = false;
-
-                const tip = document.createElement('small');
-                tip.className = 'mini-label';
-                tip.textContent = '指定した閾値で明暗を 0/255 に切り分けます。モノクロのマスク作成などに。';
-                container.appendChild(tip);
-
-                const levelControl = createSliderWithNumber({
-                    labelText: '閾値 (0-255)',
-                    min: 0,
-                    max: 255,
-                    step: 1,
-                    initial: node.params.level,
-                    onChange: (value) => {
-                        node.params.level = clamp(Math.round(value), 0, 255);
-                        schedulePreviewRender();
-                    },
-                });
-                container.appendChild(levelControl.element);
-
-                const invertLabel = document.createElement('label');
-                invertLabel.className = 'block';
-                invertLabel.style.gap = '0.5rem';
-                const invertCheckbox = document.createElement('input');
-                invertCheckbox.type = 'checkbox';
-                invertCheckbox.checked = node.params.invert;
-                invertCheckbox.addEventListener('change', () => {
-                    node.params.invert = invertCheckbox.checked;
-                    schedulePreviewRender();
-                });
-                invertLabel.appendChild(invertCheckbox);
-                invertLabel.appendChild(document.createTextNode('結果を反転 (暗→白 / 明→黒)'));
-                container.appendChild(invertLabel);
-
-                const resetRow = document.createElement('div');
-                resetRow.className = 'flex';
-                resetRow.style.gap = '1rem';
-                resetRow.style.flexWrap = 'wrap';
-                const resetButton = document.createElement('a');
-                resetButton.href = '#';
-                resetButton.className = 'button';
-                resetButton.textContent = '２値化設定をリセット';
-                resetButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    node.params.level = 128;
-                    node.params.invert = false;
-                    levelControl.setValue(128);
-                    invertCheckbox.checked = false;
-                    schedulePreviewRender();
-                });
-                resetRow.appendChild(resetButton);
-                container.appendChild(resetRow);
-            }
-
-            function schedulePreviewRender() {
-                if (!state.sourceBitmap) {
-                    setStatus('画像を読み込んでください。', false);
-                    return;
-                }
-                if (state.pendingRender !== null) {
-                    cancelAnimationFrame(state.pendingRender);
-                }
-                state.pendingRender = requestAnimationFrame(() => {
-                    state.pendingRender = null;
-                    renderPreview();
-                });
-            }
-
-            function preparePreviewData() {
-                const scale = Number.parseInt(elements.previewScale.value, 10) / 100;
-                const width = Math.max(1, Math.round(state.sourceBitmap.width * scale));
-                const height = Math.max(1, Math.round(state.sourceBitmap.height * scale));
-                elements.sourceCanvas.width = width;
-                elements.sourceCanvas.height = height;
-                sourceCtx.clearRect(0, 0, width, height);
-                sourceCtx.drawImage(state.sourceBitmap, 0, 0, width, height);
-                const imageData = sourceCtx.getImageData(0, 0, width, height);
-                return { imageData, width, height };
-            }
-
-            function renderPreview() {
-                if (!state.sourceBitmap) {
-                    setStatus('画像を読み込んでください。', false);
-                    return;
-                }
+            applyJsonBtn.addEventListener('click', (event) => {
+                event.preventDefault();
                 try {
-                    const base = preparePreviewData();
-                    const processed = applyPipeline(base, state.nodes);
-                    elements.resultCanvas.width = processed.width;
-                    elements.resultCanvas.height = processed.height;
-                    resultCtx.putImageData(processed.imageData, 0, 0);
-                    setStatus(`プレビュー更新: ${processed.width} × ${processed.height}`);
-                    refreshOverlayIfVisible();
+                    const parsed = JSON.parse(kernelJsonInput.value);
+                    if (!Array.isArray(parsed) || parsed.length === 0) {
+                        throw new Error('invalid');
+                    }
+                    const size = parsed.length;
+                    if (!ALLOWED_KERNEL_SIZES.includes(size)) {
+                        throw new Error('size');
+                    }
+                    if (!parsed.every((row) => Array.isArray(row) && row.length === size)) {
+                        throw new Error('shape');
+                    }
+                    node.params.size = size;
+                    node.params.kernel = parsed.flat().map((value) => Number.parseFloat(value) || 0);
+                    node.params.preset = 'custom';
+                    sizeSelect.value = `${size}`;
+                    presetSelect.value = 'custom';
+                    if (node.params.autoNormalize) {
+                        node.params.divisor = computeAutoDivisor(node.params.kernel);
+                    } else if (!Number.isFinite(node.params.divisor) || node.params.divisor === 0) {
+                        node.params.divisor = 1;
+                    }
+                    divisorInput.value = `${node.params.divisor}`;
+                    refreshKernelGrid();
+                    schedulePreviewRender();
+                    setStatus('JSON からカーネルを読み込みました。');
                 } catch (error) {
                     console.error(error);
-                    setStatus('処理中にエラーが発生しました。ノード設定を確認してください。', false);
+                    setStatus('カーネルJSONの解析に失敗しました。サイズは 3,5,7 の正方配列にしてください。', false);
                 }
-            }
+            });
 
-            function applyPipeline(dataObj, nodes) {
-                let current = {
-                    imageData: new ImageData(new Uint8ClampedArray(dataObj.imageData.data), dataObj.width, dataObj.height),
-                    width: dataObj.width,
-                    height: dataObj.height,
-                };
-                nodes.forEach((node) => {
-                    if (node.type === 'convolution') {
-                        current = processConvolution(current, node.params);
-                    } else if (node.type === 'rgb') {
-                        current = processRgb(current, node.params);
-                    } else if (node.type === 'resize') {
-                        current = processResize(current, node.params);
-                    } else if (node.type === 'brightnessContrast') {
-                        current = processBrightnessContrast(current, node.params);
-                    } else if (node.type === 'hsl') {
-                        current = processHsl(current, node.params);
-                    } else if (node.type === 'gamma') {
-                        current = processGamma(current, node.params);
-                    } else if (node.type === 'threshold') {
-                        current = processThreshold(current, node.params);
+            copyJsonBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const jsonText = JSON.stringify(chunkKernel(node.params.kernel, node.params.size));
+                try {
+                    if (navigator.clipboard?.writeText) {
+                        await navigator.clipboard.writeText(jsonText);
+                    } else {
+                        const temp = document.createElement('textarea');
+                        temp.value = jsonText;
+                        temp.style.position = 'fixed';
+                        temp.style.opacity = '0';
+                        document.body.appendChild(temp);
+                        temp.focus();
+                        temp.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(temp);
                     }
+                    setStatus('カーネルをクリップボードにコピーしました。');
+                } catch (error) {
+                    console.error(error);
+                    setStatus('クリップボードへのコピーに失敗しました。', false);
+                }
+            });
+
+            refreshKernelGrid();
+        }
+
+        function renderRgbControls(node, container) {
+            const defaults = {
+                rScale: 1,
+                gScale: 1,
+                bScale: 1,
+                rOffset: 0,
+                gOffset: 0,
+                bOffset: 0,
+            };
+            Object.entries(defaults).forEach(([key, value]) => {
+                if (!Number.isFinite(node.params[key])) {
+                    node.params[key] = value;
+                }
+            });
+
+            const tip = document.createElement('small');
+            tip.className = 'mini-label';
+            tip.textContent = '倍率100%で変化なし、オフセット0で基準色です。';
+            container.appendChild(tip);
+
+            const channelConfigs = [
+                { label: '赤チャンネル', color: '#ff7676', scaleKey: 'rScale', offsetKey: 'rOffset' },
+                { label: '緑チャンネル', color: '#7bd88f', scaleKey: 'gScale', offsetKey: 'gOffset' },
+                { label: '青チャンネル', color: '#77aaff', scaleKey: 'bScale', offsetKey: 'bOffset' },
+            ];
+
+            const channelControls = [];
+
+            channelConfigs.forEach((channel) => {
+                const section = document.createElement('div');
+                section.className = 'indent';
+                section.style.borderLeft = `4px solid ${channel.color}`;
+                section.style.paddingLeft = '0.75rem';
+                section.style.marginTop = '0.75rem';
+
+                const heading = document.createElement('span');
+                heading.className = 'channel-heading';
+                heading.textContent = channel.label;
+                heading.style.color = channel.color;
+                section.appendChild(heading);
+
+                const scaleControl = createSliderWithNumber({
+                    labelText: '倍率 (%)',
+                    min: 0,
+                    max: 400,
+                    step: 1,
+                    initial: Math.round(node.params[channel.scaleKey] * 100),
+                    suffix: '%',
+                    onChange: (displayValue) => {
+                        node.params[channel.scaleKey] = clamp(displayValue / 100, 0, 4);
+                        schedulePreviewRender();
+                    },
                 });
-                return current;
+
+                const offsetControl = createSliderWithNumber({
+                    labelText: 'オフセット (0=変化なし)',
+                    min: -255,
+                    max: 255,
+                    step: 1,
+                    initial: node.params[channel.offsetKey],
+                    onChange: (value) => {
+                        node.params[channel.offsetKey] = clamp(value, -255, 255);
+                        schedulePreviewRender();
+                    },
+                });
+
+                section.appendChild(scaleControl.element);
+                section.appendChild(offsetControl.element);
+                channelControls.push({ scaleControl, offsetControl });
+
+                container.appendChild(section);
+            });
+
+            const resetRow = document.createElement('div');
+            resetRow.className = 'flex';
+            resetRow.style.gap = '1rem';
+            resetRow.style.flexWrap = 'wrap';
+            resetRow.style.marginTop = '1rem';
+            const resetButton = document.createElement('a');
+            resetButton.href = '#';
+            resetButton.className = 'button';
+            resetButton.textContent = 'RGB値をリセット';
+            resetButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                channelConfigs.forEach((channel, index) => {
+                    node.params[channel.scaleKey] = 1;
+                    node.params[channel.offsetKey] = 0;
+                    channelControls[index].scaleControl.setValue(100);
+                    channelControls[index].offsetControl.setValue(0);
+                });
+                schedulePreviewRender();
+            });
+            resetRow.appendChild(resetButton);
+            container.appendChild(resetRow);
+        }
+
+        function renderResizeControls(node, container) {
+            if (node.params.mode !== 'percent' && node.params.mode !== 'pixel') {
+                node.params.mode = 'percent';
             }
 
-            function processConvolution(data, params) {
-                const size = ALLOWED_KERNEL_SIZES.includes(params.size) ? params.size : 3;
-                const kernelLength = size * size;
-                const kernelSource = Array.isArray(params.kernel) && params.kernel.length === kernelLength
-                    ? params.kernel.slice()
-                    : createIdentityKernel(size);
-                const baseDivisor = Number.isFinite(params.divisor) ? params.divisor : 1;
-                const bias = Number.isFinite(params.bias) ? params.bias : 0;
-                const divisor = params.autoNormalize ? computeAutoDivisor(kernelSource) : baseDivisor;
-                const safeDivisor = Math.abs(divisor) > 1e-6 ? divisor : 1;
-                const normalizedKernel = kernelSource.map((value) => value / safeDivisor);
+            const ensurePercent = (value) => {
+                if (!Number.isFinite(value)) return 100;
+                return clamp(Math.round(value), 1, 1000);
+            };
 
-                const { width, height } = data;
-                const input = data.imageData.data;
-                const output = new Uint8ClampedArray(input.length);
-                const half = Math.floor(size / 2);
+            node.params.widthPercent = ensurePercent(node.params.widthPercent);
+            node.params.heightPercent = ensurePercent(node.params.heightPercent);
 
-                for (let y = 0; y < height; y += 1) {
-                    for (let x = 0; x < width; x += 1) {
-                        let r = 0;
-                        let g = 0;
-                        let b = 0;
-                        for (let ky = -half; ky <= half; ky += 1) {
-                            for (let kx = -half; kx <= half; kx += 1) {
-                                const ix = clamp(x + kx, 0, width - 1);
-                                const iy = clamp(y + ky, 0, height - 1);
-                                const idx = (iy * width + ix) * 4;
-                                const weight = normalizedKernel[(ky + half) * size + (kx + half)];
-                                r += input[idx] * weight;
-                                g += input[idx + 1] * weight;
-                                b += input[idx + 2] * weight;
-                            }
-                        }
-                        const outIdx = (y * width + x) * 4;
-                        output[outIdx] = clamp(Math.round(r + bias), 0, 255);
-                        output[outIdx + 1] = clamp(Math.round(g + bias), 0, 255);
-                        output[outIdx + 2] = clamp(Math.round(b + bias), 0, 255);
-                        output[outIdx + 3] = input[outIdx + 3];
+            const defaultWidth = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? 1;
+            const defaultHeight = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? 1;
+
+            if (!Number.isFinite(node.params.widthPx) || node.params.widthPx <= 0) {
+                node.params.widthPx = Math.max(1, Math.round(defaultWidth));
+            }
+            if (!Number.isFinite(node.params.heightPx) || node.params.heightPx <= 0) {
+                node.params.heightPx = Math.max(1, Math.round(defaultHeight));
+            }
+            if (typeof node.params.keepAspect !== 'boolean') {
+                node.params.keepAspect = true;
+            }
+            if (typeof node.params.pixelAnchor !== 'string') {
+                node.params.pixelAnchor = 'width';
+            }
+
+            let widthPercentInput;
+            let heightPercentInput;
+            let widthPxInput;
+            let heightPxInput;
+
+            const getAspectRatio = () => {
+                const w = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? node.params.widthPx ?? 1;
+                const h = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? node.params.heightPx ?? 1;
+                if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(h) || h <= 0) {
+                    return 1;
+                }
+                return w / h;
+            };
+
+            const percentGroup = document.createElement('div');
+            percentGroup.className = 'indent';
+
+            const pixelGroup = document.createElement('div');
+            pixelGroup.className = 'indent';
+
+            const updateVisibility = () => {
+                const isPercent = node.params.mode === 'percent';
+                percentGroup.style.display = isPercent ? 'block' : 'none';
+                pixelGroup.style.display = isPercent ? 'none' : 'block';
+            };
+
+            const updateDisabledStates = () => {
+                if (heightPercentInput) {
+                    heightPercentInput.disabled = node.params.keepAspect;
+                }
+                if (heightPxInput) {
+                    heightPxInput.disabled = node.params.keepAspect;
+                }
+            };
+
+            const syncHeightPercent = () => {
+                if (!heightPercentInput) return;
+                node.params.heightPercent = node.params.widthPercent;
+                heightPercentInput.value = `${node.params.heightPercent}`;
+            };
+
+            const syncHeightPx = () => {
+                if (!heightPxInput) return;
+                const aspect = getAspectRatio();
+                const newHeight = Math.max(1, Math.round(node.params.widthPx / (aspect || 1)));
+                node.params.heightPx = newHeight;
+                heightPxInput.value = `${newHeight}`;
+            };
+
+            const syncWidthPx = () => {
+                if (!widthPxInput) return;
+                const aspect = getAspectRatio();
+                const newWidth = Math.max(1, Math.round(node.params.heightPx * aspect));
+                node.params.widthPx = newWidth;
+                widthPxInput.value = `${newWidth}`;
+            };
+
+            const modeLabel = document.createElement('label');
+            modeLabel.className = 'block';
+            modeLabel.style.gap = '0.5rem';
+            const modeSpan = document.createElement('span');
+            modeSpan.textContent = 'サイズ指定方法';
+            modeLabel.appendChild(modeSpan);
+            const modeSelect = document.createElement('select');
+            modeSelect.style.minWidth = '180px';
+            modeSelect.innerHTML = '<option value="percent">拡大率 (%)</option><option value="pixel">ピクセル数 (px)</option>';
+            modeSelect.value = node.params.mode;
+            modeLabel.appendChild(modeSelect);
+            container.appendChild(modeLabel);
+
+            const info = document.createElement('small');
+            info.className = 'mini-label';
+            if (Number.isFinite(node.params.lastInputWidth) && Number.isFinite(node.params.lastInputHeight)) {
+                info.textContent = `現在の入力サイズ: ${node.params.lastInputWidth} × ${node.params.lastInputHeight} px`;
+            } else {
+                info.textContent = '現在の入力サイズ: 未取得 (プレビューを更新すると計測されます)';
+            }
+            container.appendChild(info);
+
+            const widthPercentWrap = document.createElement('label');
+            widthPercentWrap.className = 'block';
+            widthPercentWrap.style.gap = '0.5rem';
+            widthPercentWrap.innerHTML = '<span>横方向拡大率 (%)</span>';
+            widthPercentInput = document.createElement('input');
+            widthPercentInput.type = 'number';
+            widthPercentInput.min = '1';
+            widthPercentInput.max = '1000';
+            widthPercentInput.step = '1';
+            widthPercentInput.value = `${node.params.widthPercent}`;
+            widthPercentInput.addEventListener('input', () => {
+                let value = Number.parseFloat(widthPercentInput.value);
+                if (!Number.isFinite(value)) value = node.params.widthPercent;
+                value = clamp(value, 1, 1000);
+                node.params.widthPercent = value;
+                widthPercentInput.value = `${value}`;
+                if (node.params.keepAspect) {
+                    syncHeightPercent();
+                }
+                schedulePreviewRender();
+            });
+            widthPercentWrap.appendChild(widthPercentInput);
+            percentGroup.appendChild(widthPercentWrap);
+
+            const heightPercentWrap = document.createElement('label');
+            heightPercentWrap.className = 'block';
+            heightPercentWrap.style.gap = '0.5rem';
+            heightPercentWrap.innerHTML = '<span>縦方向拡大率 (%)</span>';
+            heightPercentInput = document.createElement('input');
+            heightPercentInput.type = 'number';
+            heightPercentInput.min = '1';
+            heightPercentInput.max = '1000';
+            heightPercentInput.step = '1';
+            heightPercentInput.value = `${node.params.heightPercent}`;
+            heightPercentInput.addEventListener('input', () => {
+                let value = Number.parseFloat(heightPercentInput.value);
+                if (!Number.isFinite(value)) value = node.params.heightPercent;
+                value = clamp(value, 1, 1000);
+                node.params.heightPercent = value;
+                heightPercentInput.value = `${value}`;
+                schedulePreviewRender();
+            });
+            heightPercentWrap.appendChild(heightPercentInput);
+            percentGroup.appendChild(heightPercentWrap);
+
+            container.appendChild(percentGroup);
+
+            const widthPxWrap = document.createElement('label');
+            widthPxWrap.className = 'block';
+            widthPxWrap.style.gap = '0.5rem';
+            widthPxWrap.innerHTML = '<span>横幅 (px)</span>';
+            widthPxInput = document.createElement('input');
+            widthPxInput.type = 'number';
+            widthPxInput.min = '1';
+            widthPxInput.max = '20000';
+            widthPxInput.step = '1';
+            widthPxInput.value = `${node.params.widthPx}`;
+            widthPxInput.addEventListener('input', () => {
+                let value = Number.parseFloat(widthPxInput.value);
+                if (!Number.isFinite(value)) value = node.params.widthPx;
+                value = clamp(value, 1, 20000);
+                node.params.pixelAnchor = 'width';
+                node.params.widthPx = value;
+                widthPxInput.value = `${value}`;
+                if (node.params.keepAspect) {
+                    syncHeightPx();
+                }
+                schedulePreviewRender();
+            });
+            widthPxWrap.appendChild(widthPxInput);
+            pixelGroup.appendChild(widthPxWrap);
+
+            const heightPxWrap = document.createElement('label');
+            heightPxWrap.className = 'block';
+            heightPxWrap.style.gap = '0.5rem';
+            heightPxWrap.innerHTML = '<span>縦幅 (px)</span>';
+            heightPxInput = document.createElement('input');
+            heightPxInput.type = 'number';
+            heightPxInput.min = '1';
+            heightPxInput.max = '20000';
+            heightPxInput.step = '1';
+            heightPxInput.value = `${node.params.heightPx}`;
+            heightPxInput.addEventListener('input', () => {
+                let value = Number.parseFloat(heightPxInput.value);
+                if (!Number.isFinite(value)) value = node.params.heightPx;
+                value = clamp(value, 1, 20000);
+                node.params.pixelAnchor = 'height';
+                node.params.heightPx = value;
+                heightPxInput.value = `${value}`;
+                if (node.params.keepAspect) {
+                    syncWidthPx();
+                }
+                schedulePreviewRender();
+            });
+            heightPxWrap.appendChild(heightPxInput);
+            pixelGroup.appendChild(heightPxWrap);
+
+            container.appendChild(pixelGroup);
+
+            const toggleWrap = document.createElement('label');
+            toggleWrap.className = 'block';
+            toggleWrap.style.gap = '0.5rem';
+            const toggle = document.createElement('input');
+            toggle.type = 'checkbox';
+            toggle.checked = node.params.keepAspect;
+            toggle.addEventListener('change', () => {
+                node.params.keepAspect = toggle.checked;
+                updateDisabledStates();
+                if (node.params.keepAspect) {
+                    if (node.params.mode === 'percent') {
+                        syncHeightPercent();
+                    } else {
+                        node.params.pixelAnchor = 'width';
+                        syncHeightPx();
                     }
                 }
+                schedulePreviewRender();
+            });
+            toggleWrap.appendChild(toggle);
+            toggleWrap.appendChild(document.createTextNode('縦横比を維持する'));
+            container.appendChild(toggleWrap);
 
-                return {
-                    imageData: new ImageData(output, width, height),
-                    width,
-                    height,
-                };
-            }
-
-            function processRgb(data, params) {
-                const { width, height } = data;
-                const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
-                const pixels = result.data;
-                for (let i = 0; i < pixels.length; i += 4) {
-                    pixels[i] = clamp(pixels[i] * params.rScale + params.rOffset, 0, 255);
-                    pixels[i + 1] = clamp(pixels[i + 1] * params.gScale + params.gOffset, 0, 255);
-                    pixels[i + 2] = clamp(pixels[i + 2] * params.bScale + params.bOffset, 0, 255);
-                }
-                return {
-                    imageData: result,
-                    width,
-                    height,
-                };
-            }
-
-            function processBrightnessContrast(data, params) {
-                const { width, height } = data;
-                const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
-                const pixels = result.data;
-
-                const brightness = clamp(Number.isFinite(params.brightness) ? params.brightness : 0, -100, 100);
-                const contrastPercent = clamp(Number.isFinite(params.contrast) ? params.contrast : 0, -100, 100) / 100;
-
-                const brightnessOffset = 255 * (brightness / 100);
-                const contrastFactor = Math.max(0, 1 + contrastPercent);
-
-                for (let i = 0; i < pixels.length; i += 4) {
-                    pixels[i] = clamp(contrastFactor * (pixels[i] - 128) + 128 + brightnessOffset, 0, 255);
-                    pixels[i + 1] = clamp(contrastFactor * (pixels[i + 1] - 128) + 128 + brightnessOffset, 0, 255);
-                    pixels[i + 2] = clamp(contrastFactor * (pixels[i + 2] - 128) + 128 + brightnessOffset, 0, 255);
-                }
-
-                return {
-                    imageData: result,
-                    width,
-                    height,
-                };
-            }
-
-            function rgbToHsl(r, g, b) {
-                const rn = r / 255;
-                const gn = g / 255;
-                const bn = b / 255;
-                const max = Math.max(rn, gn, bn);
-                const min = Math.min(rn, gn, bn);
-                let h;
-                let s;
-                const l = (max + min) / 2;
-
-                if (max === min) {
-                    h = 0;
-                    s = 0;
-                } else {
-                    const d = max - min;
-                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                    switch (max) {
-                        case rn:
-                            h = (gn - bn) / d + (gn < bn ? 6 : 0);
-                            break;
-                        case gn:
-                            h = (bn - rn) / d + 2;
-                            break;
-                        default:
-                            h = (rn - gn) / d + 4;
-                    }
-                    h /= 6;
-                }
-
-                return [h, s, l];
-            }
-
-            function hslToRgb(h, s, l) {
-                const hueToRgb = (p, q, t) => {
-                    let tt = t;
-                    if (tt < 0) tt += 1;
-                    if (tt > 1) tt -= 1;
-                    if (tt < 1 / 6) return p + (q - p) * 6 * tt;
-                    if (tt < 1 / 2) return q;
-                    if (tt < 2 / 3) return p + (q - p) * (2 / 3 - tt) * 6;
-                    return p;
-                };
-
-                let r;
-                let g;
-                let b;
-
-                if (s === 0) {
-                    r = l;
-                    g = l;
-                    b = l;
-                } else {
-                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                    const p = 2 * l - q;
-                    r = hueToRgb(p, q, h + 1 / 3);
-                    g = hueToRgb(p, q, h);
-                    b = hueToRgb(p, q, h - 1 / 3);
-                }
-
-                return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-            }
-
-            function processHsl(data, params) {
-                const { width, height } = data;
-                const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
-                const pixels = result.data;
-
-                const hueShift = clamp(Number.isFinite(params.hue) ? params.hue : 0, -180, 180) / 360;
-                const saturationAdjust = clamp(Number.isFinite(params.saturation) ? params.saturation : 0, -100, 100) / 100;
-                const lightnessAdjust = clamp(Number.isFinite(params.lightness) ? params.lightness : 0, -100, 100) / 100;
-
-                const saturationFactor = Math.max(0, 1 + saturationAdjust);
-
-                for (let i = 0; i < pixels.length; i += 4) {
-                    const [h, s, l] = rgbToHsl(pixels[i], pixels[i + 1], pixels[i + 2]);
-                    let newH = h + hueShift;
-                    newH = (newH % 1 + 1) % 1;
-                    const newS = clamp(s * saturationFactor, 0, 1);
-                    const newL = clamp(l + lightnessAdjust, 0, 1);
-                    const [nr, ng, nb] = hslToRgb(newH, newS, newL);
-                    pixels[i] = nr;
-                    pixels[i + 1] = ng;
-                    pixels[i + 2] = nb;
-                }
-
-                return {
-                    imageData: result,
-                    width,
-                    height,
-                };
-            }
-
-            function processGamma(data, params) {
-                const { width, height } = data;
-                const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
-                const pixels = result.data;
-                const gamma = clamp(Number.isFinite(params.gamma) ? params.gamma : 1, 0.1, 5);
-                const invGamma = 1 / gamma;
-
-                for (let i = 0; i < pixels.length; i += 4) {
-                    pixels[i] = clamp(Math.round(255 * Math.pow(pixels[i] / 255, invGamma)), 0, 255);
-                    pixels[i + 1] = clamp(Math.round(255 * Math.pow(pixels[i + 1] / 255, invGamma)), 0, 255);
-                    pixels[i + 2] = clamp(Math.round(255 * Math.pow(pixels[i + 2] / 255, invGamma)), 0, 255);
-                }
-
-                return {
-                    imageData: result,
-                    width,
-                    height,
-                };
-            }
-
-            function processThreshold(data, params) {
-                const { width, height } = data;
-                const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
-                const pixels = result.data;
-                const level = clamp(Number.isFinite(params.level) ? params.level : 128, 0, 255);
-                const invert = Boolean(params.invert);
-
-                for (let i = 0; i < pixels.length; i += 4) {
-                    const gray = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
-                    let value = gray >= level ? 255 : 0;
-                    if (invert) {
-                        value = 255 - value;
-                    }
-                    pixels[i] = value;
-                    pixels[i + 1] = value;
-                    pixels[i + 2] = value;
-                }
-
-                return {
-                    imageData: result,
-                    width,
-                    height,
-                };
-            }
-
-            function processResize(data, params) {
-                params.lastInputWidth = data.width;
-                params.lastInputHeight = data.height;
-
-                if (params.mode !== 'pixel' && params.mode !== 'percent') {
-                    params.mode = 'percent';
-                }
-                if (typeof params.keepAspect !== 'boolean') {
-                    params.keepAspect = true;
-                }
-                if (typeof params.pixelAnchor !== 'string') {
-                    params.pixelAnchor = 'width';
-                }
-
-                if (!Number.isFinite(params.widthPercent)) {
-                    params.widthPercent = 100;
-                }
-                if (!Number.isFinite(params.heightPercent)) {
-                    params.heightPercent = params.keepAspect ? params.widthPercent : 100;
-                }
-
-                if (!Number.isFinite(params.widthPx) || params.widthPx <= 0) {
-                    params.widthPx = data.width;
-                }
-                if (!Number.isFinite(params.heightPx) || params.heightPx <= 0) {
-                    params.heightPx = data.height;
-                }
-
-                const aspect = data.height > 0 ? data.width / data.height : 1;
-                let newWidth = data.width;
-                let newHeight = data.height;
-
-                if (params.mode === 'pixel') {
-                    let targetWidth = Math.max(1, Math.round(params.widthPx));
-                    let targetHeight = Math.max(1, Math.round(params.heightPx));
-
-                    if (params.keepAspect) {
-                        if (params.pixelAnchor === 'height') {
-                            targetHeight = Math.max(1, targetHeight);
-                            targetWidth = Math.max(1, Math.round(targetHeight * aspect));
-                        } else {
-                            targetWidth = Math.max(1, targetWidth);
-                            targetHeight = Math.max(1, Math.round(targetWidth / (aspect || 1)));
-                            params.pixelAnchor = 'width';
-                        }
-                    }
-
-                    newWidth = targetWidth;
-                    newHeight = targetHeight;
-
-                    params.widthPx = newWidth;
-                    params.heightPx = newHeight;
-                    params.widthPercent = data.width > 0 ? clamp((newWidth / data.width) * 100, 1, 1000) : 100;
-                    params.heightPercent = data.height > 0 ? clamp((newHeight / data.height) * 100, 1, 1000) : 100;
-                } else {
-                    const scaleX = clamp(params.widthPercent / 100, 0.01, 10);
-                    const scaleY = params.keepAspect ? scaleX : clamp(params.heightPercent / 100, 0.01, 10);
-                    newWidth = Math.max(1, Math.round(data.width * scaleX));
-                    newHeight = Math.max(1, Math.round(data.height * scaleY));
-
-                    params.widthPx = newWidth;
-                    params.heightPx = newHeight;
-                    if (params.keepAspect) {
-                        params.heightPercent = params.widthPercent;
-                    }
-                }
-
-                tempCanvas.width = data.width;
-                tempCanvas.height = data.height;
-                tempCtx.putImageData(data.imageData, 0, 0);
-
-                scratchCanvas.width = newWidth;
-                scratchCanvas.height = newHeight;
-                scratchCtx.clearRect(0, 0, newWidth, newHeight);
-                scratchCtx.imageSmoothingEnabled = true;
-                scratchCtx.drawImage(tempCanvas, 0, 0, data.width, data.height, 0, 0, newWidth, newHeight);
-
-                const resizedData = scratchCtx.getImageData(0, 0, newWidth, newHeight);
-                return {
-                    imageData: resizedData,
-                    width: newWidth,
-                    height: newHeight,
-                };
-            }
-
-            function buildOutputCanvas() {
-                if (!state.sourceBitmap) return null;
-                scratchCanvas.width = state.sourceBitmap.width;
-                scratchCanvas.height = state.sourceBitmap.height;
-                scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-                scratchCtx.drawImage(state.sourceBitmap, 0, 0);
-                let current = {
-                    imageData: scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height),
-                    width: scratchCanvas.width,
-                    height: scratchCanvas.height,
-                };
-                current = applyPipeline(current, state.nodes);
-                const outputCanvas = document.createElement('canvas');
-                outputCanvas.width = current.width;
-                outputCanvas.height = current.height;
-                outputCanvas.getContext('2d').putImageData(current.imageData, 0, 0);
-                return outputCanvas;
-            }
-
-            function writeBack() {
-                if (!state.sourceBitmap) {
-                    setStatus('先に画像を読み込んでください。', false);
+            modeSelect.addEventListener('change', () => {
+                const newMode = modeSelect.value === 'pixel' ? 'pixel' : 'percent';
+                if (newMode === node.params.mode) {
+                    updateVisibility();
+                    updateDisabledStates();
                     return;
                 }
-                setStatus('結果をソースに書き戻しています...', true);
-                try {
-                    const canvas = buildOutputCanvas();
-                    if (!canvas) {
+
+                if (newMode === 'pixel') {
+                    const refW = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? defaultWidth;
+                    const refH = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? defaultHeight;
+                    if (Number.isFinite(refW) && refW > 0) {
+                        node.params.widthPx = Math.max(1, Math.round(refW * (node.params.widthPercent / 100)));
+                    }
+                    if (Number.isFinite(refH) && refH > 0) {
+                        node.params.heightPx = Math.max(1, Math.round(refH * (node.params.heightPercent / 100)));
+                    }
+                    widthPxInput.value = `${node.params.widthPx}`;
+                    heightPxInput.value = `${node.params.heightPx}`;
+                } else {
+                    const refW = node.params.lastInputWidth ?? state.sourceBitmap?.width ?? node.params.widthPx;
+                    const refH = node.params.lastInputHeight ?? state.sourceBitmap?.height ?? node.params.heightPx;
+                    if (Number.isFinite(refW) && refW > 0) {
+                        node.params.widthPercent = ensurePercent((node.params.widthPx / refW) * 100);
+                    }
+                    if (Number.isFinite(refH) && refH > 0) {
+                        node.params.heightPercent = ensurePercent((node.params.heightPx / refH) * 100);
+                    }
+                    widthPercentInput.value = `${node.params.widthPercent}`;
+                    heightPercentInput.value = `${node.params.heightPercent}`;
+                }
+
+                node.params.mode = newMode;
+                updateVisibility();
+                updateDisabledStates();
+                schedulePreviewRender();
+            });
+
+            updateVisibility();
+            updateDisabledStates();
+        }
+
+        function renderBrightnessContrastControls(node, container) {
+            if (!Number.isFinite(node.params.brightness)) node.params.brightness = 0;
+            if (!Number.isFinite(node.params.contrast)) node.params.contrast = 0;
+
+            const tip = document.createElement('small');
+            tip.className = 'mini-label';
+            tip.textContent = '明るさは全体の輝度を上下させ、コントラストは明暗差を強調・緩和します。';
+            container.appendChild(tip);
+
+            const brightnessControl = createSliderWithNumber({
+                labelText: '明るさ調整 (%)',
+                min: -100,
+                max: 100,
+                step: 1,
+                initial: node.params.brightness,
+                suffix: '%',
+                onChange: (value) => {
+                    node.params.brightness = clamp(value, -100, 100);
+                    schedulePreviewRender();
+                },
+            });
+
+            const contrastControl = createSliderWithNumber({
+                labelText: 'コントラスト調整 (%)',
+                min: -100,
+                max: 100,
+                step: 1,
+                initial: node.params.contrast,
+                suffix: '%',
+                onChange: (value) => {
+                    node.params.contrast = clamp(value, -100, 100);
+                    schedulePreviewRender();
+                },
+            });
+
+            container.appendChild(brightnessControl.element);
+            container.appendChild(contrastControl.element);
+
+            const resetRow = document.createElement('div');
+            resetRow.className = 'flex';
+            resetRow.style.gap = '1rem';
+            resetRow.style.flexWrap = 'wrap';
+            const resetButton = document.createElement('a');
+            resetButton.href = '#';
+            resetButton.className = 'button';
+            resetButton.textContent = '明るさ・コントラストをリセット';
+            resetButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                node.params.brightness = 0;
+                node.params.contrast = 0;
+                brightnessControl.setValue(0);
+                contrastControl.setValue(0);
+                schedulePreviewRender();
+            });
+            resetRow.appendChild(resetButton);
+            container.appendChild(resetRow);
+        }
+
+        function renderHslControls(node, container) {
+            if (!Number.isFinite(node.params.hue)) node.params.hue = 0;
+            if (!Number.isFinite(node.params.saturation)) node.params.saturation = 0;
+            if (!Number.isFinite(node.params.lightness)) node.params.lightness = 0;
+
+            const tip = document.createElement('small');
+            tip.className = 'mini-label';
+            tip.textContent = '色相は色味 (°)、彩度は鮮やかさ、明度は明るさのバランスを調整します。';
+            container.appendChild(tip);
+
+            const hueControl = createSliderWithNumber({
+                labelText: '色相 (°)',
+                min: -180,
+                max: 180,
+                step: 1,
+                initial: node.params.hue,
+                suffix: '°',
+                onChange: (value) => {
+                    node.params.hue = clamp(value, -180, 180);
+                    schedulePreviewRender();
+                },
+            });
+
+            const saturationControl = createSliderWithNumber({
+                labelText: '彩度 (%)',
+                min: -100,
+                max: 100,
+                step: 1,
+                initial: node.params.saturation,
+                suffix: '%',
+                onChange: (value) => {
+                    node.params.saturation = clamp(value, -100, 100);
+                    schedulePreviewRender();
+                },
+            });
+
+            const lightnessControl = createSliderWithNumber({
+                labelText: '明度 (%)',
+                min: -100,
+                max: 100,
+                step: 1,
+                initial: node.params.lightness,
+                suffix: '%',
+                onChange: (value) => {
+                    node.params.lightness = clamp(value, -100, 100);
+                    schedulePreviewRender();
+                },
+            });
+
+            container.appendChild(hueControl.element);
+            container.appendChild(saturationControl.element);
+            container.appendChild(lightnessControl.element);
+
+            const resetRow = document.createElement('div');
+            resetRow.className = 'flex';
+            resetRow.style.gap = '1rem';
+            resetRow.style.flexWrap = 'wrap';
+            const resetButton = document.createElement('a');
+            resetButton.href = '#';
+            resetButton.className = 'button';
+            resetButton.textContent = 'HSL 値をリセット';
+            resetButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                node.params.hue = 0;
+                node.params.saturation = 0;
+                node.params.lightness = 0;
+                hueControl.setValue(0);
+                saturationControl.setValue(0);
+                lightnessControl.setValue(0);
+                schedulePreviewRender();
+            });
+            resetRow.appendChild(resetButton);
+            container.appendChild(resetRow);
+        }
+
+        function renderGammaControls(node, container) {
+            if (!Number.isFinite(node.params.gamma) || node.params.gamma <= 0) {
+                node.params.gamma = 1;
+            }
+
+            const tip = document.createElement('small');
+            tip.className = 'mini-label';
+            tip.textContent = 'ガンマ補正で暗部／明部のバランスを調整します。1で変化なし。';
+            container.appendChild(tip);
+
+            const gammaControl = createSliderWithNumber({
+                labelText: 'ガンマ値',
+                min: 0.1,
+                max: 5,
+                step: 0.05,
+                initial: Number(node.params.gamma.toFixed(2)),
+                onChange: (value) => {
+                    node.params.gamma = clamp(value, 0.1, 5);
+                    schedulePreviewRender();
+                },
+            });
+
+            const gammaNumber = gammaControl.element.querySelector('input[type="number"]');
+            if (gammaNumber) {
+                gammaNumber.step = '0.05';
+            }
+
+            container.appendChild(gammaControl.element);
+
+            const resetRow = document.createElement('div');
+            resetRow.className = 'flex';
+            resetRow.style.gap = '1rem';
+            resetRow.style.flexWrap = 'wrap';
+            const resetButton = document.createElement('a');
+            resetButton.href = '#';
+            resetButton.className = 'button';
+            resetButton.textContent = 'ガンマをリセット';
+            resetButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                node.params.gamma = 1;
+                gammaControl.setValue(1);
+                schedulePreviewRender();
+            });
+            resetRow.appendChild(resetButton);
+            container.appendChild(resetRow);
+        }
+
+        function renderThresholdControls(node, container) {
+            if (!Number.isFinite(node.params.level)) node.params.level = 128;
+            node.params.level = clamp(node.params.level, 0, 255);
+            if (typeof node.params.invert !== 'boolean') node.params.invert = false;
+
+            const tip = document.createElement('small');
+            tip.className = 'mini-label';
+            tip.textContent = '指定した閾値で明暗を 0/255 に切り分けます。モノクロのマスク作成などに。';
+            container.appendChild(tip);
+
+            const levelControl = createSliderWithNumber({
+                labelText: '閾値 (0-255)',
+                min: 0,
+                max: 255,
+                step: 1,
+                initial: node.params.level,
+                onChange: (value) => {
+                    node.params.level = clamp(Math.round(value), 0, 255);
+                    schedulePreviewRender();
+                },
+            });
+            container.appendChild(levelControl.element);
+
+            const invertLabel = document.createElement('label');
+            invertLabel.className = 'block';
+            invertLabel.style.gap = '0.5rem';
+            const invertCheckbox = document.createElement('input');
+            invertCheckbox.type = 'checkbox';
+            invertCheckbox.checked = node.params.invert;
+            invertCheckbox.addEventListener('change', () => {
+                node.params.invert = invertCheckbox.checked;
+                schedulePreviewRender();
+            });
+            invertLabel.appendChild(invertCheckbox);
+            invertLabel.appendChild(document.createTextNode('結果を反転 (暗→白 / 明→黒)'));
+            container.appendChild(invertLabel);
+
+            const resetRow = document.createElement('div');
+            resetRow.className = 'flex';
+            resetRow.style.gap = '1rem';
+            resetRow.style.flexWrap = 'wrap';
+            const resetButton = document.createElement('a');
+            resetButton.href = '#';
+            resetButton.className = 'button';
+            resetButton.textContent = '２値化設定をリセット';
+            resetButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                node.params.level = 128;
+                node.params.invert = false;
+                levelControl.setValue(128);
+                invertCheckbox.checked = false;
+                schedulePreviewRender();
+            });
+            resetRow.appendChild(resetButton);
+            container.appendChild(resetRow);
+        }
+
+        function schedulePreviewRender() {
+            if (!state.sourceBitmap) {
+                setStatus('画像を読み込んでください。', false);
+                return;
+            }
+            if (state.pendingRender !== null) {
+                cancelAnimationFrame(state.pendingRender);
+            }
+            state.pendingRender = requestAnimationFrame(() => {
+                state.pendingRender = null;
+                renderPreview();
+            });
+        }
+
+        function preparePreviewData() {
+            const scale = Number.parseInt(elements.previewScale.value, 10) / 100;
+            const width = Math.max(1, Math.round(state.sourceBitmap.width * scale));
+            const height = Math.max(1, Math.round(state.sourceBitmap.height * scale));
+            elements.sourceCanvas.width = width;
+            elements.sourceCanvas.height = height;
+            sourceCtx.clearRect(0, 0, width, height);
+            sourceCtx.drawImage(state.sourceBitmap, 0, 0, width, height);
+            const imageData = sourceCtx.getImageData(0, 0, width, height);
+            return { imageData, width, height };
+        }
+
+        function renderPreview() {
+            if (!state.sourceBitmap) {
+                setStatus('画像を読み込んでください。', false);
+                return;
+            }
+            try {
+                const base = preparePreviewData();
+                const processed = applyPipeline(base, state.nodes);
+                elements.resultCanvas.width = processed.width;
+                elements.resultCanvas.height = processed.height;
+                resultCtx.putImageData(processed.imageData, 0, 0);
+                setStatus(`プレビュー更新: ${processed.width} × ${processed.height}`);
+                refreshOverlayIfVisible();
+            } catch (error) {
+                console.error(error);
+                setStatus('処理中にエラーが発生しました。ノード設定を確認してください。', false);
+            }
+        }
+
+        function applyPipeline(dataObj, nodes) {
+            let current = {
+                imageData: new ImageData(new Uint8ClampedArray(dataObj.imageData.data), dataObj.width, dataObj.height),
+                width: dataObj.width,
+                height: dataObj.height,
+            };
+            nodes.forEach((node) => {
+                if (node.type === 'convolution') {
+                    current = processConvolution(current, node.params);
+                } else if (node.type === 'rgb') {
+                    current = processRgb(current, node.params);
+                } else if (node.type === 'resize') {
+                    current = processResize(current, node.params);
+                } else if (node.type === 'brightnessContrast') {
+                    current = processBrightnessContrast(current, node.params);
+                } else if (node.type === 'hsl') {
+                    current = processHsl(current, node.params);
+                } else if (node.type === 'gamma') {
+                    current = processGamma(current, node.params);
+                } else if (node.type === 'threshold') {
+                    current = processThreshold(current, node.params);
+                }
+            });
+            return current;
+        }
+
+        function processConvolution(data, params) {
+            const size = ALLOWED_KERNEL_SIZES.includes(params.size) ? params.size : 3;
+            const kernelLength = size * size;
+            const kernelSource = Array.isArray(params.kernel) && params.kernel.length === kernelLength
+                ? params.kernel.slice()
+                : createIdentityKernel(size);
+            const baseDivisor = Number.isFinite(params.divisor) ? params.divisor : 1;
+            const bias = Number.isFinite(params.bias) ? params.bias : 0;
+            const divisor = params.autoNormalize ? computeAutoDivisor(kernelSource) : baseDivisor;
+            const safeDivisor = Math.abs(divisor) > 1e-6 ? divisor : 1;
+            const normalizedKernel = kernelSource.map((value) => value / safeDivisor);
+
+            const { width, height } = data;
+            const input = data.imageData.data;
+            const output = new Uint8ClampedArray(input.length);
+            const half = Math.floor(size / 2);
+
+            for (let y = 0; y < height; y += 1) {
+                for (let x = 0; x < width; x += 1) {
+                    let r = 0;
+                    let g = 0;
+                    let b = 0;
+                    for (let ky = -half; ky <= half; ky += 1) {
+                        for (let kx = -half; kx <= half; kx += 1) {
+                            const ix = clamp(x + kx, 0, width - 1);
+                            const iy = clamp(y + ky, 0, height - 1);
+                            const idx = (iy * width + ix) * 4;
+                            const weight = normalizedKernel[(ky + half) * size + (kx + half)];
+                            r += input[idx] * weight;
+                            g += input[idx + 1] * weight;
+                            b += input[idx + 2] * weight;
+                        }
+                    }
+                    const outIdx = (y * width + x) * 4;
+                    output[outIdx] = clamp(Math.round(r + bias), 0, 255);
+                    output[outIdx + 1] = clamp(Math.round(g + bias), 0, 255);
+                    output[outIdx + 2] = clamp(Math.round(b + bias), 0, 255);
+                    output[outIdx + 3] = input[outIdx + 3];
+                }
+            }
+
+            return {
+                imageData: new ImageData(output, width, height),
+                width,
+                height,
+            };
+        }
+
+        function processRgb(data, params) {
+            const { width, height } = data;
+            const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
+            const pixels = result.data;
+            for (let i = 0; i < pixels.length; i += 4) {
+                pixels[i] = clamp(pixels[i] * params.rScale + params.rOffset, 0, 255);
+                pixels[i + 1] = clamp(pixels[i + 1] * params.gScale + params.gOffset, 0, 255);
+                pixels[i + 2] = clamp(pixels[i + 2] * params.bScale + params.bOffset, 0, 255);
+            }
+            return {
+                imageData: result,
+                width,
+                height,
+            };
+        }
+
+        function processBrightnessContrast(data, params) {
+            const { width, height } = data;
+            const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
+            const pixels = result.data;
+
+            const brightness = clamp(Number.isFinite(params.brightness) ? params.brightness : 0, -100, 100);
+            const contrastPercent = clamp(Number.isFinite(params.contrast) ? params.contrast : 0, -100, 100) / 100;
+
+            const brightnessOffset = 255 * (brightness / 100);
+            const contrastFactor = Math.max(0, 1 + contrastPercent);
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                pixels[i] = clamp(contrastFactor * (pixels[i] - 128) + 128 + brightnessOffset, 0, 255);
+                pixels[i + 1] = clamp(contrastFactor * (pixels[i + 1] - 128) + 128 + brightnessOffset, 0, 255);
+                pixels[i + 2] = clamp(contrastFactor * (pixels[i + 2] - 128) + 128 + brightnessOffset, 0, 255);
+            }
+
+            return {
+                imageData: result,
+                width,
+                height,
+            };
+        }
+
+        function rgbToHsl(r, g, b) {
+            const rn = r / 255;
+            const gn = g / 255;
+            const bn = b / 255;
+            const max = Math.max(rn, gn, bn);
+            const min = Math.min(rn, gn, bn);
+            let h;
+            let s;
+            const l = (max + min) / 2;
+
+            if (max === min) {
+                h = 0;
+                s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case rn:
+                        h = (gn - bn) / d + (gn < bn ? 6 : 0);
+                        break;
+                    case gn:
+                        h = (bn - rn) / d + 2;
+                        break;
+                    default:
+                        h = (rn - gn) / d + 4;
+                }
+                h /= 6;
+            }
+
+            return [h, s, l];
+        }
+
+        function hslToRgb(h, s, l) {
+            const hueToRgb = (p, q, t) => {
+                let tt = t;
+                if (tt < 0) tt += 1;
+                if (tt > 1) tt -= 1;
+                if (tt < 1 / 6) return p + (q - p) * 6 * tt;
+                if (tt < 1 / 2) return q;
+                if (tt < 2 / 3) return p + (q - p) * (2 / 3 - tt) * 6;
+                return p;
+            };
+
+            let r;
+            let g;
+            let b;
+
+            if (s === 0) {
+                r = l;
+                g = l;
+                b = l;
+            } else {
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hueToRgb(p, q, h + 1 / 3);
+                g = hueToRgb(p, q, h);
+                b = hueToRgb(p, q, h - 1 / 3);
+            }
+
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function processHsl(data, params) {
+            const { width, height } = data;
+            const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
+            const pixels = result.data;
+
+            const hueShift = clamp(Number.isFinite(params.hue) ? params.hue : 0, -180, 180) / 360;
+            const saturationAdjust = clamp(Number.isFinite(params.saturation) ? params.saturation : 0, -100, 100) / 100;
+            const lightnessAdjust = clamp(Number.isFinite(params.lightness) ? params.lightness : 0, -100, 100) / 100;
+
+            const saturationFactor = Math.max(0, 1 + saturationAdjust);
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                const [h, s, l] = rgbToHsl(pixels[i], pixels[i + 1], pixels[i + 2]);
+                let newH = h + hueShift;
+                newH = (newH % 1 + 1) % 1;
+                const newS = clamp(s * saturationFactor, 0, 1);
+                const newL = clamp(l + lightnessAdjust, 0, 1);
+                const [nr, ng, nb] = hslToRgb(newH, newS, newL);
+                pixels[i] = nr;
+                pixels[i + 1] = ng;
+                pixels[i + 2] = nb;
+            }
+
+            return {
+                imageData: result,
+                width,
+                height,
+            };
+        }
+
+        function processGamma(data, params) {
+            const { width, height } = data;
+            const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
+            const pixels = result.data;
+            const gamma = clamp(Number.isFinite(params.gamma) ? params.gamma : 1, 0.1, 5);
+            const invGamma = 1 / gamma;
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                pixels[i] = clamp(Math.round(255 * Math.pow(pixels[i] / 255, invGamma)), 0, 255);
+                pixels[i + 1] = clamp(Math.round(255 * Math.pow(pixels[i + 1] / 255, invGamma)), 0, 255);
+                pixels[i + 2] = clamp(Math.round(255 * Math.pow(pixels[i + 2] / 255, invGamma)), 0, 255);
+            }
+
+            return {
+                imageData: result,
+                width,
+                height,
+            };
+        }
+
+        function processThreshold(data, params) {
+            const { width, height } = data;
+            const result = new ImageData(new Uint8ClampedArray(data.imageData.data), width, height);
+            const pixels = result.data;
+            const level = clamp(Number.isFinite(params.level) ? params.level : 128, 0, 255);
+            const invert = Boolean(params.invert);
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                const gray = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+                let value = gray >= level ? 255 : 0;
+                if (invert) {
+                    value = 255 - value;
+                }
+                pixels[i] = value;
+                pixels[i + 1] = value;
+                pixels[i + 2] = value;
+            }
+
+            return {
+                imageData: result,
+                width,
+                height,
+            };
+        }
+
+        function processResize(data, params) {
+            params.lastInputWidth = data.width;
+            params.lastInputHeight = data.height;
+
+            if (params.mode !== 'pixel' && params.mode !== 'percent') {
+                params.mode = 'percent';
+            }
+            if (typeof params.keepAspect !== 'boolean') {
+                params.keepAspect = true;
+            }
+            if (typeof params.pixelAnchor !== 'string') {
+                params.pixelAnchor = 'width';
+            }
+
+            if (!Number.isFinite(params.widthPercent)) {
+                params.widthPercent = 100;
+            }
+            if (!Number.isFinite(params.heightPercent)) {
+                params.heightPercent = params.keepAspect ? params.widthPercent : 100;
+            }
+
+            if (!Number.isFinite(params.widthPx) || params.widthPx <= 0) {
+                params.widthPx = data.width;
+            }
+            if (!Number.isFinite(params.heightPx) || params.heightPx <= 0) {
+                params.heightPx = data.height;
+            }
+
+            const aspect = data.height > 0 ? data.width / data.height : 1;
+            let newWidth = data.width;
+            let newHeight = data.height;
+
+            if (params.mode === 'pixel') {
+                let targetWidth = Math.max(1, Math.round(params.widthPx));
+                let targetHeight = Math.max(1, Math.round(params.heightPx));
+
+                if (params.keepAspect) {
+                    if (params.pixelAnchor === 'height') {
+                        targetHeight = Math.max(1, targetHeight);
+                        targetWidth = Math.max(1, Math.round(targetHeight * aspect));
+                    } else {
+                        targetWidth = Math.max(1, targetWidth);
+                        targetHeight = Math.max(1, Math.round(targetWidth / (aspect || 1)));
+                        params.pixelAnchor = 'width';
+                    }
+                }
+
+                newWidth = targetWidth;
+                newHeight = targetHeight;
+
+                params.widthPx = newWidth;
+                params.heightPx = newHeight;
+                params.widthPercent = data.width > 0 ? clamp((newWidth / data.width) * 100, 1, 1000) : 100;
+                params.heightPercent = data.height > 0 ? clamp((newHeight / data.height) * 100, 1, 1000) : 100;
+            } else {
+                const scaleX = clamp(params.widthPercent / 100, 0.01, 10);
+                const scaleY = params.keepAspect ? scaleX : clamp(params.heightPercent / 100, 0.01, 10);
+                newWidth = Math.max(1, Math.round(data.width * scaleX));
+                newHeight = Math.max(1, Math.round(data.height * scaleY));
+
+                params.widthPx = newWidth;
+                params.heightPx = newHeight;
+                if (params.keepAspect) {
+                    params.heightPercent = params.widthPercent;
+                }
+            }
+
+            tempCanvas.width = data.width;
+            tempCanvas.height = data.height;
+            tempCtx.putImageData(data.imageData, 0, 0);
+
+            scratchCanvas.width = newWidth;
+            scratchCanvas.height = newHeight;
+            scratchCtx.clearRect(0, 0, newWidth, newHeight);
+            scratchCtx.imageSmoothingEnabled = true;
+            scratchCtx.drawImage(tempCanvas, 0, 0, data.width, data.height, 0, 0, newWidth, newHeight);
+
+            const resizedData = scratchCtx.getImageData(0, 0, newWidth, newHeight);
+            return {
+                imageData: resizedData,
+                width: newWidth,
+                height: newHeight,
+            };
+        }
+
+        function buildOutputCanvas() {
+            if (!state.sourceBitmap) return null;
+            scratchCanvas.width = state.sourceBitmap.width;
+            scratchCanvas.height = state.sourceBitmap.height;
+            scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+            scratchCtx.drawImage(state.sourceBitmap, 0, 0);
+            let current = {
+                imageData: scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height),
+                width: scratchCanvas.width,
+                height: scratchCanvas.height,
+            };
+            current = applyPipeline(current, state.nodes);
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = current.width;
+            outputCanvas.height = current.height;
+            outputCanvas.getContext('2d').putImageData(current.imageData, 0, 0);
+            return outputCanvas;
+        }
+
+        function writeBack() {
+            if (!state.sourceBitmap) {
+                setStatus('先に画像を読み込んでください。', false);
+                return;
+            }
+            setStatus('結果をソースに書き戻しています...', true);
+            try {
+                const canvas = buildOutputCanvas();
+                if (!canvas) {
+                    setStatus('書き戻しに失敗しました。', false);
+                    return;
+                }
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
                         setStatus('書き戻しに失敗しました。', false);
                         return;
                     }
-                    canvas.toBlob(async (blob) => {
-                        if (!blob) {
-                            setStatus('書き戻しに失敗しました。', false);
-                            return;
-                        }
-                        try {
-                            const bitmap = await createImageBitmap(blob);
-                            setSourceBitmap(bitmap, '書き戻し画像');
-                            setStatus('結果をソースに書き戻しました。', true);
-                        } catch (error) {
-                            console.error(error);
-                            setStatus('書き戻しに失敗しました。', false);
-                        }
-                    }, 'image/png');
-                } catch (error) {
-                    console.error(error);
-                    setStatus('書き戻しに失敗しました。', false);
-                }
+                    try {
+                        const bitmap = await createImageBitmap(blob);
+                        setSourceBitmap(bitmap, '書き戻し画像');
+                        setStatus('結果をソースに書き戻しました。', true);
+                    } catch (error) {
+                        console.error(error);
+                        setStatus('書き戻しに失敗しました。', false);
+                    }
+                }, 'image/png');
+            } catch (error) {
+                console.error(error);
+                setStatus('書き戻しに失敗しました。', false);
             }
+        }
 
-            function downloadResult() {
-                if (!state.sourceBitmap) {
-                    setStatus('先に画像を読み込んでください。', false);
+        function downloadResult() {
+            if (!state.sourceBitmap) {
+                setStatus('先に画像を読み込んでください。', false);
+                return;
+            }
+            setStatus('出力画像を生成中...', true);
+            try {
+                const canvas = buildOutputCanvas();
+                if (!canvas) {
+                    setStatus('出力生成に失敗しました。', false);
                     return;
                 }
-                setStatus('出力画像を生成中...', true);
-                try {
-                    const canvas = buildOutputCanvas();
-                    if (!canvas) {
+                const format = elements.outputFormat.value;
+                const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+                const quality = format === 'jpeg' ? clamp(Number.parseInt(elements.jpegQuality.value, 10) / 100, 0.1, 1) : undefined;
+                canvas.toBlob((blob) => {
+                    if (!blob) {
                         setStatus('出力生成に失敗しました。', false);
                         return;
                     }
-                    const format = elements.outputFormat.value;
-                    const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
-                    const quality = format === 'jpeg' ? clamp(Number.parseInt(elements.jpegQuality.value, 10) / 100, 0.1, 1) : undefined;
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            setStatus('出力生成に失敗しました。', false);
-                            return;
-                        }
-                        const link = document.createElement('a');
-                        const timestamp = new Date().toISOString().replace(/[-:.T]/g, '').slice(0, 14);
-                        const ext = format === 'jpeg' ? 'jpg' : 'png';
-                        link.download = `image_effector_${timestamp}.${ext}`;
-                        link.href = URL.createObjectURL(blob);
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-                        setStatus(`出力を保存しました (${canvas.width} × ${canvas.height})`);
-                    }, mimeType, quality);
-                } catch (error) {
-                    console.error(error);
-                    setStatus('出力生成中にエラーが発生しました。', false);
-                }
+                    const link = document.createElement('a');
+                    const timestamp = new Date().toISOString().replace(/[-:.T]/g, '').slice(0, 14);
+                    const ext = format === 'jpeg' ? 'jpg' : 'png';
+                    link.download = `image_effector_${timestamp}.${ext}`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    setStatus(`出力を保存しました (${canvas.width} × ${canvas.height})`);
+                }, mimeType, quality);
+            } catch (error) {
+                console.error(error);
+                setStatus('出力生成中にエラーが発生しました。', false);
             }
+        }
 
-            function updatePreviewScaleLabel() {
-                elements.previewScaleValue.textContent = `${elements.previewScale.value}%`;
+        function updatePreviewScaleLabel() {
+            elements.previewScaleValue.textContent = `${elements.previewScale.value}%`;
+        }
+
+        function updateJpegQualityLabel() {
+            elements.jpegQualityValue.textContent = `${elements.jpegQuality.value}%`;
+        }
+
+        function updateOutputControls() {
+            const format = elements.outputFormat.value;
+            if (format === 'jpeg') {
+                elements.jpegQualityRow.style.display = '';
+            } else {
+                elements.jpegQualityRow.style.display = 'none';
             }
+        }
 
-            function updateJpegQualityLabel() {
-                elements.jpegQualityValue.textContent = `${elements.jpegQuality.value}%`;
-            }
+        function createOverlayElements() {
+            if (document.getElementById('canvas-overlay')) return;
+            const overlay = document.createElement('div');
+            overlay.id = 'canvas-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.background = 'rgba(0, 0, 0, 0.92)';
+            overlay.style.display = 'none';
+            overlay.style.zIndex = '9999';
+            overlay.style.justifyContent = 'center';
+            overlay.style.alignItems = 'center';
+            overlay.style.padding = '10px';
+            overlay.style.boxSizing = 'border-box';
 
-            function updateOutputControls() {
-                const format = elements.outputFormat.value;
-                if (format === 'jpeg') {
-                    elements.jpegQualityRow.style.display = '';
-                } else {
-                    elements.jpegQualityRow.style.display = 'none';
-                }
-            }
+            const container = document.createElement('div');
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.display = 'flex';
+            container.style.justifyContent = 'center';
+            container.style.alignItems = 'center';
+            container.style.overflow = 'auto';
 
-            function createOverlayElements() {
-                if (document.getElementById('canvas-overlay')) return;
-                const overlay = document.createElement('div');
-                overlay.id = 'canvas-overlay';
-                overlay.style.position = 'fixed';
-                overlay.style.top = '0';
-                overlay.style.left = '0';
-                overlay.style.width = '100vw';
-                overlay.style.height = '100vh';
-                overlay.style.background = 'rgba(0, 0, 0, 0.92)';
-                overlay.style.display = 'none';
-                overlay.style.zIndex = '9999';
-                overlay.style.justifyContent = 'center';
-                overlay.style.alignItems = 'center';
-                overlay.style.padding = '10px';
-                overlay.style.boxSizing = 'border-box';
+            const overlayCanvas = document.createElement('canvas');
+            overlayCanvas.id = 'overlay-canvas';
+            overlayCanvas.style.maxWidth = '100%';
+            overlayCanvas.style.maxHeight = '100%';
+            overlayCanvas.style.boxShadow = '0 0 30px rgba(0, 0, 0, 0.8)';
+            overlayCanvas.style.background = 'black';
+            overlayCanvas.style.cursor = 'zoom-out';
 
-                const container = document.createElement('div');
-                container.style.width = '100%';
-                container.style.height = '100%';
-                container.style.display = 'flex';
-                container.style.justifyContent = 'center';
-                container.style.alignItems = 'center';
-                container.style.overflow = 'auto';
+            container.appendChild(overlayCanvas);
+            overlay.appendChild(container);
+            document.body.appendChild(overlay);
 
-                const overlayCanvas = document.createElement('canvas');
-                overlayCanvas.id = 'overlay-canvas';
-                overlayCanvas.style.maxWidth = '100%';
-                overlayCanvas.style.maxHeight = '100%';
-                overlayCanvas.style.boxShadow = '0 0 30px rgba(0, 0, 0, 0.8)';
-                overlayCanvas.style.background = 'black';
-                overlayCanvas.style.cursor = 'zoom-out';
-
-                container.appendChild(overlayCanvas);
-                overlay.appendChild(container);
-                document.body.appendChild(overlay);
-
-                overlay.addEventListener('click', (event) => {
-                    if (event.target === overlay) {
-                        closeOverlay();
-                    }
-                });
-
-                window.addEventListener('keydown', (event) => {
-                    if (event.key === 'Escape') closeOverlay();
-                });
-
-                let lastTap = 0;
-                overlayCanvas.addEventListener('click', () => {
+            overlay.addEventListener('click', (event) => {
+                if (event.target === overlay) {
                     closeOverlay();
-                });
-                overlayCanvas.addEventListener('dblclick', () => {
-                    closeOverlay();
-                });
-                overlayCanvas.addEventListener('touchend', () => {
-                    const now = Date.now();
-                    if (now - lastTap < 300) {
-                        closeOverlay();
-                        lastTap = 0;
-                    } else {
-                        lastTap = now;
-                    }
-                }, { passive: true });
-            }
-
-            function openOverlayFromCanvas(srcCanvas) {
-                createOverlayElements();
-                const overlay = document.getElementById('canvas-overlay');
-                const overlayCanvas = document.getElementById('overlay-canvas');
-                if (!overlay || !overlayCanvas || !srcCanvas) return;
-
-                const vw = Math.max(100, window.innerWidth - 40);
-                const vh = Math.max(100, window.innerHeight - 40);
-                const sw = srcCanvas.width;
-                const sh = srcCanvas.height;
-                const ratio = Math.min(vw / sw, vh / sh, 1);
-                const dw = Math.max(1, Math.floor(sw * ratio));
-                const dh = Math.max(1, Math.floor(sh * ratio));
-
-                overlayCanvas.width = dw;
-                overlayCanvas.height = dh;
-                overlayCanvas.style.width = `${dw}px`;
-                overlayCanvas.style.height = `${dh}px`;
-
-                const ctx = overlayCanvas.getContext('2d');
-                ctx.clearRect(0, 0, dw, dh);
-                ctx.drawImage(srcCanvas, 0, 0, sw, sh, 0, 0, dw, dh);
-
-                overlay.dataset.source = srcCanvas === elements.resultCanvas ? 'result' : 'source';
-                overlay.style.display = 'flex';
-            }
-
-            function closeOverlay() {
-                const overlay = document.getElementById('canvas-overlay');
-                if (!overlay) return;
-                overlay.style.display = 'none';
-                overlay.dataset.source = '';
-            }
-
-            function refreshOverlayIfVisible() {
-                const overlay = document.getElementById('canvas-overlay');
-                if (!overlay || overlay.style.display === 'none') return;
-                const sourceType = overlay.dataset.source || 'result';
-                if (sourceType === 'source') {
-                    openOverlayFromCanvas(elements.sourceCanvas);
-                } else {
-                    openOverlayFromCanvas(elements.resultCanvas);
                 }
+            });
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeOverlay();
+            });
+
+            let lastTap = 0;
+            overlayCanvas.addEventListener('click', () => {
+                closeOverlay();
+            });
+            overlayCanvas.addEventListener('dblclick', () => {
+                closeOverlay();
+            });
+            overlayCanvas.addEventListener('touchend', () => {
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    closeOverlay();
+                    lastTap = 0;
+                } else {
+                    lastTap = now;
+                }
+            }, { passive: true });
+        }
+
+        function openOverlayFromCanvas(srcCanvas) {
+            createOverlayElements();
+            const overlay = document.getElementById('canvas-overlay');
+            const overlayCanvas = document.getElementById('overlay-canvas');
+            if (!overlay || !overlayCanvas || !srcCanvas) return;
+
+            const vw = Math.max(100, window.innerWidth - 40);
+            const vh = Math.max(100, window.innerHeight - 40);
+            const sw = srcCanvas.width;
+            const sh = srcCanvas.height;
+            const ratio = Math.min(vw / sw, vh / sh, 1);
+            const dw = Math.max(1, Math.floor(sw * ratio));
+            const dh = Math.max(1, Math.floor(sh * ratio));
+
+            overlayCanvas.width = dw;
+            overlayCanvas.height = dh;
+            overlayCanvas.style.width = `${dw}px`;
+            overlayCanvas.style.height = `${dh}px`;
+
+            const ctx = overlayCanvas.getContext('2d');
+            ctx.clearRect(0, 0, dw, dh);
+            ctx.drawImage(srcCanvas, 0, 0, sw, sh, 0, 0, dw, dh);
+
+            overlay.dataset.source = srcCanvas === elements.resultCanvas ? 'result' : 'source';
+            overlay.style.display = 'flex';
+        }
+
+        function closeOverlay() {
+            const overlay = document.getElementById('canvas-overlay');
+            if (!overlay) return;
+            overlay.style.display = 'none';
+            overlay.dataset.source = '';
+        }
+
+        function refreshOverlayIfVisible() {
+            const overlay = document.getElementById('canvas-overlay');
+            if (!overlay || overlay.style.display === 'none') return;
+            const sourceType = overlay.dataset.source || 'result';
+            if (sourceType === 'source') {
+                openOverlayFromCanvas(elements.sourceCanvas);
+            } else {
+                openOverlayFromCanvas(elements.resultCanvas);
             }
+        }
 
-            function setupCanvasViewer() {
-                createOverlayElements();
-                elements.sourceCanvas.addEventListener('click', () => openOverlayFromCanvas(elements.sourceCanvas));
-                elements.resultCanvas.addEventListener('click', () => openOverlayFromCanvas(elements.resultCanvas));
-                window.addEventListener('resize', () => {
-                    refreshOverlayIfVisible();
-                });
-            }
+        function setupCanvasViewer() {
+            createOverlayElements();
+            elements.sourceCanvas.addEventListener('click', () => openOverlayFromCanvas(elements.sourceCanvas));
+            elements.resultCanvas.addEventListener('click', () => openOverlayFromCanvas(elements.resultCanvas));
+            window.addEventListener('resize', () => {
+                refreshOverlayIfVisible();
+            });
+        }
 
-            function attachEvents() {
-                elements.fileInput.addEventListener('change', (event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                        loadImageFromFile(file);
-                    }
-                });
+        function attachEvents() {
+            elements.fileInput.addEventListener('change', (event) => {
+                const file = event.target.files?.[0];
+                if (file) {
+                    loadImageFromFile(file);
+                }
+            });
 
-                elements.loadUrlLink.addEventListener('click', (event) => {
+            elements.loadUrlLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                const url = elements.urlInput.value.trim();
+                if (url) {
+                    loadImageFromUrl(url);
+                }
+            });
+
+            elements.urlInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
                     event.preventDefault();
                     const url = elements.urlInput.value.trim();
                     if (url) {
                         loadImageFromUrl(url);
                     }
-                });
+                }
+            });
 
-                elements.urlInput.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        const url = elements.urlInput.value.trim();
-                        if (url) {
-                            loadImageFromUrl(url);
-                        }
-                    }
-                });
+            elements.resetLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                resetImage();
+            });
 
-                elements.resetLink.addEventListener('click', (event) => {
+            elements.addNodeButtons.forEach((button) => {
+                button.addEventListener('click', (event) => {
                     event.preventDefault();
-                    resetImage();
+                    const type = button.dataset.addNode;
+                    addNode(type);
                 });
+            });
 
-                elements.addNodeButtons.forEach((button) => {
-                    button.addEventListener('click', (event) => {
-                        event.preventDefault();
-                        const type = button.dataset.addNode;
-                        addNode(type);
-                    });
-                });
+            elements.clearNodesButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                clearNodes();
+            });
 
-                elements.clearNodesButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    clearNodes();
-                });
-
-                elements.previewScale.addEventListener('input', () => {
-                    updatePreviewScaleLabel();
-                    schedulePreviewRender();
-                });
-
-                elements.refreshPreview.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    schedulePreviewRender();
-                });
-
-                elements.applyEffects.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    schedulePreviewRender();
-                });
-
-                elements.downloadResult.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    downloadResult();
-                });
-
-                elements.writeBack.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    writeBack();
-                });
-
-                elements.outputFormat.addEventListener('change', () => {
-                    updateOutputControls();
-                });
-
-                elements.jpegQuality.addEventListener('input', () => {
-                    updateJpegQualityLabel();
-                });
-            }
-
-            function init() {
-                attachEvents();
-                setupCanvasViewer();
+            elements.previewScale.addEventListener('input', () => {
                 updatePreviewScaleLabel();
-                updateOutputControls();
-                updateJpegQualityLabel();
-                renderNodes();
-            }
+                schedulePreviewRender();
+            });
 
-            init();
-        })();
-    </script>
-    </body>
+            elements.refreshPreview.addEventListener('click', (event) => {
+                event.preventDefault();
+                schedulePreviewRender();
+            });
+
+            elements.applyEffects.addEventListener('click', (event) => {
+                event.preventDefault();
+                schedulePreviewRender();
+            });
+
+            elements.downloadResult.addEventListener('click', (event) => {
+                event.preventDefault();
+                downloadResult();
+            });
+
+            elements.writeBack.addEventListener('click', (event) => {
+                event.preventDefault();
+                writeBack();
+            });
+
+            elements.outputFormat.addEventListener('change', () => {
+                updateOutputControls();
+            });
+
+            elements.jpegQuality.addEventListener('input', () => {
+                updateJpegQualityLabel();
+            });
+        }
+
+        function init() {
+            attachEvents();
+            setupCanvasViewer();
+            updatePreviewScaleLabel();
+            updateOutputControls();
+            updateJpegQualityLabel();
+            renderNodes();
+        }
+
+        init();
+    })();
+</script>

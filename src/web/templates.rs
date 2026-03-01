@@ -1,5 +1,5 @@
 use gray_matter::{Matter, engine::YAML};
-use crate::{markdown::PageMeta, render::MarkdownRenderer};
+use crate::{VERSION, markdown::PageMeta, render::MarkdownRenderer};
 
 #[derive(Clone)]
 pub struct TemplateService {
@@ -39,7 +39,8 @@ impl TemplateService {
             title = title,
             authors = authors,
             description = description,
-            content = content
+            content = content,
+            version = VERSION
         )
     }
 
@@ -52,7 +53,8 @@ impl TemplateService {
             title = title,
             authors = authors,
             description = description,
-            content = html
+            content = html,
+            version = VERSION
         )
     }
 
