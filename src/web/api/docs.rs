@@ -113,7 +113,7 @@ impl DocsRouter {
             } else if entry.kind.is_file() {
                 let opt_file_name = entry.path.file_name().and_then(|n| n.to_str());
                 if let Some(file_name) = opt_file_name {
-                    if !file_name.starts_with(".") {
+                    if !file_name.starts_with(".") && file_name != "index.md" {
                         files.push(file_name);
                     }
                 }
