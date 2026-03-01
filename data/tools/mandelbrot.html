@@ -1,0 +1,758 @@
+---
+title: Mandelbrot Set Viewer
+description: マンデルブロット集合を描画するやつ
+authors:
+- 371tti
+is_complete: true
+---
+
+    <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        background: #000;
+        color: #f5f5f5;
+        font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+        overflow: hidden;
+    }
+
+    #canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        cursor: crosshair;
+        touch-action: none;
+    }
+</style>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
+    <script type="module">
+    Decimal.set({ precision: 60, rounding: Decimal.ROUND_HALF_EVEN, toExpNeg: -80, toExpPos: 80 });
+
+    const SPLIT = 134217729;
+    const HIGH_PRECISION_THRESHOLD = new Decimal('1e20');
+
+    function decimalToDoubleDouble(dec) {
+        const hi = dec.toNumber();
+        const lo = dec.minus(hi).toNumber();
+        return [hi, lo];
+    }
+
+    function ddAdd(a, b) {
+        const s = a[0] + b[0];
+        const bb = s - a[0];
+        let err = (b[0] - bb) + (a[0] - (s - bb));
+        err += a[1] + b[1];
+        const hi = s + err;
+        const lo = err - (hi - s);
+        return [hi, lo];
+    }
+
+    function ddSub(a, b) {
+        const s = a[0] - b[0];
+        const bb = s - a[0];
+        let err = (-b[0] - bb) + (a[0] - (s - bb));
+        err += a[1] - b[1];
+        const hi = s + err;
+        const lo = err - (hi - s);
+        return [hi, lo];
+    }
+
+    function twoProd(a, b) {
+        const p = a * b;
+        const ca = SPLIT * a;
+        const ah = ca - (ca - a);
+        const al = a - ah;
+        const cb = SPLIT * b;
+        const bh = cb - (cb - b);
+        const bl = b - bh;
+        const err = ((ah * bh - p) + ah * bl + al * bh) + al * bl;
+        return [p, err];
+    }
+
+    function ddMul(a, b) {
+        const prod = twoProd(a[0], b[0]);
+        const t = prod[1] + a[0] * b[1] + a[1] * b[0];
+        const hi = prod[0] + t;
+        const lo = (prod[0] - hi) + t + a[1] * b[1];
+        return [hi, lo];
+    }
+
+    function ddMulNumber(a, n) {
+        return ddMul(a, [n, 0]);
+    }
+
+    function ddFromNumber(n) {
+        return [n, 0];
+    }
+
+    function createPerturbationWorker() {
+        const workerCode = `
+        const SPLIT = 134217729;
+        
+        function ddAdd(a, b) {
+            const s = a[0] + b[0];
+            const bb = s - a[0];
+            let err = (b[0] - bb) + (a[0] - (s - bb));
+            err += a[1] + b[1];
+            const hi = s + err;
+            const lo = err - (hi - s);
+            return [hi, lo];
+        }
+        
+        function ddSub(a, b) {
+            const s = a[0] - b[0];
+            const bb = s - a[0];
+            let err = (-b[0] - bb) + (a[0] - (s - bb));
+            err += a[1] - b[1];
+            const hi = s + err;
+            const lo = err - (hi - s);
+            return [hi, lo];
+        }
+        
+        function twoProd(a, b) {
+            const p = a * b;
+            const ca = SPLIT * a;
+            const ah = ca - (ca - a);
+            const al = a - ah;
+            const cb = SPLIT * b;
+            const bh = cb - (cb - b);
+            const bl = b - bh;
+            const err = ((ah * bh - p) + ah * bl + al * bh) + al * bl;
+            return [p, err];
+        }
+        
+        function ddMul(a, b) {
+            const prod = twoProd(a[0], b[0]);
+            const t = prod[1] + a[0] * b[1] + a[1] * b[0];
+            const hi = prod[0] + t;
+            const lo = (prod[0] - hi) + t + a[1] * b[1];
+            return [hi, lo];
+        }
+        
+        function ddMulNumber(a, n) {
+            return ddMul(a, [n, 0]);
+        }
+        
+        function ddFromNumber(n) {
+            return [n, 0];
+        }
+        
+        const DD_TWO = [2, 0];
+        
+        function iterateFloat(refOrbit, px, py, halfW, halfH, pixelSizeX, pixelSizeY, maxIter, invMax) {
+            const blockW = refOrbit.blockW;
+            const blockH = refOrbit.blockH;
+            const data = refOrbit.data;
+            const localIdx = refOrbit.localIdx(px, py);
+            const dcx = (px - halfW) * pixelSizeX;
+            const dcy = (py - halfH) * pixelSizeY;
+            let dr = 0, di = 0;
+            let iter = 0;
+            for (; iter < maxIter && iter < refOrbit.values.length; iter++) {
+                const ref = refOrbit.values[iter];
+                const refZr = ref[0];
+                const refZi = ref[2];
+                const zr = refZr + dr;
+                const zi = refZi + di;
+                const zr2 = zr * zr;
+                const zi2 = zi * zi;
+                if (zr2 + zi2 > 4) break;
+                const newDr = 2 * (refZr * dr - refZi * di) + (dr * dr - di * di) + dcx;
+                const newDi = 2 * (refZr * di + refZi * dr) + 2 * dr * di + dcy;
+                dr = newDr;
+                di = newDi;
+            }
+            if (iter >= maxIter || iter >= refOrbit.values.length) {
+                data[localIdx] = 0;
+                data[localIdx + 1] = 0;
+                data[localIdx + 2] = 0;
+            } else {
+                const ref = refOrbit.values[iter];
+                const zr = ref[0] + dr;
+                const zi = ref[2] + di;
+                const mag2 = zr * zr + zi * zi;
+                const log_zn = Math.log(Math.max(1e-12, mag2)) / 2;
+                const nu = Math.log(Math.max(1e-12, log_zn / Math.LN2)) / Math.LN2;
+                const smoothIter = iter + 1 - nu;
+                const base = Math.min(1, Math.max(0, smoothIter * invMax));
+                const normalized = Math.min(1, Math.max(0, 1 - Math.exp(-6 * base)));
+                const v = Math.floor(255 * normalized);
+                data[localIdx] = v;
+                data[localIdx + 1] = v;
+                data[localIdx + 2] = v;
+            }
+            data[localIdx + 3] = 255;
+        }
+        
+        self.onmessage = function(e) {
+            try {
+                const { W, H, refOrbit, zoom, maxIter, blockX, blockY, blockSize, useHighPrecision } = e.data;
+                if (!refOrbit || !refOrbit.length) {
+                    self.postMessage({ error: 'Missing orbit', blockX, blockY });
+                    return;
+                }
+                
+                const aspect = W / H;
+                const viewHeight = zoom;
+                const viewWidth = zoom * aspect;
+                const pixelSizeX = viewWidth / W;
+                const pixelSizeY = viewHeight / H;
+                
+                const halfW = W / 2;
+                const halfH = H / 2;
+                
+                const startX = blockX * blockSize;
+                const startY = blockY * blockSize;
+                const endX = Math.min(startX + blockSize, W);
+                const endY = Math.min(startY + blockSize, H);
+                
+                const blockW = endX - startX;
+                const blockH = endY - startY;
+                const data = new Uint8ClampedArray(blockW * blockH * 4);
+                
+                const invMax = maxIter > 0 ? 1 / maxIter : 0;
+                
+                if (!useHighPrecision) {
+                    const floatOrbit = {
+                        values: refOrbit,
+                        blockW,
+                        blockH,
+                        data,
+                        localIdx(px, py) {
+                            return ((py - startY) * blockW + (px - startX)) * 4;
+                        }
+                    };
+                    for (let py = startY; py < endY; py++) {
+                        for (let px = startX; px < endX; px++) {
+                            iterateFloat(floatOrbit, px, py, halfW, halfH, pixelSizeX, pixelSizeY, maxIter, invMax);
+                        }
+                    }
+                    self.postMessage({ blockX, blockY, data, blockW, blockH }, [data.buffer]);
+                    return;
+                }
+                
+                for (let py = startY; py < endY; py++) {
+                    for (let px = startX; px < endX; px++) {
+                        const dcx = (px - halfW) * pixelSizeX;
+                        const dcy = (py - halfH) * pixelSizeY;
+                        
+                        let dr = [0, 0];
+                        let di = [0, 0];
+                        let iter = 0;
+                        
+                        for (; iter < maxIter && iter < refOrbit.length; iter++) {
+                            const ref = refOrbit[iter];
+                            const refZr = [ref[0], ref[1]];
+                            const refZi = [ref[2], ref[3]];
+                            
+                            const zr = ddAdd(refZr, dr);
+                            const zi = ddAdd(refZi, di);
+                            
+                            const zr2 = ddMul(zr, zr);
+                            const zi2 = ddMul(zi, zi);
+                            const mag2 = ddAdd(zr2, zi2);
+                            
+                            if (mag2[0] + mag2[1] > 4) break;
+                            
+                            const zrdr = ddMul(refZr, dr);
+                            const zidi = ddMul(refZi, di);
+                            const drSq = ddMul(dr, dr);
+                            const diSq = ddMul(di, di);
+                            
+                            const twoZrdrMinusZi = ddMulNumber(ddSub(zrdr, zidi), 2);
+                            const diffSquares = ddSub(drSq, diSq);
+                            const newDr = ddAdd(ddAdd(twoZrdrMinusZi, diffSquares), ddFromNumber(dcx));
+                            
+                            const zrdi = ddMul(refZr, di);
+                            const zidr = ddMul(refZi, dr);
+                            const sumZR = ddAdd(zrdi, zidr);
+                            const termA = ddMul(sumZR, DD_TWO);
+                            const termB = ddMul(ddMul(dr, di), DD_TWO);
+                            const newDi = ddAdd(ddAdd(termA, termB), ddFromNumber(dcy));
+                            
+                            dr = newDr;
+                            di = newDi;
+                        }
+                        
+                        const localIdx = ((py - startY) * blockW + (px - startX)) * 4;
+                        
+                        if (iter >= maxIter || iter >= refOrbit.length) {
+                            data[localIdx] = 0;
+                            data[localIdx + 1] = 0;
+                            data[localIdx + 2] = 0;
+                        } else {
+                            const ref = refOrbit[iter];
+                            const refZr = [ref[0], ref[1]];
+                            const refZi = [ref[2], ref[3]];
+                            const zr = ddAdd(refZr, dr);
+                            const zi = ddAdd(refZi, di);
+                            const zr2 = ddMul(zr, zr);
+                            const zi2 = ddMul(zi, zi);
+                            const mag2 = ddAdd(zr2, zi2);
+                            
+                            const mag = Math.max(1e-12, mag2[0] + mag2[1]);
+                            const log_zn = Math.log(mag) / 2;
+                            const nu = Math.log(Math.max(1e-12, log_zn / Math.LN2)) / Math.LN2;
+                            const smoothIter = iter + 1 - nu;
+                            const base = Math.min(1, Math.max(0, smoothIter * invMax));
+                            const normalized = Math.min(1, Math.max(0, 1 - Math.exp(-6 * base)));
+                            const v = Math.floor(255 * normalized);
+                            data[localIdx] = v;
+                            data[localIdx + 1] = v;
+                            data[localIdx + 2] = v;
+                        }
+                        data[localIdx + 3] = 255;
+                    }
+                }
+                
+                self.postMessage({ blockX, blockY, data, blockW, blockH }, [data.buffer]);
+            } catch (err) {
+                self.postMessage({ error: err.message, blockX: e.data?.blockX, blockY: e.data?.blockY });
+            }
+        };
+        `;
+        
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        return new Worker(URL.createObjectURL(blob));
+    }
+
+    class MandelbrotRenderer {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d', { alpha: false, desynchronized: true, willReadFrequently: false });
+            
+            this.centerX = new Decimal(-0.5);
+            this.centerY = new Decimal(0.0);
+            this.zoom = new Decimal(3);
+            
+            this.renderPasses = [64, 32, 16, 8, 4, 2, 1, 0.5, 0.25, 0.125];
+            this.blockSize = 64;
+            this.rendering = false;
+            this.renderToken = 0;
+            
+            this.refOrbit = null;
+            this.refCenter = null;
+            
+            this.minIter = 600;
+            this.dynamicIter = this.minIter;
+            this.iterSmoothing = 0.2;
+            this.initialWidth = new Decimal(3);
+            this.maxIterCap = 131072;
+            
+            // Worker pool
+            const workerCount = Math.max(navigator.hardwareConcurrency || 4, 8);
+            this.workers = [];
+            this.workerBusy = [];
+            for (let i = 0; i < workerCount; i++) {
+                this.workers.push(createPerturbationWorker());
+                this.workerBusy.push(false);
+            }
+            
+            this.resize();
+        }
+
+        resize() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = this.canvas.getBoundingClientRect();
+            this.canvas.width = Math.floor(rect.width * dpr);
+            this.canvas.height = Math.floor(rect.height * dpr);
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+            this.ctx.scale(dpr, dpr);
+        }
+
+        // 参照軌道を計算（任意精度）
+        computeReferenceOrbit() {
+            const maxIter = this.referenceOrbitDepth();
+            const orbit = [];
+            
+            let Zr = new Decimal(0);
+            let Zi = new Decimal(0);
+            const cx = this.centerX;
+            const cy = this.centerY;
+            
+            for (let i = 0; i < maxIter; i++) {
+                const Zr2 = Zr.mul(Zr);
+                const Zi2 = Zi.mul(Zi);
+                const mag2 = Zr2.plus(Zi2);
+                
+                if (mag2.gt(1e20)) break;
+                
+                const zrDD = decimalToDoubleDouble(Zr);
+                const ziDD = decimalToDoubleDouble(Zi);
+                orbit.push([zrDD[0], zrDD[1], ziDD[0], ziDD[1]]);
+                
+                const newZi = Zr.mul(Zi).mul(2).plus(cy);
+                const newZr = Zr2.minus(Zi2).plus(cx);
+                Zr = newZr;
+                Zi = newZi;
+            }
+            
+            if (orbit.length === 0) {
+                const cxDD = decimalToDoubleDouble(this.centerX);
+                const cyDD = decimalToDoubleDouble(this.centerY);
+                orbit.push([cxDD[0], cxDD[1], cyDD[0], cyDD[1]]);
+            }
+            this.refOrbit = orbit;
+            this.refCenter = { x: this.centerX, y: this.centerY };
+        }
+
+        cancelActiveRender() {
+            this.renderToken++;
+            this.rendering = false;
+        }
+
+        updateDynamicIterations() {
+            const zoomLevel = Math.max(1, new Decimal(this.initialWidth).div(this.zoom).toNumber());
+            const logZoom = Math.log10(zoomLevel + 1e-12);
+            const scale = Math.pow(logZoom + 1, 1.4);
+            const target = Math.min(this.maxIterCap, Math.max(this.minIter, Math.round(this.minIter * (1 + scale * 0.85))));
+            this.dynamicIter = Math.round(this.dynamicIter + (target - this.dynamicIter) * this.iterSmoothing);
+        }
+
+        effectiveMaxIter() {
+            return this.dynamicIter;
+        }
+
+        referenceOrbitDepth() {
+            return Math.max(4096, Math.floor(this.effectiveMaxIter() * 2.4));
+        }
+
+        buildRenderPassPlan() {
+            const magnification = this.initialWidth.div(this.zoom);
+            const log10 = magnification.log().div(Math.log(10)).toNumber();
+            if (log10 < 5) return [32, 16, 8, 4, 2, 1];
+            if (log10 < 7.5) return [16, 8, 4, 2, 1];
+            if (log10 < 9) return [12, 6, 3, 1.5, 1];
+            if (log10 < 12) return [8, 4, 2, 1, 0.5];
+            if (log10 < 15) return [6, 3, 1.5, 1, 0.5, 0.25];
+            if (log10 < 18) return [4, 2, 1, 0.5, 0.25, 0.125];
+            return this.renderPasses.slice();
+        }
+
+        computeBlockSize(downSample, magnification) {
+            const log10 = Math.max(0, magnification.log().div(Math.log(10)).toNumber() - 6);
+            const growth = 1 + Math.min(4.5, Math.pow(log10 + 0.75, 1.05));
+            const scaled = this.blockSize * growth;
+            const effective = downSample >= 1 ? scaled / Math.max(1, downSample) : scaled * 0.65;
+            return Math.max(24, Math.floor(effective));
+        }
+
+        async render() {
+            this.renderToken++;
+            const currentToken = this.renderToken;
+
+            this.updateDynamicIterations();
+            if (!this.refOrbit || !this.refCenter ||
+                !this.centerX.eq(this.refCenter.x) || !this.centerY.eq(this.refCenter.y)) {
+                this.computeReferenceOrbit();
+            }
+
+            if (currentToken !== this.renderToken) return;
+
+            this.rendering = true;
+            const passes = this.buildRenderPassPlan();
+
+            try {
+                for (let pass = 0; pass < passes.length; pass++) {
+                    if (currentToken !== this.renderToken) {
+                        return;
+                    }
+                    
+                    const downSample = passes[pass];
+                    await this.renderPassBlocked(downSample, currentToken);
+                    
+                    if (currentToken !== this.renderToken) {
+                        return;
+                    }
+                    
+                    if (pass < passes.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 16));
+                    }
+                }
+            } finally {
+                // 必ずフラグをリセット
+                if (currentToken === this.renderToken) {
+                    this.rendering = false;
+                }
+            }
+        }
+
+        async renderPassBlocked(downSample, token) {
+            if (token !== this.renderToken) return;
+            if (!this.refOrbit || !Array.isArray(this.refOrbit) || this.refOrbit.length === 0) {
+                console.error('refOrbit is empty');
+                return;
+            }
+            const refOrbitSnapshot = this.refOrbit.map(entry => entry.slice());
+            const maxIterSnapshot = this.effectiveMaxIter();
+            const magnification = this.initialWidth.div(this.zoom);
+            const useHighPrecision = magnification.gt(HIGH_PRECISION_THRESHOLD);
+            
+            const W = Math.floor(this.canvas.width / downSample);
+            const H = Math.floor(this.canvas.height / downSample);
+            const zoom = this.zoom.toNumber();
+            const blockSize = this.computeBlockSize(downSample, magnification);
+            const blocksX = Math.ceil(W / blockSize);
+            const blocksY = Math.ceil(H / blockSize);
+            const totalBlocks = blocksX * blocksY;
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = W;
+            tempCanvas.height = H;
+            const tempCtx = tempCanvas.getContext('2d');
+            const imageData = tempCtx.createImageData(W, H);
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                imageData.data[i] = 0;
+                imageData.data[i + 1] = 0;
+                imageData.data[i + 2] = 0;
+                imageData.data[i + 3] = 255;
+            }
+            
+            const jobs = [];
+            for (let by = 0; by < blocksY; by++) {
+                for (let bx = 0; bx < blocksX; bx++) {
+                    const startX = bx * blockSize;
+                    const startY = by * blockSize;
+                    const width = Math.min(blockSize, W - startX);
+                    const height = Math.min(blockSize, H - startY);
+                    jobs.push({
+                        blockX: bx,
+                        blockY: by,
+                        startX,
+                        startY,
+                        width,
+                        height,
+                        resolve: null
+                    });
+                }
+            }
+            
+            let nextJobIndex = 0;
+            const jobPromises = jobs.map(job => new Promise(resolve => { job.resolve = resolve; }));
+            
+            const launchJob = (workerIdx) => {
+                if (token !== this.renderToken) return;
+                if (nextJobIndex >= jobs.length) return;
+                
+                const job = jobs[nextJobIndex++];
+                const worker = this.workers[workerIdx];
+                const payload = {
+                    W,
+                    H,
+                    refOrbit: refOrbitSnapshot,
+                    zoom,
+                    maxIter: maxIterSnapshot,
+                    blockX: job.blockX,
+                    blockY: job.blockY,
+                    blockSize,
+                    useHighPrecision
+                };
+                
+                const onMessage = (e) => {
+                    worker.removeEventListener('message', onMessage);
+                    
+                    if (token !== this.renderToken) {
+                        job.resolve();
+                        launchJob(workerIdx);
+                        return;
+                    }
+                    
+                    const msg = e.data;
+                    if (msg && msg.error) {
+                        console.error('Worker error:', msg.error, 'block', job.blockX, job.blockY);
+                        job.resolve();
+                        launchJob(workerIdx);
+                        return;
+                    }
+                    
+                    try {
+                        const { data, blockW, blockH } = msg || {};
+                        const startX = job.startX;
+                        const startY = job.startY;
+                        if (!data || !blockW || !blockH) {
+                            job.resolve();
+                            launchJob(workerIdx);
+                            return;
+                        }
+                        for (let y = 0; y < blockH; y++) {
+                            for (let x = 0; x < blockW; x++) {
+                                const srcIdx = (y * blockW + x) * 4;
+                                const dstIdx = ((startY + y) * W + (startX + x)) * 4;
+                                if (srcIdx + 3 < data.length && dstIdx + 3 < imageData.data.length) {
+                                    const gray = data[srcIdx];
+                                    const t = gray / 255;
+                                    const color = this.getColor(t);
+                                    imageData.data[dstIdx] = color[0];
+                                    imageData.data[dstIdx + 1] = color[1];
+                                    imageData.data[dstIdx + 2] = color[2];
+                                    imageData.data[dstIdx + 3] = 255;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Block merge error:', err);
+                    }
+                    
+                    job.resolve();
+                    launchJob(workerIdx);
+                };
+                
+                worker.addEventListener('message', onMessage);
+                try {
+                    worker.postMessage(payload);
+                } catch (err) {
+                    worker.removeEventListener('message', onMessage);
+                    console.error('postMessage error:', err);
+                    job.resolve();
+                    launchJob(workerIdx);
+                }
+            };
+            
+            for (let i = 0; i < this.workers.length && i < jobs.length; i++) {
+                launchJob(i);
+            }
+            
+            await Promise.all(jobPromises);
+            
+            if (token !== this.renderToken) return;
+            
+            try {
+                tempCtx.putImageData(imageData, 0, 0);
+                this.ctx.save();
+                this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.imageSmoothingEnabled = downSample > 1;
+                this.ctx.imageSmoothingQuality = 'high';
+                this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.restore();
+            } catch (finalDrawErr) {
+                console.error('Final draw error:', finalDrawErr);
+            }
+        }
+
+        getColor(t) {
+            const v = Math.floor(255 * Math.pow(t, 0.9));
+            return [v, v, v];
+        }
+
+        zoomTo(clientX, clientY, factor) {
+            this.cancelActiveRender();
+            const rect = this.canvas.getBoundingClientRect();
+            const relX = (clientX - rect.left) / rect.width - 0.5;
+            const relY = (clientY - rect.top) / rect.height - 0.5;
+            
+            const aspect = rect.width / rect.height;
+            const oldHeight = this.zoom;
+            const oldWidth = oldHeight.mul(aspect);
+            const offsetX = oldWidth.mul(relX);
+            const offsetY = oldHeight.mul(relY);
+            
+            this.centerX = this.centerX.plus(offsetX.mul(new Decimal(1).minus(factor)));
+            this.centerY = this.centerY.plus(offsetY.mul(new Decimal(1).minus(factor)));
+            this.zoom = this.zoom.mul(factor);
+            
+            // 参照軌道をクリア（移動したので）
+            this.refOrbit = null;
+        }
+
+        pan(dx, dy) {
+            this.cancelActiveRender();
+            const rect = this.canvas.getBoundingClientRect();
+            const aspect = rect.width / rect.height;
+            
+            const pixelSizeX = this.zoom.mul(aspect).div(rect.width);
+            const pixelSizeY = this.zoom.div(rect.height);
+            
+            this.centerX = this.centerX.minus(pixelSizeX.mul(dx));
+            this.centerY = this.centerY.minus(pixelSizeY.mul(dy));
+            
+            // 参照軌道をクリア（移動したので）
+            this.refOrbit = null;
+        }
+    }
+
+    // UI初期化
+    const canvas = document.getElementById('canvas');
+    const renderer = new MandelbrotRenderer(canvas);
+
+    let renderTimeout = null;
+
+    function scheduleRender(delay = 30) {
+        if (renderTimeout) clearTimeout(renderTimeout);
+
+        renderTimeout = setTimeout(async () => {
+            const t0 = performance.now();
+            try {
+                await renderer.render();
+                console.debug(`render ${Math.round(performance.now() - t0)}ms`);
+            } catch (err) {
+                console.error('Render error:', err);
+            }
+        }, delay);
+    }
+
+    // イベント
+    window.addEventListener('resize', () => {
+        renderer.cancelActiveRender();
+        renderer.resize();
+        scheduleRender(100);
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        renderer.cancelActiveRender();
+        const factor = new Decimal(e.deltaY > 0 ? 1.15 : 1 / 1.15);
+        renderer.zoomTo(e.clientX, e.clientY, factor);
+        scheduleRender(20);
+    }, { passive: false });
+
+    let isPanning = false;
+    let lastX = 0, lastY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+        isPanning = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        canvas.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+
+        renderer.pan(dx, dy);
+        lastX = e.clientX;
+        lastY = e.clientY;
+
+        scheduleRender(40);
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isPanning) {
+            isPanning = false;
+            canvas.style.cursor = 'crosshair';
+            scheduleRender(10);
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'r') {
+            renderer.cancelActiveRender();
+            renderer.centerX = new Decimal(-0.5);
+            renderer.centerY = new Decimal(0.0);
+            renderer.zoom = new Decimal(3);
+            renderer.dynamicIter = renderer.minIter;
+            renderer.refOrbit = null;
+            scheduleRender(0);
+        }
+    });
+
+    // 初期レンダリング
+    renderer.resize();
+    scheduleRender(0);
+    </script>
+</body>

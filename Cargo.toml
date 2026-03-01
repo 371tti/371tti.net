@@ -1,30 +1,17 @@
 [package]
 name = "wk-371tti-net"
-version = "1.0.0"
+version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+kurosabi = { version = "0.6.15", features = ["tokio-server", "json", "file"] }
+tokio = { version = "1.49.0", features = ["full"] }
+comrak = { version = "0.50.0", default-features = true }
+pulldown-latex = "0.7"
 env_logger = "0.11.8"
-chrono = { version = "0.4.42", features = ["serde"] }
-kurosabi = "0.5.4"
-tokio = { version = "1.48.0"}
-serde_json = "1.0.145"
-serde = { version = "1.0.228", features = ["derive", "rc"] }
-dashmap = "6.1.0"
-getrandom = "0.3.4"
-base64 = "0.22.1"
-argon2 = "0.5.3"
-toml = "0.9.8"
 log = "0.4"
-async-trait = "0.1.89"
-mongodb = "3.4.1"
-futures = "0.3.31"
-reqwest = { version = "0.12.24", default-features = false, features = ["json", "rustls-tls"] }
-tf-idf-vectorizer = "0.5.9"
-regex = "1.12"
-
-gray_matter = "0.3"
-pulldown-cmark = "0.13.0"
-latex2mathml = "0.2.3"
-
-
+tf-idf-vectorizer = "0.10.1"
+dashmap = "6.1.0"
+gray_matter = "0.3.2"
+serde = "1.0.228"
+chrono = "0.4.44"

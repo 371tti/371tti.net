@@ -1,6 +1,0 @@
-﻿# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-# ┃  Welcome, robots!                    ┃
-# ┃  Feel free to explore...             ┃
-# ┃  But please be gentle :)             ┃
-# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-User-agent: *

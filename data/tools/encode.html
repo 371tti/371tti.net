@@ -1,0 +1,699 @@
+---
+title: Encoder / Decoder
+description: さまざまなエンコードやハッシュ、数値表現の相互変換ツール
+authors:
+- 371tti
+is_complete: true
+---
+
+<body>
+    <main>
+        <h1>Encoder / Decoder</h1>
+        <div class="grid2">
+            <div>
+                <h2>Plaintext(UTF-8)</h2>
+                <textarea id="utf-8" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>UTF-16</h2>
+                <textarea id="utf-16" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>UTF-16BE</h2>
+                <textarea id="utf-16be" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>UTF-8(ByteText)</h2>
+                <textarea id="utf-8-bytes" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>Shift-JIS</h2>
+                <textarea id="shift-jis" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>EUC-JP</h2>
+                <textarea id="euc-jp" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>ISO-2022-JP(JIS)</h2>
+                <textarea id="jis" rows="2" style="width: 100%;" placeholder="Text"></textarea>
+            </div>
+            <div>
+                <h2>Base64</h2>
+                <textarea id="base64" rows="2" style="width: 100%;" placeholder="Base64"></textarea>
+            </div>
+            <div>
+                <h2>Base64URL</h2>
+                <textarea id="base64url" rows="2" style="width: 100%;" placeholder="Base64URL"></textarea>
+            </div>
+            <div>
+                <h2>Base32</h2>
+                <textarea id="base32" rows="2" style="width: 100%;" placeholder="Base32"></textarea>
+            </div>
+            <div>
+                <h2>Binary(UTF-8 bits)</h2>
+                <textarea id="bin-utf8" rows="2" style="width: 100%;" placeholder="01001000 01101001"></textarea>
+            </div>
+            <div>
+                <h2>Quoted-Printable(UTF-8)</h2>
+                <textarea id="quoted-printable" rows="2" style="width: 100%;" placeholder="Hello=20World"></textarea>
+            </div>
+            <div>
+                <h2>sha256</h2>
+                <textarea id="sha256" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>sha1</h2>
+                <textarea id="sha1" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>sha512</h2>
+                <textarea id="sha512" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>sha384</h2>
+                <textarea id="sha384" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>ripemd160</h2>
+                <textarea id="ripemd160" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>sha3-256</h2>
+                <textarea id="sha3-256" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>sha3-512</h2>
+                <textarea id="sha3-512" rows="2" style="width: 100%;" placeholder="Hash"></textarea>
+            </div>
+            <div>
+                <h2>crc32</h2>
+                <textarea id="crc32" rows="2" style="width: 100%;" placeholder="Checksum"></textarea>
+            </div>
+            <div>
+                <h2>adler32</h2>
+                <textarea id="adler32" rows="2" style="width: 100%;" placeholder="Checksum"></textarea>
+            </div>
+            <div>
+                <h2>fnv1a-32</h2>
+                <textarea id="fnv1a32" rows="2" style="width: 100%;" placeholder="Checksum"></textarea>
+            </div>
+            <div>
+                <h2>fnv1a-64</h2>
+                <textarea id="fnv1a64" rows="2" style="width: 100%;" placeholder="Checksum"></textarea>
+            </div>
+            <div>
+                <h2>crc16-ccitt</h2>
+                <textarea id="crc16" rows="2" style="width: 100%;" placeholder="Checksum"></textarea>
+            </div>
+            <div>
+                <h2>Hex(UTF-8)</h2>
+                <textarea id="hex" rows="2" style="width: 100%;" placeholder="Hex"></textarea>
+            </div>
+            <div>
+                <h2>URL Encode</h2>
+                <textarea id="url-encode" rows="2" style="width: 100%;" placeholder="URL Encoded"></textarea>
+            </div>
+            <div>
+                <h2>HTML Entities</h2>
+                <textarea id="html-entities" rows="2" style="width: 100%;" placeholder="HTML Entities"></textarea>
+            </div>
+            <div>
+                <h2>ROT13</h2>
+                <textarea id="rot13" rows="2" style="width: 100%;" placeholder="ROT13"></textarea>
+            </div>
+            <div>
+                <h2>MD5</h2>
+                <textarea id="md5" rows="2" style="width: 100%;" placeholder="MD5 Hash"></textarea>
+            </div>
+            <div>
+                <h2>Hex(Number)</h2>
+                <textarea id="hex-number" rows="2" style="width: 100%;" placeholder="Hex Number"></textarea>
+            </div>
+            <div>
+                <h2>Bin(Number)</h2>
+                <textarea id="bin-number" rows="2" style="width: 100%;" placeholder="Binary Number"></textarea>
+            </div>
+            <div>
+                <h2>Oct(Number)</h2>
+                <textarea id="oct-number" rows="2" style="width: 100%;" placeholder="Octal Number"></textarea>
+            </div>
+            <div>
+                <h2>Dec(Number)</h2>
+                <textarea id="dec-number" rows="2" style="width: 100%;" placeholder="Decimal Number"></textarea>
+            </div>
+        </div>
+    </main>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.2.0/encoding.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<script>
+    const $utf8 = document.getElementById("utf-8");
+    const $utf16 = document.getElementById("utf-16");
+    const $utf16be = document.getElementById("utf-16be");
+    const $utf8Bytes = document.getElementById("utf-8-bytes");
+    const $sjis = document.getElementById("shift-jis");
+    const $eucJp = document.getElementById("euc-jp");
+    const $jis = document.getElementById("jis");
+    const $base64 = document.getElementById("base64");
+    const $base64url = document.getElementById("base64url");
+    const $base32 = document.getElementById("base32");
+    const $binUtf8 = document.getElementById("bin-utf8");
+    const $quotedPrintable = document.getElementById("quoted-printable");
+    const $sha256 = document.getElementById("sha256");
+    const $sha1 = document.getElementById("sha1");
+    const $sha512 = document.getElementById("sha512");
+    const $sha384 = document.getElementById("sha384");
+    const $ripemd160 = document.getElementById("ripemd160");
+    const $sha3_256 = document.getElementById("sha3-256");
+    const $sha3_512 = document.getElementById("sha3-512");
+    const $crc32 = document.getElementById("crc32");
+    const $adler32 = document.getElementById("adler32");
+    const $fnv1a32 = document.getElementById("fnv1a32");
+    const $fnv1a64 = document.getElementById("fnv1a64");
+    const $crc16 = document.getElementById("crc16");
+    const $hex = document.getElementById("hex");
+    const $url = document.getElementById("url-encode");
+    const $html = document.getElementById("html-entities");
+    const $rot13 = document.getElementById("rot13");
+    const $md5 = document.getElementById("md5");
+    const $hexNum = document.getElementById("hex-number");
+    const $binNum = document.getElementById("bin-number");
+    const $octNum = document.getElementById("oct-number");
+    const $decNum = document.getElementById("dec-number");
+
+    let updating = false;
+
+    const toHex = (bytes) =>
+        Array.from(bytes, (b) => b.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+
+    function parseHexBytes(text) {
+        const trimmed = text.trim();
+        if (!trimmed) return new Uint8Array();
+
+        if (!/^[0-9a-fA-F\s]+$/.test(trimmed)) {
+            throw new Error("invalid hex format");
+        }
+
+        const compact = trimmed.replace(/\s+/g, "");
+        if (compact.length % 2 !== 0) throw new Error("hex length must be even");
+
+        const out = new Uint8Array(compact.length / 2);
+        for (let i = 0; i < compact.length; i += 2) {
+            out[i / 2] = parseInt(compact.slice(i, i + 2), 16);
+        }
+        return out;
+    }
+
+    function encodeUtf16LeBytes(str) {
+        const out = new Uint8Array(str.length * 2);
+        for (let i = 0; i < str.length; i++) {
+            const code = str.charCodeAt(i);
+            out[i * 2] = code & 0xff;
+            out[i * 2 + 1] = code >> 8;
+        }
+        return out;
+    }
+
+    function decodeUtf16LeBytes(bytes) {
+        if (bytes.length % 2 !== 0) throw new Error("invalid UTF-16 byte length");
+        let out = "";
+        for (let i = 0; i < bytes.length; i += 2) {
+            const code = bytes[i] | (bytes[i + 1] << 8);
+            out += String.fromCharCode(code);
+        }
+        return out;
+    }
+
+    function encodeUtf16BeBytes(str) {
+        const out = new Uint8Array(str.length * 2);
+        for (let i = 0; i < str.length; i++) {
+            const code = str.charCodeAt(i);
+            out[i * 2] = code >> 8;
+            out[i * 2 + 1] = code & 0xff;
+        }
+        return out;
+    }
+
+    function decodeUtf16BeBytes(bytes) {
+        if (bytes.length % 2 !== 0) throw new Error("invalid UTF-16BE byte length");
+        let out = "";
+        for (let i = 0; i < bytes.length; i += 2) {
+            const code = (bytes[i] << 8) | bytes[i + 1];
+            out += String.fromCharCode(code);
+        }
+        return out;
+    }
+
+    function encodeUtf8Bytes(str) {
+        return new TextEncoder().encode(str);
+    }
+
+    function decodeUtf8Bytes(bytes) {
+        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    }
+
+    function encodeByEncodingJapanese(str, toEncoding) {
+        const unicodeArray = Encoding.stringToCode(str);
+        const converted = Encoding.convert(unicodeArray, {
+            to: toEncoding,
+            from: "UNICODE",
+            type: "array"
+        });
+        return new Uint8Array(converted);
+    }
+
+    function decodeByEncodingJapanese(bytes, fromEncoding) {
+        const unicodeArray = Encoding.convert(Array.from(bytes), {
+            to: "UNICODE",
+            from: fromEncoding,
+            type: "array"
+        });
+        return Encoding.codeToString(unicodeArray);
+    }
+
+    function encodeSjisBytes(str) {
+        return encodeByEncodingJapanese(str, "SJIS");
+    }
+
+    function decodeSjisBytes(bytes) {
+        return decodeByEncodingJapanese(bytes, "SJIS");
+    }
+
+    function encodeEucJpBytes(str) {
+        return encodeByEncodingJapanese(str, "EUCJP");
+    }
+
+    function decodeEucJpBytes(bytes) {
+        return decodeByEncodingJapanese(bytes, "EUCJP");
+    }
+
+    function encodeJisBytes(str) {
+        return encodeByEncodingJapanese(str, "JIS");
+    }
+
+    function decodeJisBytes(bytes) {
+        return decodeByEncodingJapanese(bytes, "JIS");
+    }
+
+    function bytesToByteText(bytes) {
+        let out = "";
+        for (const b of bytes) out += String.fromCharCode(b);
+        return out;
+    }
+
+    function byteTextToBytes(text, label = "byte text") {
+        const out = new Uint8Array(text.length);
+        for (let i = 0; i < text.length; i++) {
+            const code = text.charCodeAt(i);
+            if (code > 0xff) throw new Error(label + " must be 0x00-0xFF");
+            out[i] = code;
+        }
+        return out;
+    }
+
+    function encodeBase64Utf8(str) {
+        const bytes = new TextEncoder().encode(str);
+        let binary = "";
+        for (const b of bytes) binary += String.fromCharCode(b);
+        return btoa(binary);
+    }
+
+    function decodeBase64Utf8(text) {
+        const binary = atob(text.trim());
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    }
+
+    function encodeBase64UrlUtf8(str) {
+        return encodeBase64Utf8(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+
+    function decodeBase64UrlUtf8(text) {
+        const normalized = text.trim();
+        if (!/^[A-Za-z0-9\-_]*$/.test(normalized)) throw new Error("invalid base64url format");
+        const padded = normalized.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (normalized.length % 4)) % 4);
+        return decodeBase64Utf8(padded);
+    }
+
+    const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+    function encodeBase32Utf8(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bits = "";
+        for (const b of bytes) bits += b.toString(2).padStart(8, "0");
+        while (bits.length % 5 !== 0) bits += "0";
+
+        let out = "";
+        for (let i = 0; i < bits.length; i += 5) {
+            out += BASE32_ALPHABET[parseInt(bits.slice(i, i + 5), 2)];
+        }
+        while (out.length % 8 !== 0) out += "=";
+        return out;
+    }
+
+    function decodeBase32Utf8(text) {
+        const normalized = text.trim().toUpperCase().replace(/\s+/g, "");
+        if (!/^[A-Z2-7=]*$/.test(normalized)) throw new Error("invalid base32 format");
+        if (normalized.length % 8 !== 0) throw new Error("invalid base32 length");
+
+        const body = normalized.replace(/=+$/g, "");
+        let bits = "";
+        for (const ch of body) {
+            const idx = BASE32_ALPHABET.indexOf(ch);
+            if (idx < 0) throw new Error("invalid base32 character");
+            bits += idx.toString(2).padStart(5, "0");
+        }
+
+        const fullByteLen = Math.floor(bits.length / 8);
+        const bytes = new Uint8Array(fullByteLen);
+        for (let i = 0; i < fullByteLen; i++) {
+            bytes[i] = parseInt(bits.slice(i * 8, i * 8 + 8), 2);
+        }
+        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    }
+
+    function encodeUtf8Bits(str) {
+        const bytes = new TextEncoder().encode(str);
+        return Array.from(bytes, (b) => b.toString(2).padStart(8, "0")).join(" ");
+    }
+
+    function decodeUtf8Bits(text) {
+        const normalized = text.trim();
+        if (!normalized) return "";
+        if (!/^[01\s]+$/.test(normalized)) throw new Error("invalid binary utf8 format");
+        const compact = normalized.replace(/\s+/g, "");
+        if (compact.length % 8 !== 0) throw new Error("binary length must be multiple of 8");
+        const bytes = new Uint8Array(compact.length / 8);
+        for (let i = 0; i < compact.length; i += 8) {
+            bytes[i / 8] = parseInt(compact.slice(i, i + 8), 2);
+        }
+        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    }
+
+    function encodeQuotedPrintableUtf8(str) {
+        const bytes = new TextEncoder().encode(str);
+        let out = "";
+        for (const b of bytes) {
+            const printable = (b >= 33 && b <= 60) || (b >= 62 && b <= 126) || b === 9 || b === 32;
+            out += printable ? String.fromCharCode(b) : "=" + b.toString(16).toUpperCase().padStart(2, "0");
+        }
+        return out;
+    }
+
+    function decodeQuotedPrintableUtf8(text) {
+        const normalized = text.replace(/=\r?\n/g, "");
+        const bytes = [];
+        for (let i = 0; i < normalized.length; i++) {
+            const ch = normalized[i];
+            if (ch === "=") {
+                const hex = normalized.slice(i + 1, i + 3);
+                if (!/^[0-9a-fA-F]{2}$/.test(hex)) throw new Error("invalid quoted-printable format");
+                bytes.push(parseInt(hex, 16));
+                i += 2;
+            } else {
+                const code = ch.charCodeAt(0);
+                if (code > 0xff) throw new Error("quoted-printable input must be byte text");
+                bytes.push(code);
+            }
+        }
+        return new TextDecoder("utf-8", { fatal: true }).decode(new Uint8Array(bytes));
+    }
+
+    function encodeHtmlEntities(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function decodeHtmlEntities(text) {
+        const el = document.createElement("textarea");
+        el.innerHTML = text;
+        return el.value;
+    }
+
+    function applyRot13(str) {
+        return str.replace(/[A-Za-z]/g, (c) => {
+            const base = c <= "Z" ? 65 : 97;
+            return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+        });
+    }
+
+    function parseNumberInBase(text, base) {
+        const t = text.trim().toLowerCase();
+        if (!t) return null;
+        let normalized = t;
+        let sign = 1n;
+        if (normalized.startsWith("+")) {
+            normalized = normalized.slice(1);
+        } else if (normalized.startsWith("-")) {
+            sign = -1n;
+            normalized = normalized.slice(1);
+        }
+
+        let parsed;
+
+        if (base === 16) {
+            normalized = normalized.replace(/^0x/, "");
+            if (!/^[0-9a-f]+$/.test(normalized)) throw new Error("invalid hex");
+            parsed = BigInt("0x" + normalized);
+        } else if (base === 2) {
+            normalized = normalized.replace(/^0b/, "");
+            if (!/^[01]+$/.test(normalized)) throw new Error("invalid binary");
+            parsed = BigInt("0b" + normalized);
+        } else if (base === 8) {
+            normalized = normalized.replace(/^0o/, "");
+            if (!/^[0-7]+$/.test(normalized)) throw new Error("invalid octal");
+            parsed = BigInt("0o" + normalized);
+        } else if (base === 10) {
+            if (!/^\d+$/.test(normalized)) throw new Error("invalid decimal");
+            parsed = BigInt(normalized);
+        } else {
+            throw new Error("invalid number");
+        }
+
+        return sign < 0n ? -parsed : parsed;
+    }
+
+    async function sha256Hex(str) {
+        const data = new TextEncoder().encode(str);
+        const hash = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    async function digestHex(str, algorithm) {
+        const data = new TextEncoder().encode(str);
+        const hash = await crypto.subtle.digest(algorithm, data);
+        return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function digestCryptoJsHex(str, algorithm) {
+        if (algorithm === "RIPEMD160") {
+            return CryptoJS.RIPEMD160(str).toString(CryptoJS.enc.Hex);
+        }
+        if (algorithm === "SHA3-256") {
+            return CryptoJS.SHA3(str, { outputLength: 256 }).toString(CryptoJS.enc.Hex);
+        }
+        if (algorithm === "SHA3-512") {
+            return CryptoJS.SHA3(str, { outputLength: 512 }).toString(CryptoJS.enc.Hex);
+        }
+        throw new Error("unsupported crypto-js algorithm");
+    }
+
+    const CRC32_TABLE = (() => {
+        const table = new Uint32Array(256);
+        for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++) {
+                c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            }
+            table[i] = c >>> 0;
+        }
+        return table;
+    })();
+
+    function crc32Hex(bytes) {
+        let crc = 0xFFFFFFFF;
+        for (const b of bytes) {
+            crc = CRC32_TABLE[(crc ^ b) & 0xFF] ^ (crc >>> 8);
+        }
+        crc = (crc ^ 0xFFFFFFFF) >>> 0;
+        return crc.toString(16).padStart(8, "0");
+    }
+
+    function adler32Hex(bytes) {
+        let a = 1;
+        let b = 0;
+        for (const byte of bytes) {
+            a = (a + byte) % 65521;
+            b = (b + a) % 65521;
+        }
+        const v = (((b << 16) | a) >>> 0);
+        return v.toString(16).padStart(8, "0");
+    }
+
+    function fnv1a32Hex(bytes) {
+        let hash = 0x811c9dc5;
+        for (const b of bytes) {
+            hash ^= b;
+            hash = Math.imul(hash, 0x01000193) >>> 0;
+        }
+        return hash.toString(16).padStart(8, "0");
+    }
+
+    function fnv1a64Hex(bytes) {
+        let hash = 0xcbf29ce484222325n;
+        const prime = 0x100000001b3n;
+        const mod = 0xFFFFFFFFFFFFFFFFn;
+        for (const b of bytes) {
+            hash ^= BigInt(b);
+            hash = (hash * prime) & mod;
+        }
+        return hash.toString(16).padStart(16, "0");
+    }
+
+    function crc16CcittHex(bytes) {
+        let crc = 0xFFFF;
+        for (const b of bytes) {
+            crc ^= (b << 8);
+            for (let i = 0; i < 8; i++) {
+                crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+                crc &= 0xFFFF;
+            }
+        }
+        return crc.toString(16).padStart(4, "0");
+    }
+
+    async function renderAllFromText(plain, source = null) {
+        if (source !== "utf8") $utf8.value = plain;
+        if (source !== "utf16") $utf16.value = bytesToByteText(encodeUtf16LeBytes(plain));
+        if (source !== "utf16be") $utf16be.value = bytesToByteText(encodeUtf16BeBytes(plain));
+        if (source !== "utf8-bytes") $utf8Bytes.value = bytesToByteText(encodeUtf8Bytes(plain));
+        if (source !== "sjis") $sjis.value = bytesToByteText(encodeSjisBytes(plain));
+        if (source !== "euc-jp") $eucJp.value = bytesToByteText(encodeEucJpBytes(plain));
+        if (source !== "jis") $jis.value = bytesToByteText(encodeJisBytes(plain));
+        if (source !== "base64") $base64.value = encodeBase64Utf8(plain);
+        if (source !== "base64url") $base64url.value = encodeBase64UrlUtf8(plain);
+        if (source !== "base32") $base32.value = encodeBase32Utf8(plain);
+        if (source !== "bin-utf8") $binUtf8.value = encodeUtf8Bits(plain);
+        if (source !== "quoted-printable") $quotedPrintable.value = encodeQuotedPrintableUtf8(plain);
+        if (source !== "hex") $hex.value = toHex(new TextEncoder().encode(plain));
+        if (source !== "url") $url.value = encodeURIComponent(plain);
+        if (source !== "html") $html.value = encodeHtmlEntities(plain);
+        if (source !== "rot13") $rot13.value = applyRot13(plain);
+        $md5.value = md5(plain);
+        $sha256.value = await digestHex(plain, "SHA-256");
+        $sha1.value = await digestHex(plain, "SHA-1");
+        $sha512.value = await digestHex(plain, "SHA-512");
+        $sha384.value = await digestHex(plain, "SHA-384");
+        $ripemd160.value = digestCryptoJsHex(plain, "RIPEMD160");
+        $sha3_256.value = digestCryptoJsHex(plain, "SHA3-256");
+        $sha3_512.value = digestCryptoJsHex(plain, "SHA3-512");
+        const utf8Bytes = encodeUtf8Bytes(plain);
+        $crc32.value = crc32Hex(utf8Bytes);
+        $adler32.value = adler32Hex(utf8Bytes);
+        $fnv1a32.value = fnv1a32Hex(utf8Bytes);
+        $fnv1a64.value = fnv1a64Hex(utf8Bytes);
+        $crc16.value = crc16CcittHex(utf8Bytes);
+    }
+
+    function renderNumberViews(n, source = null) {
+        if (n === null) {
+            if (source !== "hex-number") $hexNum.value = "";
+            if (source !== "bin-number") $binNum.value = "";
+            if (source !== "oct-number") $octNum.value = "";
+            if (source !== "dec-number") $decNum.value = "";
+            return;
+        }
+
+        const value = typeof n === "bigint" ? n : BigInt(n);
+        const sign = value < 0n ? "-" : "";
+        const abs = value < 0n ? -value : value;
+        if (source !== "hex-number") $hexNum.value = sign + abs.toString(16).toUpperCase();
+        if (source !== "bin-number") $binNum.value = sign + abs.toString(2);
+        if (source !== "oct-number") $octNum.value = sign + abs.toString(8);
+        if (source !== "dec-number") $decNum.value = value.toString(10);
+    }
+
+    async function updateByTextResolver(source, resolver) {
+        if (updating) return;
+        updating = true;
+        try {
+            const plain = resolver();
+            await renderAllFromText(plain, source);
+        } catch {
+        } finally {
+            updating = false;
+        }
+    }
+
+    $utf8.addEventListener("input", () => updateByTextResolver("utf8", () => $utf8.value));
+    $utf16.addEventListener("input", () => updateByTextResolver("utf16", () => decodeUtf16LeBytes(byteTextToBytes($utf16.value, "UTF-16 byte text"))));
+    $utf16be.addEventListener("input", () => updateByTextResolver("utf16be", () => decodeUtf16BeBytes(byteTextToBytes($utf16be.value, "UTF-16BE byte text"))));
+    $utf8Bytes.addEventListener("input", () => updateByTextResolver("utf8-bytes", () => decodeUtf8Bytes(byteTextToBytes($utf8Bytes.value, "UTF-8 byte text"))));
+    $sjis.addEventListener("input", () => updateByTextResolver("sjis", () => decodeSjisBytes(byteTextToBytes($sjis.value, "Shift-JIS byte text"))));
+    $eucJp.addEventListener("input", () => updateByTextResolver("euc-jp", () => decodeEucJpBytes(byteTextToBytes($eucJp.value, "EUC-JP byte text"))));
+    $jis.addEventListener("input", () => updateByTextResolver("jis", () => decodeJisBytes(byteTextToBytes($jis.value, "JIS byte text"))));
+    $base64.addEventListener("input", () => updateByTextResolver("base64", () => decodeBase64Utf8($base64.value)));
+    $base64url.addEventListener("input", () => updateByTextResolver("base64url", () => decodeBase64UrlUtf8($base64url.value)));
+    $base32.addEventListener("input", () => updateByTextResolver("base32", () => decodeBase32Utf8($base32.value)));
+    $binUtf8.addEventListener("input", () => updateByTextResolver("bin-utf8", () => decodeUtf8Bits($binUtf8.value)));
+    $quotedPrintable.addEventListener("input", () => updateByTextResolver("quoted-printable", () => decodeQuotedPrintableUtf8($quotedPrintable.value)));
+    $hex.addEventListener("input", () => updateByTextResolver("hex", () => new TextDecoder("utf-8", { fatal: true }).decode(parseHexBytes($hex.value))));
+    $url.addEventListener("input", () => updateByTextResolver("url", () => decodeURIComponent($url.value)));
+    $html.addEventListener("input", () => updateByTextResolver("html", () => decodeHtmlEntities($html.value)));
+    $rot13.addEventListener("input", () => updateByTextResolver("rot13", () => applyRot13($rot13.value)));
+
+    $hexNum.addEventListener("input", () => {
+        if (updating) return;
+        updating = true;
+        try {
+            renderNumberViews(parseNumberInBase($hexNum.value, 16), "hex-number");
+        } catch {
+        } finally {
+            updating = false;
+        }
+    });
+
+    $binNum.addEventListener("input", () => {
+        if (updating) return;
+        updating = true;
+        try {
+            renderNumberViews(parseNumberInBase($binNum.value, 2), "bin-number");
+        } catch {
+        } finally {
+            updating = false;
+        }
+    });
+
+    $octNum.addEventListener("input", () => {
+        if (updating) return;
+        updating = true;
+        try {
+            renderNumberViews(parseNumberInBase($octNum.value, 8), "oct-number");
+        } catch {
+        } finally {
+            updating = false;
+        }
+    });
+
+    $decNum.addEventListener("input", () => {
+        if (updating) return;
+        updating = true;
+        try {
+            renderNumberViews(parseNumberInBase($decNum.value, 10), "dec-number");
+        } catch {
+        } finally {
+            updating = false;
+        }
+    });
+
+    renderAllFromText("", "utf8");
+    renderNumberViews(null);
+</script>
