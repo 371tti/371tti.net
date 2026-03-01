@@ -1,9 +1,10 @@
-use std::{cmp::Ordering, collections::BTreeSet, fmt::Debug, pin::Pin, sync::{atomic::{self, AtomicU64}, Arc}, time::Duration};
+use std::{cmp::Ordering, collections::BTreeSet, fmt::Debug, pin::Pin, sync::{Arc, atomic::{self, AtomicU64}}, time::Duration};
 
 use chrono::{DateTime, Timelike, Utc};
 use tokio::sync::{Notify, RwLock};
 
-use crate::web::SiteContext;
+use crate::web::context::SiteContextShared;
+pub mod task;
 
 /// タスクの優先度
 /// 0~255の範囲で指定
@@ -54,6 +55,7 @@ impl TaskID {
     pub const SESSION_GC: Self = Self(2 << 48);
     pub const HEALTH_CHECK: Self = Self(3 << 48);
     pub const ACCOUNT_SAVE: Self = Self(4 << 48);
+    pub const UPDATE_CHECK: Self = Self(5 << 48);
 
     pub fn new(prefix: u16, counter: u64) -> Self {
         let counter = counter & 0x0000FFFFFFFFFFFF;
@@ -82,6 +84,7 @@ impl TaskID {
             2 => "SESSION_GC",
             3 => "HLTHCK",
             4 => "ACCTSV",
+            5 => "UPDATE",
             _ => "UNKNOWN",
         }
     }
@@ -301,7 +304,7 @@ impl TaskScheduler {
         }
     }
 
-    async fn execute_loop(&self, context: SiteContext) {
+    async fn execute_loop(&self, context: Arc<SiteContextShared> ) {
         loop {
             let task_item = self.fetch_ready_task_wait().await;
             if task_item.deadline.map(|d| d < Utc::now()).unwrap_or(false) {
@@ -313,19 +316,19 @@ impl TaskScheduler {
         }
     }
 
-    pub async fn start(scheduler: Arc<Self>, context: SiteContext, worker_num: usize) {
+    pub async fn start(context: Arc<SiteContextShared> , worker_num: usize) {
         log::info!("Starting TaskScheduler with {} workers", worker_num);
-        let timer_self = scheduler.clone();
+        let timer_self = context.clone();
         tokio::spawn(async move {
-            timer_self.timer_loop().await;
+            timer_self.scheduler.timer_loop().await;
         });
         log::info!("TaskScheduler timer loop started");
 
         for _ in 0..worker_num {
-            let exec_self = scheduler.clone();
+            let exec_self = context.clone();
             let exec_context = context.clone();
             tokio::spawn(async move {
-                exec_self.execute_loop(exec_context).await;
+                exec_self.scheduler.execute_loop(exec_context).await;
             });
         }
         log::info!("TaskScheduler {} worker(s) started", worker_num);
@@ -335,7 +338,7 @@ impl TaskScheduler {
     /// 非同期タスクをBox化するユーティリティ関数
     pub fn boxed_task<F, Fut>(f: F) -> BoxedTask
     where
-        F: Fn(SiteContext) -> Fut + Send + Sync + 'static,
+        F: Fn(Arc<SiteContextShared> ) -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = ()> + Send + 'static,
     {
         Box::new(move |ctx| Box::pin(f(ctx)))
@@ -357,5 +360,5 @@ impl TaskScheduler {
 }
 
 /// 非同期タスクをbox化
-pub type BoxedTask = Box<dyn Fn(SiteContext) 
+pub type BoxedTask = Box<dyn Fn(Arc<SiteContextShared> ) 
     -> Pin<Box<dyn Future<Output = ()> + Send>> + Send + Sync>;

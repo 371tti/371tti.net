@@ -4,7 +4,7 @@ version = "2.0.0"
 edition = "2024"
 
 [dependencies]
-kurosabi = { version = "0.6.15", features = ["tokio-server", "json", "file"] }
+kurosabi = { version = "0.6.16", features = ["tokio-server", "json", "file"] }
 tokio = { version = "1.49.0", features = ["full"] }
 comrak = { version = "0.50.0", default-features = true }
 pulldown-latex = "0.7"
@@ -15,3 +15,12 @@ dashmap = "6.1.0"
 gray_matter = "0.3.2"
 serde = "1.0.228"
 chrono = "0.4.44"
+serde_yaml = "0.9.34"
+tar = "0.4.44"
+zstd = "0.13.3"
+reqwest = { version = "0.12", default-features = false, features = [
+    "blocking",
+    "rustls-tls",
+] }
+arc-swap = "1.8.2"
+serde_json = "1.0"

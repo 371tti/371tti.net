@@ -3,5 +3,12 @@ pub mod markdown;
 pub mod render;
 pub mod web;
 pub mod scheduler;
+pub mod updater;
 
-pub const VERSION: &str = "ver 2.0.0";
+pub const  TASK_SCHEDULER_WORKER_COUNT: usize = 4;
+
+pub const CONFIG_FILE_NAME: &str = "config.yaml";
+
+pub const DEFAULT_BASE_DIR: &str = "./data/";
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");

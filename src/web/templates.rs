@@ -1,11 +1,11 @@
 use gray_matter::{Matter, engine::YAML};
-use crate::{VERSION, markdown::PageMeta};
+use crate::{markdown::PageMeta, web::context::SystemInfo};
 
 #[derive(Clone, Default)]
 pub struct TemplateService;
 
 impl TemplateService {
-    pub fn render_common_page(md: String, meta: PageMeta) -> String {
+    pub fn render_common_page(md: String, meta: PageMeta, system_info: &SystemInfo) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -30,11 +30,11 @@ impl TemplateService {
             authors = authors,
             description = description,
             content = content,
-            version = VERSION
+            version = system_info.text()
         )
     }
 
-    pub fn render_common_html(html: String, meta: PageMeta) -> String {
+    pub fn render_common_html(html: String, meta: PageMeta, system_info: &SystemInfo) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -44,13 +44,13 @@ impl TemplateService {
             authors = authors,
             description = description,
             content = html,
-            version = VERSION
+            version = system_info.text()
         )
     }
 
-    pub fn render_temp_html(html: String) -> String {
+    pub fn render_temp_html(html: String, system_info: &SystemInfo) -> String {
         let (meta, content_html) = Self::parse_front_matter(html, &[]);
-        let html = TemplateService::render_common_html(content_html, meta);
+        let html = TemplateService::render_common_html(content_html, meta, system_info);
         html
     }
 

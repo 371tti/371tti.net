@@ -3,14 +3,16 @@ use kurosabi::{
     http::{HttpMethod, HttpStatusCode},
     server::tokio::KurosabiTokioServerBuilder,
 };
-use wk_371tti_net::{config::BASE_DIR, web::{SiteContext, TemplateService}};
+use wk_371tti_net::web::SiteContext;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::builder()
-        .filter_level(log::LevelFilter::Info)
+    env_logger::Builder::from_env(
+        env_logger::Env::default().default_filter_or("info,wk_371tti_net::updater=debug"),
+    )
+        .format_timestamp_millis()
         .init();
-    let context = SiteContext::new();
+    let context = SiteContext::new().await?;
     let builder: KurosabiTokioServerBuilder<SiteContext> =
         KurosabiTokioServerBuilder::with_context(context);
     builder
@@ -44,7 +46,7 @@ async fn main() -> std::io::Result<()> {
                             .no_body(),
                     },
                     ["raw", path @ ..] => {
-                        let content = FileContentBuilder::base(BASE_DIR)
+                        let content = FileContentBuilder::base(&conn.c.shared.config.base_dir)
                             .path_url_segs(path)
                             .inline();
                         if path.first() == Some(&"static") {
@@ -66,7 +68,6 @@ async fn main() -> std::io::Result<()> {
                         }
                         Err(_) => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                     },
-                    _ => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                 },
                 _ => conn
                     .set_status_code(HttpStatusCode::MethodNotAllowed)
@@ -75,7 +76,8 @@ async fn main() -> std::io::Result<()> {
             let status = conn.res.status_code().into();
             conn.c.shared.counter.increment(status);
             if status == 404{
-                conn.cancel().set_status_code(HttpStatusCode::NotFound).html_body(TemplateService::render_temp_html(include_str!("../data/404.html").to_string()))
+                let not_found_html = conn.c.not_found_routing();
+                conn.cancel().set_status_code(HttpStatusCode::NotFound).html_body(not_found_html)
             } else {
                 conn
             }

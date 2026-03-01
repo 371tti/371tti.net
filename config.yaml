@@ -1,0 +1,7 @@
+base_dir: ./data/
+port: 85
+host: 0.0.0.0
+auto_content_update: true
+use_git_command: true
+content_repo_url: https://github.com/371tti/371tti.net-contents
+content_repo_branch: main

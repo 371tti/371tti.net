@@ -6,7 +6,7 @@ use kurosabi::{
 };
 use tokio::io::AsyncReadExt;
 
-use crate::{markdown::PageMeta, web::templates::TemplateService};
+use crate::{markdown::PageMeta, web::{context::SystemInfo, templates::TemplateService}};
 
 #[derive(Clone)]
 pub struct DocsRouter {
@@ -20,7 +20,7 @@ impl DocsRouter {
         }
     }
 
-    pub async fn route(&self, path: &[&str]) -> std::io::Result<Option<String>> {
+    pub async fn route(&self, path: &[&str], system_info: &SystemInfo) -> std::io::Result<Option<String>> {
         let builder = FileContentBuilder::base(&self.base_dir)
             .path_url_segs(path)
             .check_file_exists()
@@ -29,7 +29,7 @@ impl DocsRouter {
         let builder = match builder {
             Ok(found) => found,
             // if it's a directory
-            Err(Some(dir)) => return Ok(Some(self.render_dir(dir, path).await?)),
+            Err(Some(dir)) => return Ok(Some(self.render_dir(dir, path, system_info).await?)),
             Err(None) => {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::NotFound,
@@ -44,21 +44,21 @@ impl DocsRouter {
                 let mut buf = String::new();
                 let _bytes = file.file.read_to_string(&mut buf).await?;
                 let (meta, content_md) = TemplateService::parse_front_matter(buf, path);
-                let html = TemplateService::render_common_page(content_md, meta);
+                let html = TemplateService::render_common_page(content_md, meta, system_info);
                 Ok(Some(html))
             }
             DocKind::Html => {
                 let mut buf = String::new();
                 let _bytes = file.file.read_to_string(&mut buf).await?;
                 let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
-                let html = TemplateService::render_common_html(content_html, meta);
+                let html = TemplateService::render_common_html(content_html, meta, system_info);
                 Ok(Some(html))
             }
             DocKind::Other => Ok(None),
         }
     }
 
-    async fn render_dir(&self, dir: Vec<DirEntryInfo>, path: &[&str]) -> std::io::Result<String> {
+    async fn render_dir(&self, dir: Vec<DirEntryInfo>, path: &[&str], system_info: &SystemInfo) -> std::io::Result<String> {
         let mut path_with_index = if path == [""] { vec![] } else { path.to_vec() };
         if dir.iter().any(|e| e.kind.is_file() && e.path.file_name().and_then(|n| n.to_str()) == Some("index.html")) {
             path_with_index.push("index.html");
@@ -74,7 +74,7 @@ impl DocsRouter {
                         let mut buf = String::new();
                         let _ = file.file.read_to_string(&mut buf).await;
                         let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
-                        return Ok(TemplateService::render_common_html(content_html, meta));
+                        return Ok(TemplateService::render_common_html(content_html, meta, system_info));
                     }
                 }
                 Err(_) => { let _ = path_with_index.pop(); }
@@ -211,7 +211,7 @@ impl DocsRouter {
             Some(content) => format!("\n\n---\n\n{}", content),
             None => "".to_string(),
         });
-        Ok(TemplateService::render_common_page(md, meta))
+        Ok(TemplateService::render_common_page(md, meta, system_info))
     }
 }
 
