@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use kurosabi::{
     connection::file::{DirEntryInfo, FileContentBuilder},
@@ -6,7 +6,10 @@ use kurosabi::{
 };
 use tokio::io::AsyncReadExt;
 
-use crate::{markdown::PageMeta, web::{context::SystemInfo, templates::TemplateService}};
+use crate::{
+    markdown::PageMeta,
+    web::{context::SystemInfo, templates::TemplateService},
+};
 
 #[derive(Clone)]
 pub struct DocsRouter {
@@ -20,7 +23,11 @@ impl DocsRouter {
         }
     }
 
-    pub async fn route(&self, path: &[&str], system_info: &SystemInfo) -> std::io::Result<Option<String>> {
+    pub async fn route(
+        &self,
+        path: &[&str],
+        system_info: &SystemInfo,
+    ) -> std::io::Result<Option<String>> {
         let builder = FileContentBuilder::base(&self.base_dir)
             .path_url_segs(path)
             .check_file_exists()
@@ -34,7 +41,7 @@ impl DocsRouter {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::NotFound,
                     "File not found",
-                ))
+                ));
             }
         };
 
@@ -58,9 +65,16 @@ impl DocsRouter {
         }
     }
 
-    async fn render_dir(&self, dir: Vec<DirEntryInfo>, path: &[&str], system_info: &SystemInfo) -> std::io::Result<String> {
+    async fn render_dir(
+        &self,
+        dir: Vec<DirEntryInfo>,
+        path: &[&str],
+        system_info: &SystemInfo,
+    ) -> std::io::Result<String> {
         let mut path_with_index = if path == [""] { vec![] } else { path.to_vec() };
-        if dir.iter().any(|e| e.kind.is_file() && e.path.file_name().and_then(|n| n.to_str()) == Some("index.html")) {
+        if dir.iter().any(|e| {
+            e.kind.is_file() && e.path.file_name().and_then(|n| n.to_str()) == Some("index.html")
+        }) {
             path_with_index.push("index.html");
             match FileContentBuilder::base(&self.base_dir)
                 .path_url_segs(&path_with_index)
@@ -74,52 +88,62 @@ impl DocsRouter {
                         let mut buf = String::new();
                         let _ = file.file.read_to_string(&mut buf).await;
                         let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
-                        return Ok(TemplateService::render_common_html(content_html, meta, system_info));
+                        return Ok(TemplateService::render_common_html(
+                            content_html,
+                            meta,
+                            system_info,
+                        ));
                     }
                 }
-                Err(_) => { let _ = path_with_index.pop(); }
+                Err(_) => {
+                    let _ = path_with_index.pop();
+                }
             };
         }
         path_with_index.push("index.md");
-        let index_md: Option<String> =
-            match FileContentBuilder::base(&self.base_dir)
-                .path_url_segs(&path_with_index)
-                .build()
-                .await
-            {
-                Ok(mut file) => {
-                    if !file.mime_type.contains("text/markdown;") {
-                        None
-                    } else {
-                        let mut buf = String::new();
-                        file.file.read_to_string(&mut buf).await?;
-                        Some(buf)
-                    }
+        let index_md: Option<String> = match FileContentBuilder::base(&self.base_dir)
+            .path_url_segs(&path_with_index)
+            .build()
+            .await
+        {
+            Ok(mut file) => {
+                if !file.mime_type.contains("text/markdown;") {
+                    None
+                } else {
+                    let mut buf = String::new();
+                    file.file.read_to_string(&mut buf).await?;
+                    Some(buf)
                 }
-                Err(_) => None,
-            };
+            }
+            Err(_) => None,
+        };
         let mut files: Vec<&str> = Vec::new();
         let mut dirs: Vec<&str> = Vec::new();
         for entry in dir.iter() {
             if entry.kind.is_dir() {
                 let opt_dir_name = entry.path.file_name().and_then(|n| n.to_str());
-                if let Some(dir_name) = opt_dir_name {
-                    if !dir_name.starts_with(".") {
-                        dirs.push(dir_name);
-                    }
+                if let Some(dir_name) = opt_dir_name
+                    && !dir_name.starts_with(".")
+                {
+                    dirs.push(dir_name);
                 }
             } else if entry.kind.is_file() {
                 let opt_file_name = entry.path.file_name().and_then(|n| n.to_str());
-                if let Some(file_name) = opt_file_name {
-                    if !file_name.starts_with(".") && file_name != "index.md" {
-                        files.push(file_name);
-                    }
+                if let Some(file_name) = opt_file_name
+                    && !file_name.starts_with(".")
+                    && file_name != "index.md"
+                {
+                    files.push(file_name);
                 }
             }
         }
         files.sort_unstable();
         dirs.sort_unstable();
-        let path_segments: Vec<String> = path.iter().filter(|p| !p.is_empty()).map(|s| url_decode_fast(s).to_string()).collect();
+        let path_segments: Vec<String> = path
+            .iter()
+            .filter(|p| !p.is_empty())
+            .map(|s| url_decode_fast(s).to_string())
+            .collect();
         let encoded_path = path_segments
             .iter()
             .map(|segment| url_encode(segment))
@@ -148,7 +172,7 @@ impl DocsRouter {
                 .iter()
                 .enumerate()
                 .map(|(i, p)| {
-                    let link = if i == path_segments.len() - 1 {
+                    if i == path_segments.len() - 1 {
                         p.to_string()
                     } else {
                         let href = format!(
@@ -161,8 +185,7 @@ impl DocsRouter {
                                 .join("/")
                         );
                         format!("[{}]({})", p, href)
-                    };
-                    link
+                    }
                 })
                 .collect::<Vec<_>>()
                 .join("/")
@@ -221,8 +244,12 @@ enum DocKind {
     Other,
 }
 
-fn classify_mime(mime_type: &str, path: &PathBuf) -> DocKind {
-    let file_ext = path.extension().and_then(|ext| ext.to_str()).unwrap_or("").to_lowercase();
+fn classify_mime(mime_type: &str, path: &Path) -> DocKind {
+    let file_ext = path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or("")
+        .to_lowercase();
     if file_ext == "md" || file_ext == "markdown" {
         return DocKind::Markdown;
     }

@@ -39,7 +39,10 @@ impl Config {
     pub fn get_host(&self) -> [u8; 4] {
         let segments: Vec<&str> = self.host.split('.').collect();
         if segments.len() != 4 {
-            error!("Invalid host format in config: '{}', defaulting to '0.0.0.0'", self.host);
+            error!(
+                "Invalid host format in config: '{}', defaulting to '0.0.0.0'",
+                self.host
+            );
             return [0, 0, 0, 0];
         }
         let mut result = [0u8; 4];
@@ -47,7 +50,10 @@ impl Config {
             match segment.parse::<u8>() {
                 Ok(val) => result[i] = val,
                 Err(e) => {
-                    error!("Invalid host segment '{}' in config: {}, defaulting to '0.0.0.0'", segment, e);
+                    error!(
+                        "Invalid host segment '{}' in config: {}, defaulting to '0.0.0.0'",
+                        segment, e
+                    );
                     return [0, 0, 0, 0];
                 }
             }

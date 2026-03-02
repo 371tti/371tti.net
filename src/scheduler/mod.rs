@@ -1,4 +1,14 @@
-use std::{cmp::Ordering, collections::BTreeSet, fmt::Debug, pin::Pin, sync::{Arc, atomic::{self, AtomicU64}}, time::Duration};
+use std::{
+    cmp::Ordering,
+    collections::BTreeSet,
+    fmt::Debug,
+    pin::Pin,
+    sync::{
+        Arc,
+        atomic::{self, AtomicU64},
+    },
+    time::Duration,
+};
 
 use chrono::{DateTime, Timelike, Utc};
 use tokio::sync::{Notify, RwLock};
@@ -224,6 +234,13 @@ pub struct TaskScheduler {
     /// タスクIDのカウンタ
     task_id_counter: AtomicU64,
 }
+
+impl Default for TaskScheduler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TaskScheduler {
     pub fn new() -> Self {
         Self {
@@ -236,10 +253,22 @@ impl TaskScheduler {
     }
 
     async fn next_wakeup_time(&self) -> Option<DateTime<Utc>> {
-        self.wait_queue.read().await.iter().next().map(|item| item.ready_at)
+        self.wait_queue
+            .read()
+            .await
+            .iter()
+            .next()
+            .map(|item| item.ready_at)
     }
 
-    pub async fn push_task(&self,mut id: TaskID, task: BoxedTask, priority: TaskPriority, ready_at: Option<DateTime<Utc>>, deadline: Option<DateTime<Utc>>) -> TaskID {
+    pub async fn push_task(
+        &self,
+        mut id: TaskID,
+        task: BoxedTask,
+        priority: TaskPriority,
+        ready_at: Option<DateTime<Utc>>,
+        deadline: Option<DateTime<Utc>>,
+    ) -> TaskID {
         let counter = self.task_id_counter.fetch_add(1, atomic::Ordering::SeqCst);
         id.set_counter(counter);
 
@@ -272,7 +301,10 @@ impl TaskScheduler {
             if let Some(wakeup_time) = next_wakeup {
                 let now = Utc::now();
                 if wakeup_time <= now {
-                    self.ready_queue.write().await.insert(self.wait_queue.write().await.pop_first().unwrap().into());
+                    self.ready_queue
+                        .write()
+                        .await
+                        .insert(self.wait_queue.write().await.pop_first().unwrap().into());
                     self.ready_notify.notify_one();
                     continue;
                 } else {
@@ -304,19 +336,27 @@ impl TaskScheduler {
         }
     }
 
-    async fn execute_loop(&self, context: Arc<SiteContextShared> ) {
+    async fn execute_loop(&self, context: Arc<SiteContextShared>) {
         loop {
             let task_item = self.fetch_ready_task_wait().await;
             if task_item.deadline.map(|d| d < Utc::now()).unwrap_or(false) {
-                log::warn!("Task {} 0x{:?} deadline exceeded, skipping execution", task_item.id.prefix(), task_item.id);
+                log::warn!(
+                    "Task {} 0x{:?} deadline exceeded, skipping execution",
+                    task_item.id.prefix(),
+                    task_item.id
+                );
                 continue;
             }
-            log::debug!("Executing task {} 0x{:?}", task_item.id.prefix(), task_item.id);
+            log::debug!(
+                "Executing task {} 0x{:?}",
+                task_item.id.prefix(),
+                task_item.id
+            );
             (task_item.task)(context.clone()).await;
         }
     }
 
-    pub async fn start(context: Arc<SiteContextShared> , worker_num: usize) {
+    pub async fn start(context: Arc<SiteContextShared>, worker_num: usize) {
         log::info!("Starting TaskScheduler with {} workers", worker_num);
         let timer_self = context.clone();
         tokio::spawn(async move {
@@ -338,7 +378,7 @@ impl TaskScheduler {
     /// 非同期タスクをBox化するユーティリティ関数
     pub fn boxed_task<F, Fut>(f: F) -> BoxedTask
     where
-        F: Fn(Arc<SiteContextShared> ) -> Fut + Send + Sync + 'static,
+        F: Fn(Arc<SiteContextShared>) -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = ()> + Send + 'static,
     {
         Box::new(move |ctx| Box::pin(f(ctx)))
@@ -360,5 +400,5 @@ impl TaskScheduler {
 }
 
 /// 非同期タスクをbox化
-pub type BoxedTask = Box<dyn Fn(Arc<SiteContextShared> ) 
-    -> Pin<Box<dyn Future<Output = ()> + Send>> + Send + Sync>;
+pub type BoxedTask =
+    Box<dyn Fn(Arc<SiteContextShared>) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send + Sync>;

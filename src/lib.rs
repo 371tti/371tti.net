@@ -1,11 +1,11 @@
 pub mod config;
 pub mod markdown;
 pub mod render;
-pub mod web;
 pub mod scheduler;
 pub mod updater;
+pub mod web;
 
-pub const  TASK_SCHEDULER_WORKER_COUNT: usize = 4;
+pub const TASK_SCHEDULER_WORKER_COUNT: usize = 4;
 
 pub const CONFIG_FILE_NAME: &str = "config.yaml";
 

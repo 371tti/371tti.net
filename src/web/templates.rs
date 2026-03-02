@@ -1,5 +1,5 @@
-use gray_matter::{Matter, engine::YAML};
 use crate::{markdown::PageMeta, web::context::SystemInfo};
+use gray_matter::{Matter, engine::YAML};
 
 #[derive(Clone, Default)]
 pub struct TemplateService;
@@ -50,8 +50,7 @@ impl TemplateService {
 
     pub fn render_temp_html(html: String, system_info: &SystemInfo) -> String {
         let (meta, content_html) = Self::parse_front_matter(html, &[]);
-        let html = TemplateService::render_common_html(content_html, meta, system_info);
-        html
+        TemplateService::render_common_html(content_html, meta, system_info)
     }
 
     pub fn parse_front_matter(md: String, path: &[&str]) -> (PageMeta, String) {

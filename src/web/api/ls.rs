@@ -80,11 +80,14 @@ impl LsAPI {
         let file = builder.build().await?;
         let size = file.file.metadata().await?.len();
         let name = path.last().map_or("", |v| v).to_string();
-        Ok(LsResponse::file(path, LsFile {
-            name,
-            size,
-            mime_type: file.mime_type,
-        }))
+        Ok(LsResponse::file(
+            path,
+            LsFile {
+                name,
+                size,
+                mime_type: file.mime_type,
+            },
+        ))
     }
 
     fn build_dir_response(path: &[&str], dir: Vec<DirEntryInfo>) -> LsResponse {
@@ -98,14 +101,14 @@ impl LsAPI {
                         size: None,
                     });
                 }
-            } else if entry.kind.is_file() {
-                if let Some(name) = entry.path.file_name().and_then(|n| n.to_str()) {
-                    let size = entry.path.metadata().ok().map(|m| m.len());
-                    files.push(LsEntry {
-                        name: name.to_string(),
-                        size,
-                    });
-                }
+            } else if entry.kind.is_file()
+                && let Some(name) = entry.path.file_name().and_then(|n| n.to_str())
+            {
+                let size = entry.path.metadata().ok().map(|m| m.len());
+                files.push(LsEntry {
+                    name: name.to_string(),
+                    size,
+                });
             }
         }
         dirs.sort_by(|a, b| a.name.cmp(&b.name));

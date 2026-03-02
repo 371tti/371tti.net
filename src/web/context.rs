@@ -8,7 +8,9 @@ use crate::{
     config::Config,
     scheduler::{TaskID, TaskPriority, TaskScheduler, task},
     web::{
-        TemplateService, analyzer::Counter, api::{DocsRouter, LsAPI, LsResponse}
+        TemplateService,
+        analyzer::Counter,
+        api::{DocsRouter, LsAPI, LsResponse},
     },
 };
 
@@ -33,7 +35,11 @@ pub struct SystemInfo {
 
 impl SystemInfo {
     pub fn text(&self) -> String {
-        format!("{}+contents.git.{}", self.system_version, &self.content_hash[..7])
+        format!(
+            "{}+contents.git.{}",
+            self.system_version,
+            &self.content_hash[..7]
+        )
     }
 }
 
@@ -66,11 +72,17 @@ impl SiteContext {
     }
 
     pub async fn docs_routing(&self, path: &[&str]) -> std::io::Result<Option<String>> {
-        self.shared.docs_router.route(path, self.shared.system_info.load_full().as_ref()).await
+        self.shared
+            .docs_router
+            .route(path, self.shared.system_info.load_full().as_ref())
+            .await
     }
 
     pub fn not_found_routing(&self) -> String {
-        TemplateService::render_temp_html(include_str!("../../data/404.html").to_string(), self.shared.system_info.load_full().as_ref())
+        TemplateService::render_temp_html(
+            include_str!("../../data/404.html").to_string(),
+            self.shared.system_info.load_full().as_ref(),
+        )
     }
 
     pub async fn ls_routing(&self, path: &[&str]) -> std::io::Result<LsResponse> {

@@ -1,9 +1,13 @@
-/// すごく、汚い...のでリファクタリング必須...
-
+//! すごく、汚い...のでリファクタリング必須...
 use std::{cell::RefCell, collections::HashMap};
 
-
-use comrak::{Arena, Options, format_html_with_plugins, nodes::{AstNode, NodeValue}, options::Plugins, parse_document, plugins::syntect::SyntectAdapter};
+use comrak::{
+    Arena, Options, format_html_with_plugins,
+    nodes::{AstNode, NodeValue},
+    options::Plugins,
+    parse_document,
+    plugins::syntect::SyntectAdapter,
+};
 use pulldown_latex::{Parser, RenderConfig, Storage, push_mathml};
 
 pub fn md_to_html_gfm_highlight(md: &str) -> String {
@@ -16,12 +20,12 @@ pub fn md_to_html_gfm_highlight(md: &str) -> String {
     opt.extension.footnotes = true;
     opt.extension.inline_footnotes = true;
     opt.extension.math_dollars = true;
-    opt.extension.subscript = true;    // x~2~ :contentReference[oaicite:4]{index=4}
-    opt.extension.superscript = true;  // x^2^ :contentReference[oaicite:5]{index=5}
-    opt.extension.underline = true;    // __underline__ :contentReference[oaicite:6]{index=6}
-    opt.extension.spoiler = true;      // ||spoiler|| :contentReference[oaicite:7]{index=7}
+    opt.extension.subscript = true; // x~2~ :contentReference[oaicite:4]{index=4}
+    opt.extension.superscript = true; // x^2^ :contentReference[oaicite:5]{index=5}
+    opt.extension.underline = true; // __underline__ :contentReference[oaicite:6]{index=6}
+    opt.extension.spoiler = true; // ||spoiler|| :contentReference[oaicite:7]{index=7}
     opt.extension.wikilinks_title_after_pipe = true; // [[Link|Title]] :contentReference[oaicite:9]{index=9}
-    opt.extension.highlight = true;    // ==highlight== :contentReference[oaicite:8]{index=8}
+    opt.extension.highlight = true; // ==highlight== :contentReference[oaicite:8]{index=8}
 
     // ハイライト
     let adapter = SyntectAdapter::new(Some("base16-ocean.dark"));
@@ -39,7 +43,6 @@ pub fn md_to_html_gfm_highlight(md: &str) -> String {
     format_html_with_plugins(root, &opt, &mut out, &plugins).unwrap(); // HTML化 :contentReference[oaicite:2]{index=2}
     out
 }
-
 
 /// 見出しノードの子孫から「見える文字列」を抽出する
 fn extract_heading_text<'a>(heading: &'a AstNode<'a>) -> String {
@@ -79,24 +82,30 @@ fn slugify_id_unicode(s: &str) -> String {
             continue;
         }
 
-        // 許可: 文字/数字（Unicode含む） + '_' + '-' 
+        // 許可: 文字/数字（Unicode含む） + '_' + '-'
         // 記号類は '-' に寄せる
         if ch.is_alphanumeric() || ch == '_' || ch == '-' {
             out.push(ch);
             prev_dash = false;
-        } else {
-            if !prev_dash && !out.is_empty() {
-                out.push('-');
-                prev_dash = true;
-            }
+        } else if !prev_dash && !out.is_empty() {
+            out.push('-');
+            prev_dash = true;
         }
     }
 
     // 前後の '-' を削る
-    while out.starts_with('-') { out.remove(0); }
-    while out.ends_with('-') { out.pop(); }
+    while out.starts_with('-') {
+        out.remove(0);
+    }
+    while out.ends_with('-') {
+        out.pop();
+    }
 
-    if out.is_empty() { "section".to_string() } else { out }
+    if out.is_empty() {
+        "section".to_string()
+    } else {
+        out
+    }
 }
 
 /// HTML属性値のエスケープ（念のため）
@@ -116,13 +125,9 @@ fn escape_attr(s: &str) -> String {
     out
 }
 
-fn wrap_heading_with_link<'a>(
-    arena: &'a Arena<'a>,
-    heading: &'a AstNode<'a>,
-    id_esc: &str,
-) {
+fn wrap_heading_with_link<'a>(arena: &'a Arena<'a>, heading: &'a AstNode<'a>, id_esc: &str) {
     let open = arena.alloc(AstNode::new(RefCell::new(comrak::nodes::Ast::new(
-        NodeValue::Raw(format!("<a class=\"heading-link\" href=\"#{}\">", id_esc).into()),
+        NodeValue::Raw(format!("<a class=\"heading-link\" href=\"#{}\">", id_esc)),
         Default::default(),
     ))));
 
@@ -205,7 +210,7 @@ pub fn inject_sections<'a>(arena: &'a Arena<'a>, root: &'a AstNode<'a>) {
 
         // 新しいsectionを開く（見出し直前に挿入）
         let open = arena.alloc(AstNode::new(RefCell::new(comrak::nodes::Ast::new(
-            NodeValue::Raw(format!("{}\n", section_open).into()),
+            NodeValue::Raw(format!("{}\n", section_open)),
             Default::default(),
         ))));
         n.insert_before(open);
@@ -248,7 +253,12 @@ fn inject_mathml<'a>(root: &'a AstNode<'a>) {
         // LaTeX → MathML
         let mut mathml = String::new();
         let storage = Storage::new();
-        let ok = push_mathml(&mut mathml, Parser::new(&latex, &storage), RenderConfig::default()).is_ok();
+        let ok = push_mathml(
+            &mut mathml,
+            Parser::new(&latex, &storage),
+            RenderConfig::default(),
+        )
+        .is_ok();
 
         // 失敗時は安全側に “元のテキスト” を表示（ここは好みで）
         let html = if ok {
@@ -262,14 +272,20 @@ fn inject_mathml<'a>(root: &'a AstNode<'a>) {
             // 変換失敗：そのまま文字として出す（Raw だと注入になるのでエスケープする）
             let escaped = escape_attr(&latex);
             if display_math {
-                format!("<div class=\"math math-display\"><code>{}</code></div>", escaped)
+                format!(
+                    "<div class=\"math math-display\"><code>{}</code></div>",
+                    escaped
+                )
             } else {
-                format!("<span class=\"math math-inline\"><code>{}</code></span>", escaped)
+                format!(
+                    "<span class=\"math math-inline\"><code>{}</code></span>",
+                    escaped
+                )
             }
         };
 
         // ノード置換（Raw は “そのままHTMLへ”）
-        n.data.borrow_mut().value = NodeValue::Raw(html.into());
+        n.data.borrow_mut().value = NodeValue::Raw(html);
     }
 }
 
@@ -323,7 +339,10 @@ fn strip_marker_from_first_paragraph<'a>(para: &'a AstNode<'a>) -> Option<&'stat
 
     // marker の直後が「改行(SoftBreak/LineBreak)」ならそれも消す（> [!TIP]\n> 本文 の場合）
     if let Some(next) = first.next_sibling() {
-        let is_break = matches!(next.data.borrow().value, NodeValue::SoftBreak | NodeValue::LineBreak);
+        let is_break = matches!(
+            next.data.borrow().value,
+            NodeValue::SoftBreak | NodeValue::LineBreak
+        );
         if is_break {
             next.detach();
         }
@@ -373,11 +392,13 @@ pub fn inject_quote_alerts<'a>(arena: &'a comrak::Arena<'a>, root: &'a AstNode<'
         }
 
         // Paragraph の先頭から marker を剥がして class を得る
-        let Some(cls) = strip_marker_from_first_paragraph(first) else { continue };
+        let Some(cls) = strip_marker_from_first_paragraph(first) else {
+            continue;
+        };
 
         // <blockquote class="..."> を自前で作るので、comrak の BlockQuote は剥がす
         let open = arena.alloc(AstNode::new(RefCell::new(comrak::nodes::Ast::new(
-            NodeValue::Raw(format!("<blockquote class=\"{}\">\n", cls).into()),
+            NodeValue::Raw(format!("<blockquote class=\"{}\">\n", cls)),
             Default::default(),
         ))));
         bq.insert_before(open);
