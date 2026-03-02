@@ -2,14 +2,19 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use chrono::Utc;
+use kurosabi::http::header::{Cookie, CookieBuilder};
+use srv_session::{
+    AuthManager,
+    serde_hex_array::{bytes_to_hex, hex_to_bytes},
+};
 
 use crate::{
-    TASK_SCHEDULER_WORKER_COUNT,
+    SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT,
     config::Config,
     scheduler::{TaskID, TaskPriority, TaskScheduler, task},
+    state::{AccountKV, SessionKV, Storage},
     web::{
         TemplateService,
-        analyzer::Counter,
         api::{DocsRouter, LsAPI, LsResponse},
     },
 };
@@ -17,15 +22,18 @@ use crate::{
 #[derive(Clone)]
 pub struct SiteContext {
     pub shared: Arc<SiteContextShared>,
+    pub now_user: Option<Box<str>>,
+    pub new_session: bool,
 }
 
 pub struct SiteContextShared {
     pub ls_api: LsAPI,
     pub docs_router: DocsRouter,
-    pub counter: Counter,
     pub config: Config,
     pub scheduler: TaskScheduler,
     pub system_info: ArcSwap<SystemInfo>,
+    pub storage: Storage,
+    pub auth_manager: AuthManager<SessionKV, AccountKV>,
 }
 
 pub struct SystemInfo {
@@ -46,17 +54,27 @@ impl SystemInfo {
 impl SiteContext {
     pub async fn new() -> std::io::Result<Self> {
         let config = Config::load_or_create()?;
+        let storage = Storage::load_or_create(config.storage_file.as_ref())?;
+        let auth_manager = AuthManager::new(
+            storage.sessions.clone(),
+            storage.accounts.clone(),
+            config.session_timeout,
+            config.account_timeout,
+            config.hash_config.clone(),
+        );
         let shared: Arc<SiteContextShared> = Arc::new(SiteContextShared {
             ls_api: LsAPI::new(&config.base_dir),
             docs_router: DocsRouter::new(&config.base_dir),
-            counter: Counter::new(),
             config,
             scheduler: TaskScheduler::new(),
             system_info: ArcSwap::new(Arc::new(SystemInfo {
                 system_version: crate::VERSION.to_string(),
                 content_hash: "unknown".to_string(),
             })),
+            storage,
+            auth_manager,
         });
+        // Start the scheduler and push the cron task
         TaskScheduler::start(shared.clone(), TASK_SCHEDULER_WORKER_COUNT).await;
         shared
             .scheduler
@@ -68,24 +86,53 @@ impl SiteContext {
                 None,
             )
             .await;
-        Ok(Self { shared })
+        Ok(Self {
+            shared,
+            now_user: None,
+            new_session: true,
+        })
     }
 
     pub async fn docs_routing(&self, path: &[&str]) -> std::io::Result<Option<String>> {
-        self.shared
-            .docs_router
-            .route(path, self.shared.system_info.load_full().as_ref())
-            .await
+        self.shared.docs_router.route(path, &self.shared).await
     }
 
     pub fn not_found_routing(&self) -> String {
         TemplateService::render_temp_html(
             include_str!("../../data/404.html").to_string(),
-            self.shared.system_info.load_full().as_ref(),
+            &self.shared,
         )
     }
 
     pub async fn ls_routing(&self, path: &[&str]) -> std::io::Result<LsResponse> {
         self.shared.ls_api.list(path).await
+    }
+
+    pub fn session_check(&mut self, hex_session: Option<&str>) -> Option<Cookie> {
+        if let Some(hex) = hex_session {
+            if let Ok(session_bin) = hex_to_bytes(hex) {
+                if let Some(v) = self
+                    .shared
+                    .auth_manager
+                    .get_and_verify_session(&session_bin)
+                {
+                    self.now_user = v.primary_account;
+                    self.new_session = false;
+                    return None;
+                }
+            }
+        }
+        let new_session_bin = self.shared.auth_manager.create_session();
+        let hex_session_id = bytes_to_hex(&new_session_bin);
+        self.now_user = None;
+        self.new_session = true;
+        Some(
+            CookieBuilder::new(SESSION_COOKIE_NAME, hex_session_id)
+                .path("/")
+                .http_only(true)
+                .secure(true)
+                .max_age(self.shared.config.cookie_max_age_seconds)
+                .build(),
+        )
     }
 }

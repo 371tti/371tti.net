@@ -1,9 +1,11 @@
 use std::path::Path;
 
+use chrono::Duration;
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
+use srv_session::HashConfig;
 
-use crate::DEFAULT_BASE_DIR;
+use crate::{AUTH_HASH_TARGET_MS, DEFAULT_ACCOUNT_TIMEOUT_HOURS, DEFAULT_BASE_DIR, DEFAULT_COOKIE_MAX_AGE_SECONDS, DEFAULT_SESSION_TIMEOUT_HOURS, STORAGE_FILE_NAME};
 
 fn default_content_repo_branch() -> String {
     "main".to_string()
@@ -11,26 +13,34 @@ fn default_content_repo_branch() -> String {
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    pub storage_file: String,
     pub base_dir: String,
     pub port: u16,
     pub host: String,
     pub auto_content_update: bool,
-    pub use_git_command: bool,
     pub content_repo_url: String,
     #[serde(default = "default_content_repo_branch")]
     pub content_repo_branch: String,
+    pub session_timeout: Duration,
+    pub account_timeout: Duration,
+    pub cookie_max_age_seconds: u64,
+    pub hash_config: HashConfig,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
+            storage_file: STORAGE_FILE_NAME.to_string(),
             base_dir: DEFAULT_BASE_DIR.to_string(),
             port: 8080,
             host: "0.0.0.0".to_string(),
             auto_content_update: true,
-            use_git_command: true,
             content_repo_url: "https://github.com/371tti/371tti.net-contents".to_string(),
             content_repo_branch: default_content_repo_branch(),
+            session_timeout: Duration::hours(DEFAULT_SESSION_TIMEOUT_HOURS),
+            account_timeout: Duration::hours(DEFAULT_ACCOUNT_TIMEOUT_HOURS),
+            cookie_max_age_seconds: DEFAULT_COOKIE_MAX_AGE_SECONDS,
+            hash_config: HashConfig::benchmark(AUTH_HASH_TARGET_MS)
         }
     }
 }

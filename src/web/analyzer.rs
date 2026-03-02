@@ -1,11 +1,17 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
 pub struct Counter {
     pub total_req_count: AtomicU64,
     pub status_counters: StatusCounters,
     pub not_found_count: AtomicU64,
+    pub unique_visitors: AtomicU64,
+    pub page_view_count: AtomicU64,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct StatusCounters {
     pub s1xx: AtomicU64,
     pub s2xx: AtomicU64,
@@ -32,6 +38,8 @@ impl Counter {
                 s5xx: AtomicU64::new(0),
             },
             not_found_count: AtomicU64::new(0),
+            unique_visitors: AtomicU64::new(0),
+            page_view_count: AtomicU64::new(0),
         }
     }
 
@@ -60,6 +68,14 @@ impl Counter {
         }
     }
 
+    pub fn increment_unique_visitors(&self) -> u64 {
+        self.unique_visitors.fetch_add(1, Ordering::Relaxed) + 1
+    }
+
+    pub fn increment_page_views(&self) -> u64 {
+        self.page_view_count.fetch_add(1, Ordering::Relaxed) + 1
+    }
+
     pub fn get_total(&self) -> u64 {
         self.total_req_count.load(Ordering::Relaxed)
     }
@@ -71,6 +87,15 @@ impl Counter {
             self.status_counters.s3xx.load(Ordering::Relaxed),
             self.status_counters.s4xx.load(Ordering::Relaxed),
             self.status_counters.s5xx.load(Ordering::Relaxed),
+        )
+    }
+
+    pub fn text_report(&self) -> String {
+        format!(
+            "uu={} pv={} total={}",
+            self.unique_visitors.load(Ordering::Relaxed),
+            self.page_view_count.load(Ordering::Relaxed),
+            self.total_req_count.load(Ordering::Relaxed),
         )
     }
 }

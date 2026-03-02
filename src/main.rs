@@ -3,7 +3,7 @@ use kurosabi::{
     http::{HttpMethod, HttpStatusCode},
     server::tokio::KurosabiTokioServerBuilder,
 };
-use wk_371tti_net::web::SiteContext;
+use wk_371tti_net::{SESSION_COOKIE_NAME, web::SiteContext};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -12,6 +12,7 @@ async fn main() -> std::io::Result<()> {
     )
     .format_timestamp_millis()
     .init();
+    wk_371tti_net::print_logo();
     let context = SiteContext::new().await?;
     let config = &context.shared.clone().config;
     let builder: KurosabiTokioServerBuilder<SiteContext> =
@@ -19,7 +20,15 @@ async fn main() -> std::io::Result<()> {
     builder
         .bind(config.get_host())
         .port(config.port)
-        .router_and_build(|conn| async move {
+        .router_and_build(|mut conn| async move {
+            let conn = if let Some(cookie) = conn
+                .c
+                .session_check(conn.req.get_cookie(SESSION_COOKIE_NAME).await.as_deref())
+            {
+                conn.set_cookie(cookie)
+            } else {
+                conn
+            };
             let conn = match conn.req.method() {
                 HttpMethod::GET => match conn.path_segs().as_ref() {
                     ["robots.txt"] => conn
@@ -89,7 +98,10 @@ async fn main() -> std::io::Result<()> {
                         }
                     }
                     path => match conn.c.docs_routing(path).await {
-                        Ok(Some(html)) => conn.html_body(html),
+                        Ok(Some(html)) => {
+                            conn.c.shared.storage.counter.increment_page_views();
+                            conn.html_body(html)
+                        }
                         Ok(None) => {
                             let redirect_path = "/raw/".to_string() + &path.join("/");
                             conn.redirect(redirect_path)
@@ -102,7 +114,11 @@ async fn main() -> std::io::Result<()> {
                     .no_body(),
             };
             let status = conn.res.status_code().into();
-            conn.c.shared.counter.increment(status);
+            conn.c.shared.storage.counter.increment(status);
+            // 新しいセッションで、かつ成功レスポンスの場合はユニークビジター数を増やす～～
+            if conn.c.new_session && status < 400 {
+                conn.c.shared.storage.counter.increment_unique_visitors();
+            }
             if status == 404 {
                 let not_found_html = conn.c.not_found_routing();
                 conn.cancel()

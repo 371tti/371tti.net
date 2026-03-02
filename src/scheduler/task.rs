@@ -16,7 +16,8 @@ pub fn cron_task() -> BoxedTask {
 
             // 次回スケジューリング
             let next_ready = TaskScheduler::next_5min(Utc::now());
-            ctx.scheduler
+            let task_id = ctx
+                .scheduler
                 .push_task(
                     TaskID::CRON,
                     cron_task(),
@@ -60,6 +61,38 @@ pub fn cron_task() -> BoxedTask {
                 },
             );
 
+            let storage_save_task: BoxedTask =
+                TaskScheduler::boxed_task(move |ctx: Arc<SiteContextShared>| async move {
+                    log::info!("Storage save task running");
+                    if let Err(e) = ctx.storage.save(ctx.config.storage_file.as_ref()) {
+                        log::error!("Failed to save storage: {}", e);
+                    } else {
+                        log::info!("Storage saved successfully");
+                    }
+                    log::info!("Storage save task finished");
+                });
+
+            let session_gc_task: BoxedTask =
+                TaskScheduler::boxed_task(move |ctx: Arc<SiteContextShared>| async move {
+                    log::info!("Session GC task running");
+                    let skip = getrandom::u32().expect("getrandom u32") % 20;
+                    let sessions = ctx
+                        .storage
+                        .sessions
+                        .sessions
+                        .iter()
+                        .skip(skip as usize)
+                        .step_by(20)
+                        .map(|entry| *entry.key())
+                        .collect::<Vec<_>>();
+
+                    let count = sessions.into_iter().fold(0, |acc, k| {
+                        ctx.auth_manager.gc_sessions(&k);
+                        acc + 1
+                    });
+                    log::info!("Session GC task finished (removed {} sessions)", count);
+                });
+
             ctx.scheduler
                 .push_task(
                     TaskID::UPDATE_CHECK,
@@ -69,6 +102,29 @@ pub fn cron_task() -> BoxedTask {
                     None,
                 )
                 .await;
+
+            ctx.scheduler
+                .push_task(
+                    TaskID::SESSION_GC,
+                    session_gc_task,
+                    TaskPriority::LOW,
+                    None,
+                    None,
+                )
+                .await;
+
+            if task_id.counter() % 12 == 0 {
+                // 1時間に1回? スケジューラーの実装忘れた
+                ctx.scheduler
+                    .push_task(
+                        TaskID::STORAGE_SAVE,
+                        storage_save_task,
+                        TaskPriority::NORMAL,
+                        None,
+                        None,
+                    )
+                    .await;
+            }
 
             log::info!("Cron task finished");
         }

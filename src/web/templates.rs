@@ -1,11 +1,11 @@
-use crate::{markdown::PageMeta, web::context::SystemInfo};
+use crate::{markdown::PageMeta, web::context::SiteContextShared};
 use gray_matter::{Matter, engine::YAML};
 
 #[derive(Clone, Default)]
 pub struct TemplateService;
 
 impl TemplateService {
-    pub fn render_common_page(md: String, meta: PageMeta, system_info: &SystemInfo) -> String {
+    pub fn render_common_page(md: String, meta: PageMeta, s_ctx: &SiteContextShared) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -30,11 +30,12 @@ impl TemplateService {
             authors = authors,
             description = description,
             content = content,
-            version = system_info.text()
+            version = s_ctx.system_info.load().text(),
+            count = s_ctx.storage.counter.text_report()
         )
     }
 
-    pub fn render_common_html(html: String, meta: PageMeta, system_info: &SystemInfo) -> String {
+    pub fn render_common_html(html: String, meta: PageMeta, s_ctx: &SiteContextShared) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -44,13 +45,14 @@ impl TemplateService {
             authors = authors,
             description = description,
             content = html,
-            version = system_info.text()
+            version = s_ctx.system_info.load().text(),
+            count = s_ctx.storage.counter.text_report()
         )
     }
 
-    pub fn render_temp_html(html: String, system_info: &SystemInfo) -> String {
+    pub fn render_temp_html(html: String, s_ctx: &SiteContextShared) -> String {
         let (meta, content_html) = Self::parse_front_matter(html, &[]);
-        TemplateService::render_common_html(content_html, meta, system_info)
+        TemplateService::render_common_html(content_html, meta, s_ctx)
     }
 
     pub fn parse_front_matter(md: String, path: &[&str]) -> (PageMeta, String) {

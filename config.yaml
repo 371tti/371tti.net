@@ -1,7 +1,19 @@
+storage_file: storage.cbor
 base_dir: ./data/
-port: 85
+port: 8080
 host: 0.0.0.0
 auto_content_update: true
-use_git_command: true
 content_repo_url: https://github.com/371tti/371tti.net-contents
 content_repo_branch: main
+session_timeout:
+- 2592000
+- 0
+account_timeout:
+- 604800
+- 0
+cookie_max_age_seconds: 2592000
+hash_config:
+  pepper: a11e528aa539d69b8cb6885210776c45
+  memory_kib: 151117
+  time_cost: 3
+  lanes: 3

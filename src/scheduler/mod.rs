@@ -66,6 +66,7 @@ impl TaskID {
     pub const HEALTH_CHECK: Self = Self(3 << 48);
     pub const ACCOUNT_SAVE: Self = Self(4 << 48);
     pub const UPDATE_CHECK: Self = Self(5 << 48);
+    pub const STORAGE_SAVE: Self = Self(6 << 48);
 
     pub fn new(prefix: u16, counter: u64) -> Self {
         let counter = counter & 0x0000FFFFFFFFFFFF;
@@ -95,6 +96,7 @@ impl TaskID {
             3 => "HLTHCK",
             4 => "ACCTSV",
             5 => "UPDATE",
+            6 => "STORAGE_SAVE",
             _ => "UNKNOWN",
         }
     }
