@@ -93,15 +93,17 @@ pub fn cron_task() -> BoxedTask {
                     log::info!("Session GC task finished (removed {} sessions)", count);
                 });
 
-            ctx.scheduler
-                .push_task(
-                    TaskID::UPDATE_CHECK,
-                    content_update_check_task,
-                    TaskPriority::NORMAL,
-                    None,
-                    None,
-                )
-                .await;
+            if ctx.config.auto_content_update {
+                ctx.scheduler
+                    .push_task(
+                        TaskID::UPDATE_CHECK,
+                        content_update_check_task,
+                        TaskPriority::NORMAL,
+                        None,
+                        None,
+                    )
+                    .await;
+            }
 
             ctx.scheduler
                 .push_task(

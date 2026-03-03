@@ -107,13 +107,9 @@ impl DocsRouter {
             .await
         {
             Ok(mut file) => {
-                if !file.mime_type.contains("text/markdown;") {
-                    None
-                } else {
-                    let mut buf = String::new();
-                    file.file.read_to_string(&mut buf).await?;
-                    Some(buf)
-                }
+                let mut buf = String::new();
+                file.file.read_to_string(&mut buf).await?;
+                Some(buf)
             }
             Err(_) => None,
         };
