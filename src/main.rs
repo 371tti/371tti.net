@@ -85,6 +85,9 @@ async fn main() -> std::io::Result<()> {
                             .set_status_code(HttpStatusCode::InternalServerError)
                             .no_body(),
                     },
+                    ["api", "session"] => {
+                        conn.text_body("not impl")
+                    },
                     ["raw", path @ ..] => {
                         let content = FileContentBuilder::base(&conn.c.shared.config.base_dir)
                             .path_url_segs(path)

@@ -40,6 +40,16 @@
     gap: var(--toolbar-gap-x);
 }
 
+.${TOOLBAR_CLASS} .codeblock-lang{
+    line-height: 1;
+    padding: 2px 6px;
+    border: 1px solid var(--color-bg-2, #444);
+    border-radius: 999px;
+    color: var(--color-text-0, #bbb);
+    background: rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+}
+
 .${TOOLBAR_CLASS} button{
     background: transparent;
     border: 0;
@@ -138,6 +148,17 @@
         actions.className = "codeblock-actions";
         tb.appendChild(actions);
 
+        // language detection
+        const lang = detectLanguage(pre);
+        if (lang) {
+            const langEl = document.createElement("small");
+            langEl.className = "codeblock-lang";
+            langEl.textContent = lang;
+            actions.appendChild(langEl);
+        }
+
+        tb.appendChild(actions);
+
         // Wrap
         const wrapBtn = makeIconButton(
             "/raw/static/icons/arrow-back-up.svg",
@@ -178,6 +199,25 @@
 
         container.insertBefore(tb, container.firstChild);
         return tb;
+    }
+
+        function detectLanguage(pre) {
+        const code = pre.querySelector("code");
+        if (!code) return "";
+
+        const classes = [...code.classList, ...pre.classList];
+        for (const cls of classes) {
+            const m = cls.match(/^(?:language|lang)-(.+)$/i);
+            if (m?.[1]) return m[1].toLowerCase();
+        }
+
+        const dataLang =
+            code.getAttribute("data-language") ||
+            pre.getAttribute("data-language") ||
+            code.getAttribute("data-lang") ||
+            pre.getAttribute("data-lang");
+
+        return (dataLang || "").trim().toLowerCase();
     }
 
     const items = new Set();

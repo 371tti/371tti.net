@@ -182,6 +182,7 @@ ol {
 }
 li > p {
     margin-left: 0;
+    display: contents;
 }
 math, math * {
     font-family: "STIX Two Math", "Latin Modern Math", "Cambria Math", serif;
@@ -378,7 +379,7 @@ pre code {
     font-size: 1em;
 }
 pre {
-    /* background-color: var(--color-bg-1); */
+    background-color: #1a1a1ad9;
     padding: 5mm;
     border-radius: 4px;
     overflow: auto;
@@ -441,8 +442,20 @@ input[type="checkbox"] {
     margin: 0;
     padding: 0;
     accent-color: var(--color-accent-1);
-    border: var(--color-text-0) solid 1px;
+    border: var(--color-bg-2) solid 1px;
     background-color: var(--color-bg-1);
+}
+input[type="checkbox"]:checked:not(.task-list-checkbox) {
+    accent-color: var(--color-accent-1);
+    background-color: var(--color-accent-1);
+    border-color: var(--color-accent-1);
+}
+input[type="checkbox"].task-list-checkbox:checked,
+input[type="checkbox"].task-list-checkbox:checked:disabled {
+    accent-color: var(--color-accent-1) !important;
+    background-color: var(--color-accent-1) !important;
+    border-color: var(--color-accent-1) !important;
+    opacity: 1;
 }
 input:focus,
 textarea:focus,

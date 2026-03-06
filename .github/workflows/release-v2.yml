@@ -4,16 +4,16 @@ on:
   push:
     branches: ["v2"]
 
-# 同時に複数pushが来たときの競合を抑える
 concurrency:
   group: release-v2
   cancel-in-progress: false
 
 permissions:
-  contents: write   # tag作成 + release作成に必要
+  contents: write
 
 env:
   CARGO_TERM_COLOR: always
+  BIN_NAME: wk-371tti-net
 
 jobs:
   plan:
@@ -26,10 +26,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # tags確認するので履歴が必要
+          fetch-depth: 0
           submodules: recursive
 
-      - name: Read version from Cargo.toml (via cargo metadata)
+      - name: Read version from Cargo.toml
         id: ver
         shell: bash
         run: |
@@ -62,20 +62,31 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            rust_target: x86_64-unknown-linux-gnu
-            artifact_name: app-linux-x86_64
+            rust_target: x86_64-unknown-linux-musl
+            artifact_name: wk-371tti-net-linux-x86_64
+            bin_name: wk-371tti-net
             bin_ext: ""
           - os: windows-latest
             rust_target: x86_64-pc-windows-msvc
-            artifact_name: app-windows-x86_64
+            artifact_name: wk-371tti-net-windows-x86_64
+            bin_name: wk-371tti-net
             bin_ext: ".exe"
 
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
+
+      - name: Install Linux build deps
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y musl-tools pkg-config
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -90,9 +101,13 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-${{ matrix.rust_target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.rust_target }}-cargo-
 
       - name: Build (release)
         shell: bash
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: musl-gcc
         run: |
           set -euo pipefail
           cargo build --release --target "${{ matrix.rust_target }}"
@@ -101,10 +116,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BIN_NAME="wk-371tti-net"
-          SRC="target/${{ matrix.rust_target }}/release/${BIN_NAME}${{ matrix.bin_ext }}"
+          SRC="target/${{ matrix.rust_target }}/release/${{ matrix.bin_name }}${{ matrix.bin_ext }}"
           mkdir -p dist
-          cp "$SRC" "dist/${BIN_NAME}${{ matrix.bin_ext }}"
+          cp "$SRC" "dist/${{ matrix.bin_name }}${{ matrix.bin_ext }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -118,6 +132,7 @@ jobs:
     needs: [plan, build]
     if: needs.plan.outputs.should_release == 'true'
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -139,11 +154,17 @@ jobs:
         with:
           path: artifacts
 
+      - name: Flatten release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          find artifacts -type f -exec cp {} release-assets/ \;
+
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.plan.outputs.tag }}
           name: ${{ needs.plan.outputs.tag }}
           generate_release_notes: true
-          files: |
-            artifacts/**/*
+          files: release-assets/*
