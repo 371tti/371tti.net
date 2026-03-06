@@ -11,7 +11,6 @@ use srv_session::{
 use crate::{
     SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT,
     config::Config,
-    git::GitService,
     scheduler::{TaskID, TaskPriority, TaskScheduler, task},
     state::{AccountKV, SessionKV, Storage},
     web::{
@@ -64,14 +63,6 @@ impl SiteContext {
             config.http_config.account_timeout,
             config.hash_config.clone(),
         );
-        GitService::load_or_clone_async(config.clone())
-            .await
-            .map_err(|err| {
-                std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("Failed to initialize GitService: {}", err),
-                )
-            })?;
         let shared: Arc<SiteContextShared> = Arc::new(SiteContextShared {
             ls_api: LsAPI::new(config.clone()),
             docs_router: DocsRouter::new(config.clone()),

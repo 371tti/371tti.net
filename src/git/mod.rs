@@ -5,7 +5,7 @@ use std::{
 };
 
 use gix::{Repository, bstr::ByteSlice};
-use log::info;
+use log::{error, info};
 
 use crate::config::Config;
 
@@ -136,19 +136,23 @@ impl GitService {
     }
 
     fn fetch_origin(&self) -> Result<(), GitServiceError> {
-        let auth_url = self.config.git_config.auth_able_url();
-
         let remote = self
             .repo
-            .find_fetch_remote(Some(auth_url.as_bytes().as_bstr()))
-            .map_err(GitServiceError::FailedFetchOriginUrl)?;
+            .find_remote("origin")
+            .map_err(GitServiceError::FailedFetchOrigin)?;
+
+        let remote = remote.with_url(self.config.git_config.auth_able_url().as_bytes().as_bstr())
+            .map_err(|err| GitServiceError::FailedOperation(format!("Failed to set remote URL: {}", err)))?;
 
         let should_interrupt = AtomicBool::new(false);
         let mut progress = gix::progress::Discard;
 
-        let _outcome = remote
-            .connect(gix::remote::Direction::Fetch)
-            .map_err(GitServiceError::FailedRemoteConnect)?
+        let connection = remote.connect(gix::remote::Direction::Fetch).map_err(|e| {
+            error!("remote connect error: {:?}", e);
+            GitServiceError::FailedRemoteConnect(e)
+        })?;
+
+        let _outcome = connection
             .prepare_fetch(&mut progress, Default::default())
             .map_err(GitServiceError::FailedRemotePrepareFetch)?
             .receive(&mut progress, &should_interrupt)
@@ -319,7 +323,7 @@ pub enum GitServiceError {
     FailedCloneBranchConfig(gix::refs::name::Error),
     FailedFetch(gix::clone::fetch::Error),
     FailedCheckout(gix::clone::checkout::main_worktree::Error),
-    FailedFetchOriginUrl(gix::remote::find::for_fetch::Error),
+    FailedFetchOrigin(gix::remote::find::existing::Error),
     FailedRemoteConnect(gix::remote::connect::Error),
     FailedRemotePrepareFetch(gix::remote::fetch::prepare::Error),
     FailedRemoteReceive(gix::remote::fetch::Error),
@@ -354,7 +358,7 @@ impl std::fmt::Display for GitServiceError {
             }
             GitServiceError::FailedFetch(_) => write!(f, "Failed to fetch repository"),
             GitServiceError::FailedCheckout(_) => write!(f, "Failed to checkout worktree"),
-            GitServiceError::FailedFetchOriginUrl(_) => write!(f, "Failed to find origin remote"),
+            GitServiceError::FailedFetchOrigin(_) => write!(f, "Failed to find origin remote"),
             GitServiceError::FailedRemoteConnect(_) => write!(f, "Failed to connect remote"),
             GitServiceError::FailedRemotePrepareFetch(_) => {
                 write!(f, "Failed to prepare remote fetch")
@@ -411,8 +415,8 @@ impl std::fmt::Debug for GitServiceError {
             GitServiceError::FailedCheckout(err) => {
                 write!(f, "GitServiceError::FailedCheckout({:?})", err)
             }
-            GitServiceError::FailedFetchOriginUrl(err) => {
-                write!(f, "GitServiceError::FailedFetchOriginUrl({:?})", err)
+            GitServiceError::FailedFetchOrigin(err) => {
+                write!(f, "GitServiceError::FailedFetchOrigin({:?})", err)
             }
             GitServiceError::FailedRemoteConnect(err) => {
                 write!(f, "GitServiceError::FailedRemoteConnect({:?})", err)

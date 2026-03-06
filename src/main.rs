@@ -70,6 +70,9 @@ async fn main() -> std::io::Result<()> {
                     ["icon.png"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
                         .png_body(include_bytes!("../static/icon.png")),
+                    ["371tti_icon.png"] => conn
+                        .add_header("Cache-Control", "public, max-age=300, must-revalidate")
+                        .png_body(include_bytes!("../static/371tti_icon.png")),
                     ["ls", path @ ..] => match conn.c.ls_routing(path).await {
                         Ok(result) => match conn.json_body_serialized(&result) {
                             Ok(c) => c,

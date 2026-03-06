@@ -89,15 +89,19 @@ pub fn cron_task() -> BoxedTask {
                 )
                 .await;
 
-            ctx.scheduler
-                .push_task(
-                    TaskID::GIT_UPDATE,
-                    git_update_task,
-                    TaskPriority::NORMAL,
-                    None,
-                    None,
-                )
-                .await;
+            if ctx.config.git_config.enable_remote {
+                ctx.scheduler
+                    .push_task(
+                        TaskID::GIT_UPDATE,
+                        git_update_task,
+                        TaskPriority::NORMAL,
+                        None,
+                        None,
+                    )
+                    .await;
+            } else {
+                log::info!("Remote Git repository is disabled, skipping clone/load");
+            }
 
             if task_id.counter() % 12 == 0 {
                 // 1時間に1回? スケジューラーの実装忘れた
