@@ -19,7 +19,7 @@ async fn main() -> std::io::Result<()> {
         KurosabiTokioServerBuilder::with_context(context);
     builder
         .bind(config.get_host())
-        .port(config.port)
+        .port(config.http_config.port)
         .router_and_build(|mut conn| async move {
             let conn = if let Some(cookie) = conn
                 .c
@@ -33,43 +33,43 @@ async fn main() -> std::io::Result<()> {
                 HttpMethod::GET => match conn.path_segs().as_ref() {
                     ["robots.txt"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .text_body(include_str!("../data/robots.txt")),
+                        .text_body(include_str!("../static/robots.txt")),
                     [".well-known", "security.txt"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .text_body(include_str!("../data/.well-known/security.txt")),
+                        .text_body(include_str!("../static/security.txt")),
                     ["banner.gif"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
                         .add_header("Content-Type", "image/gif")
-                        .binary_body(include_bytes!("../data/static/banner.gif")),
+                        .binary_body(include_bytes!("../static/banner.gif")),
                     ["banner.png"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
                         .add_header("Content-Type", "image/png")
-                        .binary_body(include_bytes!("../data/static/banner.png")),
+                        .binary_body(include_bytes!("../static/banner.png")),
                     ["menu.js"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .js_body(include_str!("../data/static/menu.js")),
+                        .js_body(include_str!("../static/menu.js")),
                     ["style.css"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .css_body(include_str!("../data/static/style.css")),
+                        .css_body(include_str!("../static/style.css")),
                     ["code-tool.js"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .js_body(include_str!("../data/static/code-tool.js")),
+                        .js_body(include_str!("../static/code-tool.js")),
                     ["optimizer.js"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .js_body(include_str!("../data/static/optimizer.js")),
+                        .js_body(include_str!("../static/optimizer.js")),
                     ["load-screen.js"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .js_body(include_str!("../data/static/load-screen.js")),
+                        .js_body(include_str!("../static/load-screen.js")),
                     ["manifest.json"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .json_body(include_str!("../data/static/manifest.json")),
+                        .json_body(include_str!("../static/manifest.json")),
                     ["favicon.ico"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
                         .add_header("Content-Type", "image/x-icon")
-                        .binary_body(include_bytes!("../data/static/favicon.ico")),
+                        .binary_body(include_bytes!("../static/favicon.ico")),
                     ["icon.png"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
-                        .png_body(include_bytes!("../data/static/icon.png")),
+                        .png_body(include_bytes!("../static/icon.png")),
                     ["ls", path @ ..] => match conn.c.ls_routing(path).await {
                         Ok(result) => match conn.json_body_serialized(&result) {
                             Ok(c) => c,

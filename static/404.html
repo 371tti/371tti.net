@@ -1,0 +1,76 @@
+---
+title: status 404
+description: Not Found
+authors:
+- system
+is_complete: true
+---
+
+<style>
+    .top-title {
+        font-size: 6em;
+        line-height: 1.2em;
+        font-weight: bold;
+        color: var(--color-text-1);
+        padding: 0;
+        display: inline-block;
+    }
+
+    .top-subtitle {
+        font-size: 1.2em;
+        color: var(--color-text-0);
+        padding: 0;
+        display: inline-block;
+    }
+
+    .top {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .center {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .zero-padding {
+        padding: 0;
+    }
+
+    @media (max-width: 600px) {
+        .top-title {
+            font-size: 3em;
+        }
+
+    }
+</style>
+
+<main class="full top">
+    <header>
+        <h2>371tti.net</h2>
+    </header>
+    <div class="center">
+        <div>
+            <h1 class="top-title">404</h1>
+            <h2 class="top-subtitle">Not Found</h2>
+        </div>
+    </div>
+    <div class="block">
+        <hr>
+        <div class="grid3">
+            <a href="/index.md" class="button">
+                <h2 class="zero-padding">Index</h2>
+            </a>
+            <a href="/tools" class="button">
+                <h2 class="zero-padding">Tools</h2>
+            </a>
+            <a href="/portfolio" class="button">
+                <h2 class="zero-padding">My Portfolio</h2>
+            </a>
+        </div>
+        <hr>
+    </div>
+</main>

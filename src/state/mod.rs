@@ -12,7 +12,7 @@ use srv_session::{
     AccountValue, DEFAULT_HASH_LEN, DEFAULT_SALT_LEN, DEFAULT_SESSION_LEN, KVTrait, SessionValue,
 };
 
-use crate::web::analyzer::Counter;
+use crate::{config::Config, web::analyzer::Counter};
 
 #[derive(Serialize, Deserialize)]
 pub struct Storage {
@@ -22,8 +22,9 @@ pub struct Storage {
 }
 
 impl Storage {
-    pub fn load_or_create(file_name: &Path) -> std::io::Result<Self> {
-        if file_name.exists() {
+    pub fn load_or_create(config: Arc<Config>) -> std::io::Result<Self> {
+        let file_name = Path::new(&config.storage_config.storage_file);
+        if  file_name.exists() {
             info!("Loading storage from file: {:?}", file_name);
             let mut file = std::fs::File::open(file_name)?;
             let mut buf = Vec::new();

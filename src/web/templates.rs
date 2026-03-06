@@ -25,7 +25,7 @@ impl TemplateService {
         };
         let content = crate::render::md_to_html_gfm_highlight(&md);
         format!(
-            include_str!("../../data/static/index.html"),
+            include_str!("../../static/index.html"),
             title = title,
             authors = authors,
             description = description,
@@ -40,7 +40,7 @@ impl TemplateService {
         let description = meta.description();
         let authors = meta.authors();
         format!(
-            include_str!("../../data/static/temp.html"),
+            include_str!("../../static/temp.html"),
             title = title,
             authors = authors,
             description = description,

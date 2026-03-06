@@ -5,29 +5,30 @@ edition = "2024"
 
 [dependencies]
 kurosabi = { version = "0.6.18", features = ["tokio-server", "json", "file"] }
-tokio = { version = "1.49.0", features = ["full"] }
-comrak = { version = "0.50.0", default-features = true }
+tokio = { version = "1", features = ["full"] }
+comrak = { version = "0.50", default-features = true }
 pulldown-latex = "0.7"
-env_logger = "0.11.8"
+env_logger = "0.11"
 log = "0.4"
 tf-idf-vectorizer = "0.10.1"
-dashmap = "6.1.0"
+dashmap = "6.1"
 gray_matter = "0.3.2"
-serde = "1.0.228"
-chrono = "0.4.44"
-serde_yaml = "0.9.34"
-tar = "0.4.44"
-zstd = "0.13.3"
-flate2 = "1.0"
-reqwest = { version = "0.12", default-features = false, features = [
-    "blocking",
-    "rustls-tls",
-] }
+serde = "1.0"
+chrono = "0.4"
+serde_yaml = "0.9.34-deprecated"
 arc-swap = "1.8.2"
 serde_json = "1.0"
-srv-session = "0.2.0"
+srv-session = "0.2.1"
 ciborium = "0.2.2"
-getrandom = "0.4.1"
+getrandom = "0.4"
+gix = { version = "0.80", default-features = false, features = [
+    "status",
+    "worktree-mutation",
+    "blocking-network-client",
+    "blocking-http-transport-reqwest",
+    "blocking-http-transport-reqwest-rust-tls",
+] }
+humantime-serde = "1.1.1"
 
 [profile.release]
 opt-level = 3

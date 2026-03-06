@@ -1,0 +1,17 @@
+{
+    "name": "docs.371tti.net",
+    "short_name": "doc371",
+    "start_url": "/",
+    "display": "fullscreen",
+    "background_color": "#000000",
+    "theme_color": "#cccccc",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/icon.png",
+            "sizes": "448x448",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

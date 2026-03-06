@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use log::info;
 
 use crate::{
+    git::GitService,
     scheduler::{BoxedTask, TaskID, TaskPriority, TaskScheduler},
-    updater::UpdateService,
     web::context::SiteContextShared,
 };
 
@@ -27,49 +26,36 @@ pub fn cron_task() -> BoxedTask {
                 )
                 .await;
 
-            // コンテンツ更新チェックタスクをスケジューリング
-            let content_update_check_task: BoxedTask = TaskScheduler::boxed_task(
-                move |ctx: Arc<SiteContextShared>| async move {
-                    log::info!("Content update check task running");
-                    let base_dir = std::path::PathBuf::from(ctx.config.base_dir.clone());
-                    match UpdateService::update_content(
-                        &base_dir,
-                        &ctx.config.content_repo_url,
-                        &ctx.config.content_repo_branch,
-                        Some(&ctx.system_info.load_full().content_hash),
-                    ) {
-                        Ok(v) => {
-                            info!(
-                                "Content update check result: updated={}, previous_hash={:?}, current_hash={}",
-                                v.updated, v.previous_hash, v.current_hash
-                            );
-                            if v.updated {
-                                ctx.system_info
-                                    .store(Arc::new(crate::web::context::SystemInfo {
-                                        system_version: ctx
-                                            .system_info
-                                            .load()
-                                            .system_version
-                                            .clone(),
-                                        content_hash: v.current_hash.clone(),
-                                    }));
-                            }
-                        }
-                        Err(e) => log::error!("Content update failed: {}", e),
-                    }
-                    log::info!("Content update check task finished");
-                },
-            );
-
             let storage_save_task: BoxedTask =
                 TaskScheduler::boxed_task(move |ctx: Arc<SiteContextShared>| async move {
                     log::info!("Storage save task running");
-                    if let Err(e) = ctx.storage.save(ctx.config.storage_file.as_ref()) {
+                    if let Err(e) = ctx
+                        .storage
+                        .save(ctx.config.storage_config.storage_file.as_ref())
+                    {
                         log::error!("Failed to save storage: {}", e);
                     } else {
                         log::info!("Storage saved successfully");
                     }
                     log::info!("Storage save task finished");
+                });
+
+            let git_update_task: BoxedTask =
+                TaskScheduler::boxed_task(move |ctx: Arc<SiteContextShared>| async move {
+                    log::info!("Git update task running");
+                    match GitService::update_async(ctx.config.clone()).await {
+                        Ok(new_hash) => {
+                            log::info!(
+                                "Git repository updated successfully, new commit hash: {}",
+                                new_hash
+                            );
+                            let mut system_info = ctx.system_info.load_full(); // Arc<SystemInfo>
+                            Arc::make_mut(&mut system_info).content_hash = new_hash;
+                            ctx.system_info.store(system_info);
+                        }
+                        Err(e) => log::error!("Failed to update git repository: {}", e),
+                    }
+                    log::info!("Git update task finished");
                 });
 
             let session_gc_task: BoxedTask =
@@ -93,23 +79,21 @@ pub fn cron_task() -> BoxedTask {
                     log::info!("Session GC task finished (removed {} sessions)", count);
                 });
 
-            if ctx.config.auto_content_update {
-                ctx.scheduler
-                    .push_task(
-                        TaskID::UPDATE_CHECK,
-                        content_update_check_task,
-                        TaskPriority::NORMAL,
-                        None,
-                        None,
-                    )
-                    .await;
-            }
-
             ctx.scheduler
                 .push_task(
                     TaskID::SESSION_GC,
                     session_gc_task,
                     TaskPriority::LOW,
+                    None,
+                    None,
+                )
+                .await;
+
+            ctx.scheduler
+                .push_task(
+                    TaskID::GIT_UPDATE,
+                    git_update_task,
+                    TaskPriority::NORMAL,
                     None,
                     None,
                 )

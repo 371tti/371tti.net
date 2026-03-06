@@ -1,57 +1,97 @@
-use std::path::Path;
+use std::{path::Path, time::Duration};
 
-use chrono::Duration;
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use srv_session::HashConfig;
 
-use crate::{AUTH_HASH_TARGET_MS, DEFAULT_ACCOUNT_TIMEOUT_HOURS, DEFAULT_BASE_DIR, DEFAULT_COOKIE_MAX_AGE_SECONDS, DEFAULT_SESSION_TIMEOUT_HOURS, STORAGE_FILE_NAME};
+use crate::{
+    AUTH_HASH_TARGET_MS, DEFAULT_ACCOUNT_TIMEOUT_HOURS, DEFAULT_BASE_DIR,
+    DEFAULT_COOKIE_MAX_AGE_SECONDS, DEFAULT_SESSION_TIMEOUT_HOURS, STORAGE_FILE_NAME,
+};
 
-fn default_content_repo_branch() -> String {
-    "main".to_string()
-}
+
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-    pub storage_file: String,
     pub base_dir: String,
-    pub port: u16,
+    pub storage_config: StorageConfig,
+    pub http_config: HttpConfig,
+    pub git_config: GitConfig,
+    pub hash_config: HashConfig,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct StorageConfig {
+    pub storage_file: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct HttpConfig {
     pub host: String,
-    pub auto_content_update: bool,
-    pub content_repo_url: String,
-    #[serde(default = "default_content_repo_branch")]
-    pub content_repo_branch: String,
+    pub port: u16,
+    #[serde(with = "humantime_serde")]
     pub session_timeout: Duration,
+    #[serde(with = "humantime_serde")]
     pub account_timeout: Duration,
     pub cookie_max_age_seconds: u64,
-    pub hash_config: HashConfig,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GitConfig {
+    pub enable_remote: bool,
+    pub remote_url: String,
+    pub remote_branch: String,
+    pub user: Option<String>,
+    pub token: Option<String>,
+}
+
+impl GitConfig {
+    pub fn auth_able_url(&self) -> String {
+        if let Some(token) = &self.token {
+            self.remote_url.replace("https://", &format!("https://{}:{}@", self.user.as_deref().unwrap_or("x-access-token"), token))
+        } else {
+            self.remote_url.clone()
+        }
+    }
+
+    pub fn refname(&self) -> String {
+        format!("refs/heads/{}", self.remote_branch)
+    }
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            storage_file: STORAGE_FILE_NAME.to_string(),
+            storage_config: StorageConfig {
+                storage_file: STORAGE_FILE_NAME.to_string(),
+            },
             base_dir: DEFAULT_BASE_DIR.to_string(),
-            port: 8080,
-            host: "0.0.0.0".to_string(),
-            auto_content_update: true,
-            content_repo_url: "https://github.com/371tti/371tti.net-contents".to_string(),
-            content_repo_branch: default_content_repo_branch(),
-            session_timeout: Duration::hours(DEFAULT_SESSION_TIMEOUT_HOURS),
-            account_timeout: Duration::hours(DEFAULT_ACCOUNT_TIMEOUT_HOURS),
-            cookie_max_age_seconds: DEFAULT_COOKIE_MAX_AGE_SECONDS,
-            hash_config: HashConfig::benchmark(AUTH_HASH_TARGET_MS)
+            http_config: HttpConfig {
+                host: "0.0.0.0".to_string(),
+                port: 8080,
+                session_timeout: Duration::from_hours(DEFAULT_SESSION_TIMEOUT_HOURS),
+                account_timeout: Duration::from_hours(DEFAULT_ACCOUNT_TIMEOUT_HOURS),
+                cookie_max_age_seconds: DEFAULT_COOKIE_MAX_AGE_SECONDS,
+            },
+            git_config: GitConfig {
+                enable_remote: true,
+                remote_url: "https://github.com/371tti/371tti.net-contents".to_string(),
+                remote_branch: "main".to_string(),
+                user: None,
+                token: None,
+            },
+            hash_config: HashConfig::benchmark(AUTH_HASH_TARGET_MS),
         }
     }
 }
 
 impl Config {
     pub fn get_host(&self) -> [u8; 4] {
-        let segments: Vec<&str> = self.host.split('.').collect();
+        let segments: Vec<&str> = self.http_config.host.split('.').collect();
         if segments.len() != 4 {
             error!(
                 "Invalid host format in config: '{}', defaulting to '0.0.0.0'",
-                self.host
+                self.http_config.host
             );
             return [0, 0, 0, 0];
         }

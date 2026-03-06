@@ -1,5 +1,9 @@
+use std::sync::Arc;
+
 use kurosabi::connection::file::{DirEntryInfo, FileContentBuilder};
 use serde::Serialize;
+
+use crate::config::Config;
 
 #[derive(Serialize, Clone, Copy)]
 pub enum LsKind {
@@ -54,18 +58,18 @@ impl LsResponse {
 
 #[derive(Clone)]
 pub struct LsAPI {
-    base_dir: String,
+    config: Arc<Config>,
 }
 
 impl LsAPI {
-    pub fn new(base_dir: impl Into<String>) -> Self {
+    pub fn new(config: Arc<Config>) -> Self {
         Self {
-            base_dir: base_dir.into(),
+            config,
         }
     }
 
     pub async fn list(&self, path: &[&str]) -> std::io::Result<LsResponse> {
-        let builder = match FileContentBuilder::base(&self.base_dir)
+        let builder = match FileContentBuilder::base(&self.config.base_dir)
             .path_url_segs(path)
             .check_file_exists()
             .await

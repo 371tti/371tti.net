@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 use kurosabi::{
     connection::file::{DirEntryInfo, FileContentBuilder},
@@ -7,20 +7,17 @@ use kurosabi::{
 use tokio::io::AsyncReadExt;
 
 use crate::{
-    markdown::PageMeta,
-    web::{context::SiteContextShared, templates::TemplateService},
+    config::Config, markdown::PageMeta, web::{context::SiteContextShared, templates::TemplateService}
 };
 
 #[derive(Clone)]
 pub struct DocsRouter {
-    base_dir: String,
+    config: Arc<Config>,
 }
 
 impl DocsRouter {
-    pub fn new(base_dir: impl Into<String>) -> Self {
-        Self {
-            base_dir: base_dir.into(),
-        }
+    pub fn new(config: Arc<Config>) -> Self {
+        Self { config }
     }
 
     pub async fn route(
@@ -28,7 +25,7 @@ impl DocsRouter {
         path: &[&str],
         s_ctx: &SiteContextShared,
     ) -> std::io::Result<Option<String>> {
-        let builder = FileContentBuilder::base(&self.base_dir)
+        let builder = FileContentBuilder::base(&self.config.base_dir)
             .path_url_segs(path)
             .check_file_exists()
             .await;
@@ -76,7 +73,7 @@ impl DocsRouter {
             e.kind.is_file() && e.path.file_name().and_then(|n| n.to_str()) == Some("index.html")
         }) {
             path_with_index.push("index.html");
-            match FileContentBuilder::base(&self.base_dir)
+            match FileContentBuilder::base(&self.config.base_dir)
                 .path_url_segs(&path_with_index)
                 .build()
                 .await
@@ -101,7 +98,7 @@ impl DocsRouter {
             };
         }
         path_with_index.push("index.md");
-        let index_md: Option<String> = match FileContentBuilder::base(&self.base_dir)
+        let index_md: Option<String> = match FileContentBuilder::base(&self.config.base_dir)
             .path_url_segs(&path_with_index)
             .build()
             .await

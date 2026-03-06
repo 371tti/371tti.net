@@ -11,6 +11,7 @@ use srv_session::{
 use crate::{
     SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT,
     config::Config,
+    git::GitService,
     scheduler::{TaskID, TaskPriority, TaskScheduler, task},
     state::{AccountKV, SessionKV, Storage},
     web::{
@@ -29,13 +30,14 @@ pub struct SiteContext {
 pub struct SiteContextShared {
     pub ls_api: LsAPI,
     pub docs_router: DocsRouter,
-    pub config: Config,
+    pub config: Arc<Config>,
     pub scheduler: TaskScheduler,
     pub system_info: ArcSwap<SystemInfo>,
     pub storage: Storage,
     pub auth_manager: AuthManager<SessionKV, AccountKV>,
 }
 
+#[derive(Clone)]
 pub struct SystemInfo {
     pub system_version: String,
     pub content_hash: String,
@@ -53,18 +55,26 @@ impl SystemInfo {
 
 impl SiteContext {
     pub async fn new() -> std::io::Result<Self> {
-        let config = Config::load_or_create()?;
-        let storage = Storage::load_or_create(config.storage_file.as_ref())?;
+        let config = Arc::new(Config::load_or_create()?);
+        let storage = Storage::load_or_create(config.clone())?;
         let auth_manager = AuthManager::new(
             storage.sessions.clone(),
             storage.accounts.clone(),
-            config.session_timeout,
-            config.account_timeout,
+            config.http_config.session_timeout,
+            config.http_config.account_timeout,
             config.hash_config.clone(),
         );
+        GitService::load_or_clone_async(config.clone())
+            .await
+            .map_err(|err| {
+                std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Failed to initialize GitService: {}", err),
+                )
+            })?;
         let shared: Arc<SiteContextShared> = Arc::new(SiteContextShared {
-            ls_api: LsAPI::new(&config.base_dir),
-            docs_router: DocsRouter::new(&config.base_dir),
+            ls_api: LsAPI::new(config.clone()),
+            docs_router: DocsRouter::new(config.clone()),
             config,
             scheduler: TaskScheduler::new(),
             system_info: ArcSwap::new(Arc::new(SystemInfo {
@@ -99,7 +109,7 @@ impl SiteContext {
 
     pub fn not_found_routing(&self) -> String {
         TemplateService::render_temp_html(
-            include_str!("../../data/404.html").to_string(),
+            include_str!("../../static/404.html").to_string(),
             &self.shared,
         )
     }
@@ -131,7 +141,7 @@ impl SiteContext {
                 .path("/")
                 .http_only(true)
                 .secure(true)
-                .max_age(self.shared.config.cookie_max_age_seconds)
+                .max_age(self.shared.config.http_config.cookie_max_age_seconds)
                 .build(),
         )
     }
