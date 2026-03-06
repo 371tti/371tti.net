@@ -2,20 +2,12 @@
 自作 web backend で動く高性能Webドキュメントサーバーです。
 
 # 機能
-- git remote 連携
-- git versioning
-- mdの完全なSSR
-- 全種類のファイルを配信可能
-- ドキュメントの全文検索
-- ディレクトリページの自動生成生成
+- [x] git remote 連携
+- [ ] git versioning
+- [x] mdの完全なSSR
+- [x] 全種類のファイルを配信可能
+- [ ] ドキュメントの全文検索
+- [x] ディレクトリページの自動生成生成
 
-## Git submoduleについて
-デフォルトのコンテンツリポジトリは  
-基本的にこのソフト内では初期化しますが開発環境のgitクライアントに反映されない場合は以下
-
-1. 以下でサブモジュールを初期化して
-```bash
-git submodule update --init --recursive
-```
-
-以上
+# えとせとら
+[デフォルトのコンテンツリポジトリはこちら](https://github.com/371tti/371tti.net-contents)
