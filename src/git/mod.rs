@@ -141,8 +141,11 @@ impl GitService {
             .find_remote("origin")
             .map_err(GitServiceError::FailedFetchOrigin)?;
 
-        let remote = remote.with_url(self.config.git_config.auth_able_url().as_bytes().as_bstr())
-            .map_err(|err| GitServiceError::FailedOperation(format!("Failed to set remote URL: {}", err)))?;
+        let remote = remote
+            .with_url_without_url_rewrite(self.config.git_config.auth_able_url().as_bytes().as_bstr())
+            .map_err(|err| {
+                GitServiceError::FailedOperation(format!("Failed to set remote URL: {}", err))
+            })?;
 
         let should_interrupt = AtomicBool::new(false);
         let mut progress = gix::progress::Discard;
@@ -351,37 +354,59 @@ impl std::fmt::Display for GitServiceError {
             GitServiceError::NotFoundRemoteConfig { key } => {
                 write!(f, "Remote configuration not found for key: {}", key)
             }
-            GitServiceError::FailedOpenRepository(_) => write!(f, "Failed to open repository"),
-            GitServiceError::FailedCloneConfig(_) => write!(f, "Failed to configure clone"),
-            GitServiceError::FailedCloneBranchConfig(_) => {
-                write!(f, "Failed to configure clone branch")
+            GitServiceError::FailedOpenRepository(err) => {
+                write!(f, "Failed to open repository: {:?}", err)
             }
-            GitServiceError::FailedFetch(_) => write!(f, "Failed to fetch repository"),
-            GitServiceError::FailedCheckout(_) => write!(f, "Failed to checkout worktree"),
-            GitServiceError::FailedFetchOrigin(_) => write!(f, "Failed to find origin remote"),
-            GitServiceError::FailedRemoteConnect(_) => write!(f, "Failed to connect remote"),
-            GitServiceError::FailedRemotePrepareFetch(_) => {
-                write!(f, "Failed to prepare remote fetch")
+            GitServiceError::FailedCloneConfig(err) => {
+                write!(f, "Failed to configure clone: {:?}", err)
             }
-            GitServiceError::FailedRemoteReceive(_) => write!(f, "Failed to receive remote data"),
-            GitServiceError::FailedStatus(_) => write!(f, "Failed to get worktree status"),
-            GitServiceError::FailedStatusIter(_) => write!(f, "Failed to iterate worktree status"),
+            GitServiceError::FailedCloneBranchConfig(err) => {
+                write!(f, "Failed to configure clone branch: {:?}", err)
+            }
+            GitServiceError::FailedFetch(err) => write!(f, "Failed to fetch repository: {:?}", err),
+            GitServiceError::FailedCheckout(err) => {
+                write!(f, "Failed to checkout worktree: {:?}", err)
+            }
+            GitServiceError::FailedFetchOrigin(err) => {
+                write!(f, "Failed to find origin remote: {:?}", err)
+            }
+            GitServiceError::FailedRemoteConnect(err) => {
+                write!(f, "Failed to connect remote: {:?}", err)
+            }
+            GitServiceError::FailedRemotePrepareFetch(err) => {
+                write!(f, "Failed to prepare remote fetch: {:?}", err)
+            }
+            GitServiceError::FailedRemoteReceive(err) => {
+                write!(f, "Failed to receive remote data: {:?}", err)
+            }
+            GitServiceError::FailedStatus(err) => {
+                write!(f, "Failed to get worktree status: {:?}", err)
+            }
+            GitServiceError::FailedStatusIter(err) => {
+                write!(f, "Failed to iterate worktree status: {:?}", err)
+            }
             GitServiceError::WorktreeDirty => write!(f, "Worktree has uncommitted changes"),
-            GitServiceError::FailedReadHead(_) => write!(f, "Failed to read HEAD"),
-            GitServiceError::FailedFindLocalRef(_) => write!(f, "Failed to find local branch ref"),
-            GitServiceError::FailedPeelLocalToId(_) => {
-                write!(f, "Failed to resolve local branch head")
+            GitServiceError::FailedReadHead(err) => write!(f, "Failed to read HEAD: {:?}", err),
+            GitServiceError::FailedFindLocalRef(err) => {
+                write!(f, "Failed to find local branch ref: {:?}", err)
             }
-            GitServiceError::FailedFindTrackingRef(_) => write!(f, "Failed to find tracking ref"),
-            GitServiceError::FailedPeelTrackingToId(_) => {
-                write!(f, "Failed to resolve tracking branch head")
+            GitServiceError::FailedPeelLocalToId(err) => {
+                write!(f, "Failed to resolve local branch head: {:?}", err)
+            }
+            GitServiceError::FailedFindTrackingRef(err) => {
+                write!(f, "Failed to find tracking ref: {:?}", err)
+            }
+            GitServiceError::FailedPeelTrackingToId(err) => {
+                write!(f, "Failed to resolve tracking branch head: {:?}", err)
             }
             GitServiceError::NonFastForward => write!(f, "Fast-forward is not possible"),
-            GitServiceError::FailedUpdateBranchRef(_) => {
-                write!(f, "Failed to update local branch ref")
+            GitServiceError::FailedUpdateBranchRef(err) => {
+                write!(f, "Failed to update local branch ref: {:?}", err)
             }
-            GitServiceError::FailedFindObject(_) => write!(f, "Failed to find object"),
-            GitServiceError::FailedJoinTask(_) => write!(f, "Failed to join blocking task"),
+            GitServiceError::FailedFindObject(err) => write!(f, "Failed to find object: {:?}", err),
+            GitServiceError::FailedJoinTask(err) => {
+                write!(f, "Failed to join blocking task: {:?}", err)
+            }
             GitServiceError::FailedOperation(msg) => write!(f, "Operation failed: {}", msg),
         }
     }
