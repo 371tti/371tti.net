@@ -41,19 +41,25 @@ impl GitService {
 
     pub fn load_or_clone(config: Arc<Config>) -> Result<Self, GitServiceError> {
         let repo_path = PathBuf::from(config.base_dir.clone());
-        if repo_path.exists() {
+
+        let mut repo = if repo_path.exists() {
             info!("Repository already exists at {:?}, opening...", repo_path);
-            let repo = gix::open(repo_path).map_err(GitServiceError::FailedOpenRepository)?; // 既存リポジトリを開く
-            let service = Self { repo, config };
-            service.check_repo_remote_conf(service.repo.clone())?;
-            Ok(service)
+            gix::open(repo_path).map_err(GitServiceError::FailedOpenRepository)?
         } else {
             info!("Repository does not exist at {:?}, cloning...", repo_path);
             let auth_able_url = config.git_config.auth_able_url();
             let refname = config.git_config.refname();
-            let repo = Self::clone_repo(&repo_path, &auth_able_url, &refname)?;
-            Ok(Self { repo, config })
-        }
+            Self::clone_repo(&repo_path, &auth_able_url, &refname)?
+        };
+
+        repo.committer_or_set_generic_fallback()
+            .map_err(|err| GitServiceError::FailedOperation(format!(
+                "Failed to prepare committer fallback: {err}"
+            )))?;
+
+        let service = Self { repo, config };
+        service.check_repo_remote_conf(service.repo.clone())?;
+        Ok(service)
     }
 
     pub fn update(&self) -> Result<String, GitServiceError> {
