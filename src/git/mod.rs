@@ -1,7 +1,5 @@
 use std::{
-    error::Error,
-    path::PathBuf,
-    sync::{Arc, atomic::AtomicBool},
+    error::Error, fs::{self, File}, io::{BufWriter, Write}, path::PathBuf, sync::{Arc, atomic::AtomicBool}
 };
 
 use gix::{Repository, bstr::ByteSlice};
@@ -175,6 +173,7 @@ impl GitService {
             .repo
             .status(gix::progress::Discard)
             .map_err(GitServiceError::FailedStatus)?
+            .untracked_files(gix::status::UntrackedFiles::None)
             .into_iter(std::iter::empty())
             .map_err(GitServiceError::FailedStatusIter)?;
 
@@ -292,10 +291,11 @@ impl GitService {
             .tree()
             .map_err(|err| GitServiceError::FailedOperation(err.to_string()))?;
 
-        let mut index = gix::index::State::from_tree(&tree.id, &repo.objects, Default::default())
-            .map_err(|err| GitServiceError::FailedOperation(err.to_string()))?;
+        // State::from_tree() ではなく、repo に紐づいた index file を作る
+        let mut index = repo
+            .index_from_tree(&tree.id)
+            .map_err(|err| GitServiceError::FailedOperation(format!("index_from_tree failed: {err}")))?;
 
-        // checkout は Send を要求する都合で objects を Arc-backed にするのが無難
         let objects = repo
             .objects
             .clone()
@@ -304,7 +304,7 @@ impl GitService {
 
         let workdir = repo
             .workdir()
-            .ok_or(GitServiceError::FailedOperation("No workdir".to_string()))?
+            .ok_or_else(|| GitServiceError::FailedOperation("No workdir".to_string()))?
             .to_path_buf();
 
         gix::worktree::state::checkout(
@@ -316,7 +316,27 @@ impl GitService {
             interrupt,
             gix::worktree::state::checkout::Options::default(),
         )
-        .map_err(|err| GitServiceError::FailedOperation(err.to_string()))?;
+        .map_err(|err| GitServiceError::FailedOperation(format!("checkout failed: {err}")))?;
+
+        // index を原子的に置き換える
+        let index_path = repo.index_path();
+        let tmp_path = index_path.with_extension("index.tmp");
+
+        {
+            let file = File::create(&tmp_path)
+                .map_err(|err| GitServiceError::FailedOperation(format!("create temp index failed: {err}")))?;
+            let mut out = BufWriter::new(file);
+
+            index
+                .write_to(&mut out, Default::default())
+                .map_err(|err| GitServiceError::FailedOperation(format!("write_to index failed: {err}")))?;
+
+            out.flush()
+                .map_err(|err| GitServiceError::FailedOperation(format!("flush temp index failed: {err}")))?;
+        }
+
+        fs::rename(&tmp_path, &index_path)
+            .map_err(|err| GitServiceError::FailedOperation(format!("replace index failed: {err}")))?;
 
         Ok(())
     }

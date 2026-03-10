@@ -1,6 +1,6 @@
 [package]
 name = "wk-371tti-net"
-version = "2.2.3"
+version = "2.2.4"
 edition = "2024"
 
 [dependencies]
