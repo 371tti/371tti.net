@@ -1,7 +1,10 @@
+use std::cmp::Ordering;
+
 use serde::Deserialize;
 use tf_idf_vectorizer::{Hits, Query, SimilarityAlgorithm, TermFrequency};
 
 use crate::index::index::{DocumentID, Index};
+use crate::utils::parse_http_like_range;
 
 #[derive(Clone, Deserialize)]
 pub struct SearchQuery {
@@ -14,10 +17,16 @@ pub struct SearchQuery {
     tags: Vec<u32>,
     #[serde(default)]
     order: ResultOrder,
+    #[serde(default = "default_search_range")]
+    range: String,
 }
 
 fn default_similarity_algorithm() -> SimilarityAlgorithm {
     SimilarityAlgorithm::CosineSimilarity
+}
+
+fn default_search_range() -> String {
+    "0-100".to_string()
 }
 
 #[derive(Clone, Deserialize)]
@@ -42,20 +51,47 @@ impl Index {
         self.filter_by_tags(&mut hits, &query.tags);
         match query.order {
             ResultOrder::ScoreDescWithTitle => {
-                hits.list.sort_by(|a, b| {
-                    a.key.title.cmp(&b.key.title).then_with(|| {
-                        b.score
-                            .partial_cmp(&a.score)
-                            .unwrap_or(std::cmp::Ordering::Equal)
-                    })
+                let query_lower = query.query.to_lowercase();
+                hits.list.sort_unstable_by(|a, b| {
+                    let a_contains = a
+                        .key
+                        .title
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&query_lower);
+                    let b_contains = b
+                        .key
+                        .title
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&query_lower);
+                    match (a_contains, b_contains) {
+                        (true, false) => Ordering::Less,
+                        (false, true) => Ordering::Greater,
+                        _ => b.score.total_cmp(&a.score),
+                    }
                 });
-                Some(hits)
             }
             ResultOrder::ScoreDesc => {
                 hits.sort_by_score_desc();
-                Some(hits)
             }
         }
+
+        self.apply_range(&mut hits, &query.range);
+        Some(hits)
+    }
+
+    fn apply_range(&self, hits: &mut Hits<DocumentID>, range_text: &str) {
+        let len = hits.list.len();
+        let Some(range) = parse_http_like_range(range_text, len) else {
+            hits.list.clear();
+            return;
+        };
+
+        let take = range.end.saturating_sub(range.start);
+        hits.list = hits.list.drain(..).skip(range.start).take(take).collect();
     }
 
     pub fn filter_by_tags(&self, hits: &mut Hits<DocumentID>, tags: &[u32]) {
