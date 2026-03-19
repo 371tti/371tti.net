@@ -1,11 +1,18 @@
 [package]
 name = "wk-371tti-net"
-version = "2.2.4"
+version = "2.3.0"
 edition = "2024"
 
 [dependencies]
-kurosabi = { version = "0.6.18", features = ["tokio-server", "json", "file"] }
-tokio = { version = "1", features = ["full"] }
+kurosabi = { version = "0.6.18" }
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "fs",
+    "sync",
+    "time",
+] }
 markdown = "1"
 syntect = { version = "5.3.0", default-features = false, features = [
     "default-fancy",
@@ -13,11 +20,10 @@ syntect = { version = "5.3.0", default-features = false, features = [
 pulldown-latex = "0.7"
 env_logger = "0.11"
 log = "0.4"
-tf-idf-vectorizer = "0.10.1"
 dashmap = "6.1"
 gray_matter = "0.3.2"
 serde = "1.0"
-chrono = "0.4"
+chrono = { version = "0.4", default-features = false, features = ["std", "serde", "clock"] }
 serde_yaml = "0.9.34-deprecated"
 arc-swap = "1.8.2"
 serde_json = "1.0"
@@ -32,8 +38,15 @@ gix = { version = "0.80", default-features = false, features = [
     "blocking-http-transport-reqwest-rust-tls",
 ] }
 humantime-serde = "1.1.1"
+tf-idf-vectorizer = "0.10.5"
+sudachi = { git = "https://github.com/sorami/sudachi.rs.git", tag = "v0.6.10" }
+half = { version = "2.7.1", features = ["num-traits"] }
 
 [profile.release]
 opt-level = 3
 lto = "fat"
 strip = true
+
+[build-dependencies]
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
+zip = "2"

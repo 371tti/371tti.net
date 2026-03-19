@@ -3,7 +3,7 @@ use kurosabi::{
     http::{HttpMethod, HttpStatusCode},
     server::tokio::KurosabiTokioServerBuilder,
 };
-use wk_371tti_net::{SESSION_COOKIE_NAME, web::SiteContext};
+use wk_371tti_net::{SESSION_COOKIE_NAME, index::search::SearchQuery, web::{SiteContext, api::{analyze::AnalyzeAPI, search::SearchAPI}}};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -21,7 +21,7 @@ async fn main() -> std::io::Result<()> {
         .bind(config.get_host())
         .port(config.http_config.port)
         .router_and_build(|mut conn| async move {
-            let conn = if let Some(cookie) = conn
+            let mut conn = if let Some(cookie) = conn
                 .c
                 .session_check(conn.req.get_cookie(SESSION_COOKIE_NAME).await.as_deref())
             {
@@ -85,8 +85,54 @@ async fn main() -> std::io::Result<()> {
                             .set_status_code(HttpStatusCode::InternalServerError)
                             .no_body(),
                     },
-                    ["api", "session"] => {
-                        conn.text_body("not impl")
+                    ["api", api_name @ ..] => match api_name {
+                        ["session"] => conn.text_body("not impl"),
+                        ["tag-list", range] => {
+                            let map = SearchAPI::tag_get_all(&conn.c.shared, range);
+                            match conn.json_body_serialized(&map) {
+                                Ok(c) => c,
+                                Err(e) => e
+                                    .connection.set_status_code(HttpStatusCode::InternalServerError)
+                                    .no_body(),
+                            }
+                        }
+                        ["tag-list"] => {
+                            let map = SearchAPI::tag_get_all(&conn.c.shared, "0-");
+                            match conn.json_body_serialized(&map) {
+                                Ok(c) => c,
+                                Err(e) => e
+                                    .connection.set_status_code(HttpStatusCode::InternalServerError)
+                                    .no_body(),
+                            }
+                        }
+                        ["analyze", analyzer_name @ ..] => match analyzer_name {
+                            ["term-freq", path @ .. ] => match AnalyzeAPI::term_freq(&conn.c.shared, &path) {
+                                Some(result) => match conn.json_body_serialized(&result) {
+                                    Ok(c) => c,
+                                    Err(e) => e
+                                        .connection
+                                        .set_status_code(HttpStatusCode::InternalServerError)
+                                        .no_body(),
+                                },
+                                None => conn
+                                    .set_status_code(HttpStatusCode::NotFound)
+                                    .no_body(),
+                            },
+                            ["corpus-freq"] => {
+                                let result = AnalyzeAPI::corpus_freq(&conn.c.shared);
+                                match conn.json_body_serialized(&result) {
+                                    Ok(c) => c,
+                                    Err(e) => e
+                                        .connection
+                                        .set_status_code(HttpStatusCode::InternalServerError)
+                                        .no_body(),
+                                }
+                            }
+                            _ => conn
+                                .set_status_code(HttpStatusCode::NotFound)
+                                .no_body(),
+                        }
+                        _ => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                     },
                     ["raw", path @ ..] => {
                         let content = FileContentBuilder::base(&conn.c.shared.config.base_dir)
@@ -114,6 +160,34 @@ async fn main() -> std::io::Result<()> {
                         }
                         Err(_) => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                     },
+                },
+                HttpMethod::POST => match conn.path_segs().as_ref() {
+                    ["api", "search"] => {
+                        let query = match conn.req.read_json_de::<SearchQuery>().await {
+                            Ok(q) => q,
+                            Err(e) => {
+                                log::error!("Failed to deserialize search query: {}", e);
+                                return conn
+                                    .set_status_code(HttpStatusCode::BadRequest)
+                                    .no_body();
+                            }
+                        };
+                        match SearchAPI::search(&conn.c.shared, query).await {
+                            Some(result) => match conn.json_body_serialized(&result) {
+                                Ok(c) => c,
+                                Err(e) => e
+                                    .connection
+                                    .set_status_code(HttpStatusCode::InternalServerError)
+                                    .no_body(),
+                            },
+                            None => conn
+                                .set_status_code(HttpStatusCode::InternalServerError)
+                                .no_body(),
+                        }
+                    }
+                    _ => conn
+                        .set_status_code(HttpStatusCode::NotFound)
+                        .no_body(),
                 },
                 _ => conn
                     .set_status_code(HttpStatusCode::MethodNotAllowed)

@@ -555,6 +555,9 @@ a.heading-link:focus::after {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10mm;
 }
+.w2 {
+    grid-column: span 2;
+}
 .card {
     background-color: var(--color-bg-1);
     padding: 5mm;
@@ -565,6 +568,9 @@ a.heading-link:focus::after {
 }
 .max {
     height: 100%;
+    width: 100%;
+}
+.x-max {
     width: 100%;
 }
 .indent {
@@ -579,6 +585,9 @@ a.heading-link:focus::after {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+.flex {
+    display: flex;
 }
 @media (max-width: 1200px) {
     .grid3 {
@@ -600,6 +609,9 @@ a.heading-link:focus::after {
     }
     .grid3 {
         grid-template-columns: 1fr;
+    }
+    .w2 {
+        grid-column: span 1;
     }
 }
 ::view-transition-old(expand),

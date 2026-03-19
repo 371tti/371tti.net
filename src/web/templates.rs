@@ -9,6 +9,12 @@ impl TemplateService {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
+        let tags = meta
+            .tags()
+            .iter()
+            .map(|tag| format!("<code>{}</code>", tag))
+            .collect::<Vec<_>>()
+            .join(", ");
         let md = if meta.is_complete {
             md
         } else if meta.parse_err.is_none() {
@@ -31,7 +37,8 @@ impl TemplateService {
             description = description,
             content = content,
             version = s_ctx.system_info.load().text(),
-            count = s_ctx.storage.counter.text_report()
+            count = s_ctx.storage.counter.text_report(),
+            tags = tags
         )
     }
 
@@ -39,6 +46,12 @@ impl TemplateService {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
+        let tags = meta
+            .tags()
+            .iter()
+            .map(|tag| format!("<code>{}</code>", tag))
+            .collect::<Vec<_>>()
+            .join(", ");
         format!(
             include_str!("../../static/temp.html"),
             title = title,
@@ -46,7 +59,8 @@ impl TemplateService {
             description = description,
             content = html,
             version = s_ctx.system_info.load().text(),
-            count = s_ctx.storage.counter.text_report()
+            count = s_ctx.storage.counter.text_report(),
+            tags = tags
         )
     }
 

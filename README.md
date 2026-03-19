@@ -9,5 +9,11 @@
 - [ ] ドキュメントの全文検索
 - [x] ディレクトリページの自動生成生成
 
+# 開発手順...
+git cloneして
+任意のsudachi dictionaryを `static/system.dic` に置いてください。
+ググれば出てきます。はは。
+
+
 # えとせとら
 [デフォルトのコンテンツリポジトリはこちら](https://github.com/371tti/371tti.net-contents)

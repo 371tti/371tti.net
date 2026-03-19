@@ -44,15 +44,16 @@ pub fn cron_task() -> BoxedTask {
                 TaskScheduler::boxed_task(move |ctx: Arc<SiteContextShared>| async move {
                     log::info!("Git update task running");
                     match GitService::update_async(ctx.config.clone()).await {
-                        Ok(new_hash) => {
-                            let mut system_info = ctx.system_info.load_full(); // Arc<SystemInfo>
-                            if system_info.content_hash == new_hash {
-                                log::info!("Git repository is already up to date (hash: {})", new_hash);
-                                return;
+                        Ok(update_outcome) => {
+                            if update_outcome.changed {
+                                let mut system_info = ctx.system_info.load_full();
+                                Arc::make_mut(&mut system_info).content_hash = update_outcome.new_commit.clone();
+                                ctx.system_info.store(system_info);
+                                ctx.index.update_index(&update_outcome.file_changes).await;
+                                log::info!("{}", update_outcome);
+                            } else {
+                                log::info!("Git repository is already up to date");
                             }
-                            Arc::make_mut(&mut system_info).content_hash = new_hash.clone();
-                            ctx.system_info.store(system_info);
-                            log::info!("Git repository updated successfully, new hash: {}", new_hash);
                         }
                         Err(e) => log::error!("Failed to update git repository: {}", e),
                     }

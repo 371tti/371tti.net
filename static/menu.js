@@ -433,6 +433,9 @@ class MatchFeature {
         const root = document.querySelector("article");
         if (!root || !match || !match.node) return;
 
+        const FLASH_REPEAT = 3;
+        const FLASH_DURATION_MS = 450;
+
         root.querySelectorAll('mark[data-match-flash="true"]').forEach((m) => {
             const text = document.createTextNode(m.textContent || "");
             m.replaceWith(text);
@@ -458,7 +461,7 @@ class MatchFeature {
                 const t = document.createTextNode(mark.textContent || "");
                 mark.replaceWith(t);
             }
-        }, 2500);
+        }, FLASH_DURATION_MS * FLASH_REPEAT + 120);
     }
 
     static register() {
@@ -528,6 +531,12 @@ class CoreCommands extends CommandComponent {
                     parts[0].toLowerCase() !== "go"
                 ) return [];
                 return [
+                    {
+                        cmd: "Go Search Playground",
+                        desc: "Navigate to search playground",
+                        sortIndex: 1000,
+                        action: () => window.location.assign("/search.html"),
+                    },
                     {
                         cmd: "Go Top",
                         desc: "Navigate to top page",
@@ -703,9 +712,17 @@ class FeatureComponent {
 }
 
 class SearchFeature extends FeatureComponent {
+    extractQuery(raw) {
+        const t = (raw || "").trim();
+        if (!t) return "";
+        const m = t.match(/^search\s+(.+)$/i);
+        if (m) return m[1].trim();
+        return t;
+    }
+
     scheduleSearch(raw) {
         const app = this.app;
-        const q = raw.trim();
+        const q = this.extractQuery(raw);
         if (app.state.searchTimer) {
             clearTimeout(app.state.searchTimer);
             app.state.searchTimer = null;
@@ -738,10 +755,21 @@ class SearchFeature extends FeatureComponent {
         app.state.activeSearchAbort = ac;
         app.state.lastSearchQuery = q;
         try {
-            const url = `/api/search?query=${
-                encodeURIComponent(q)
-            }&range=0..10&algo=CosineSimilarity`;
-            const resp = await fetch(url, { signal: ac.signal });
+            const payload = {
+                query: q,
+                boolean_mode: false,
+                algorithm: "CosineSimilarity",
+                tags: [],
+                order: "ScoreDescWithTitle",
+            };
+            const resp = await fetch("/api/search", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+                signal: ac.signal,
+            });
             if (!resp.ok) {
                 if (resp.status === 404) {
                     app.state.searchResults = [];
@@ -753,14 +781,41 @@ class SearchFeature extends FeatureComponent {
             const ct = resp.headers.get("content-type") || "";
             if (!ct.includes("application/json")) return;
             const data = await resp.json();
-            if (!data || !Array.isArray(data.results)) return;
-            app.state.searchResults = data.results.map((r) => ({
-                title: r.title,
-                url: r.url,
-                descriptions: r.descriptions,
-                favicon: r.favicon,
-                score: r.score,
-            }));
+
+            let mappedResults = [];
+            if (data && Array.isArray(data.results)) {
+                mappedResults = data.results.map((r) => {
+                    const path = r.path || r.url || "/";
+                    return {
+                        title: r.title,
+                        url: r.url,
+                        descriptions: `path: ${path}`,
+                        favicon: r.favicon,
+                        score: typeof r.score === "number"
+                            ? r.score
+                            : Number(r.score) || 0,
+                    };
+                });
+            } else if (data && Array.isArray(data.list)) {
+                mappedResults = data.list.map((r) => {
+                    const key = r && r.key ? r.key : {};
+                    const path = key.path || "/";
+                    const title = key.title || path;
+                    return {
+                        title,
+                        url: path.startsWith("/") ? path : `/${path}`,
+                        descriptions: `path: ${path}`,
+                        favicon: "",
+                        score: typeof r.score === "number"
+                            ? r.score
+                            : Number(r.score) || 0,
+                    };
+                });
+            }
+
+            mappedResults.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+            app.state.searchResults = mappedResults;
             app.features.commands.buildCombined();
             app.features.commands.renderResults(app.ui.resultsDiv);
         } catch (e) {
@@ -862,13 +917,13 @@ class CommandPaletteFeature extends FeatureComponent {
                     : escapeHtml(r.url);
                 const score = r.score != null
                     ? ` <span style="opacity:0.6;font-size:11px;">${
-                        escapeHtml(r.score.toFixed(1))
+                        escapeHtml(Number(r.score).toFixed(4))
                     }</span>`
                     : "";
                 return `
                     <div class="palette-item ${
                     idx === app.state.selectedIndex ? "selected" : ""
-                }" data-idx="${idx}" data-kind="search">
+                } palette-item-search" data-idx="${idx}" data-kind="search">
                         ${favicon}
                         <div>
                             <div class="palette-item-title" style="display:flex;gap:4px;align-items:center;">${safeTitle}${score}</div>
@@ -971,11 +1026,7 @@ class CommandPaletteFeature extends FeatureComponent {
             }
         } else if (item.type === "search") {
             if (item.url) {
-                try {
-                    window.open(item.url, "_blank", "noopener");
-                } catch (e) {
-                    location.href = item.url;
-                }
+                window.location.assign(item.url);
                 app.hidePalette();
             }
         }
@@ -1010,6 +1061,34 @@ class CommandPaletteFeature extends FeatureComponent {
             }
         } else if (e.key === "Enter") {
             e.preventDefault();
+            const selected = app.state.selectedIndex >= 0
+                ? list[app.state.selectedIndex]
+                : null;
+
+            if (selected) {
+                if (selected.type === "command") {
+                    const isComplete = selected._candidate &&
+                        selected.complete !== false;
+                    if (!isComplete) {
+                        app.ui.inputField.value = selected.cmd;
+                        this.filterCommands(
+                            app.ui.inputField.value,
+                            app.ui.resultsDiv,
+                        );
+                        setTimeout(() => {
+                            app.ui.inputField.setSelectionRange(
+                                app.ui.inputField.value.length,
+                                app.ui.inputField.value.length,
+                            );
+                        }, 0);
+                        return;
+                    }
+                }
+
+                this.executeCombined(app.state.selectedIndex);
+                return;
+            }
+
             const input = app.ui.inputField.value.trim().toLowerCase();
             const exactIdx = list.findIndex((item) =>
                 item.type === "command" && item.cmd.toLowerCase() === input
@@ -1032,10 +1111,6 @@ class CommandPaletteFeature extends FeatureComponent {
                         );
                     }, 0);
                 }
-                return;
-            }
-            if (app.state.selectedIndex >= 0 && list[app.state.selectedIndex]) {
-                this.executeCombined(app.state.selectedIndex);
             }
         } else if (e.key === "Escape") {
             app.hidePalette();
@@ -1306,14 +1381,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 @keyframes fadeOut { from{opacity:1}to{opacity:0} }
                 @keyframes slideIn { from{opacity:0;transform:translateX(-50%) translateY(-30px)}to{opacity:1;transform:translateX(-50%) translateY(0)} }
                 @keyframes slideOut { from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-30px)} }
-                @keyframes matchFlash { from{background-color:var(--color-accent-1);color:var(--color-text-1)}to{background-color:transparent;color:inherit} }
-                mark.match-flash { animation:matchFlash 2.5s var(--transition-timing) }
+                @keyframes matchFlashPulse {
+                    0% { background-color:var(--color-accent-1); color:var(--color-text-1) }
+                    50% { background-color:transparent; color:inherit }
+                    100% { background-color:var(--color-accent-1); color:var(--color-text-1) }
+                }
+                mark.match-flash { animation:matchFlashPulse 450ms var(--transition-timing) 3 }
                 #command-palette-overlay.show { animation:fadeIn var(--transition-duration) var(--transition-timing) forwards }
                 #command-palette-overlay.hide { animation:fadeOut var(--transition-duration) var(--transition-timing) forwards }
                 #command-palette-div.show { animation:slideIn var(--transition-duration) var(--transition-timing) forwards }
                 #command-palette-div.hide { animation:slideOut var(--transition-duration) var(--transition-timing) forwards }
                 .palette-item { padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background-color var(--transition-duration) var(--transition-timing);margin:0 4px }
                 .palette-item:hover,.palette-item.selected { background-color:var(--color-bg-2) }
+                .palette-item-search { border:0; border-left:3px solid var(--color-accent-0) }
                 .palette-item-title { font-weight:500;color:var(--color-text-1);font-size:14px }
                 .palette-item-desc { color:var(--color-text-2);font-size:12px;margin-top:1px }
             `;

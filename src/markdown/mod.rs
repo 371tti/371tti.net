@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Default, Clone)]
@@ -12,6 +14,8 @@ pub struct PageMeta {
     pub parse_err: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
 }
 
 impl PageMeta {
@@ -34,5 +38,19 @@ impl PageMeta {
             Some(d) => d.clone(),
             None => "".to_string(),
         }
+    }
+
+    pub fn tags(&self) -> Vec<String> {
+    let Some(tags) = &self.tags else {
+        return Vec::new();
+    };
+
+    let mut seen = HashSet::new();
+
+    tags.iter()
+        .map(|t| t.trim().to_lowercase())
+        .filter(|t| !t.is_empty())
+        .filter(|t| seen.insert(t.clone()))
+        .collect()
     }
 }

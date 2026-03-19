@@ -9,14 +9,10 @@ use srv_session::{
 };
 
 use crate::{
-    SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT,
-    config::Config,
-    scheduler::{TaskID, TaskPriority, TaskScheduler, task},
-    state::{AccountKV, SessionKV, Storage},
-    web::{
+    SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT, config::Config, index::index::Index, scheduler::{TaskID, TaskPriority, TaskScheduler, task}, state::{AccountKV, SessionKV, Storage}, web::{
         TemplateService,
         api::{DocsRouter, LsAPI, LsResponse},
-    },
+    }
 };
 
 #[derive(Clone)]
@@ -34,6 +30,7 @@ pub struct SiteContextShared {
     pub system_info: ArcSwap<SystemInfo>,
     pub storage: Storage,
     pub auth_manager: AuthManager<SessionKV, AccountKV>,
+    pub index: Index,
 }
 
 #[derive(Clone)]
@@ -63,6 +60,7 @@ impl SiteContext {
             config.http_config.account_timeout,
             config.hash_config.clone(),
         );
+        let index = Index::new(config.clone()).await;
         let shared: Arc<SiteContextShared> = Arc::new(SiteContextShared {
             ls_api: LsAPI::new(config.clone()),
             docs_router: DocsRouter::new(config.clone()),
@@ -74,6 +72,7 @@ impl SiteContext {
             })),
             storage,
             auth_manager,
+            index,
         });
         // Start the scheduler and push the cron task
         TaskScheduler::start(shared.clone(), TASK_SCHEDULER_WORKER_COUNT).await;

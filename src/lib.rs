@@ -5,6 +5,8 @@ pub mod scheduler;
 pub mod web;
 pub mod state;
 pub mod git;
+pub mod index;
+pub mod utils;
 
 pub const TASK_SCHEDULER_WORKER_COUNT: usize = 4;
 
@@ -14,6 +16,7 @@ pub const STORAGE_FILE_NAME: &str = "storage.cbor";
 pub const DEFAULT_BASE_DIR: &str = "./data/";
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+const SUDACHI_SYSTEM_DIC: &[u8] = include_bytes!("../static/system.dic");
 
 pub const AUTH_HASH_TARGET_MS: u64 = 200;
 

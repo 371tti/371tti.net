@@ -187,7 +187,7 @@ impl DocsRouter {
             .iter()
             .map(|d| {
                 format!(
-                    "- [{}]({}/{})",
+                    "- [{}]({}/{}/)",
                     d,
                     if encoded_path.is_empty() {
                         "".to_string()
@@ -231,13 +231,13 @@ impl DocsRouter {
     }
 }
 
-enum DocKind {
+pub enum DocKind {
     Markdown,
     Html,
     Other,
 }
 
-fn classify_mime(mime_type: &str, path: &Path) -> DocKind {
+pub fn classify_mime(mime_type: &str, path: &Path) -> DocKind {
     let file_ext = path
         .extension()
         .and_then(|ext| ext.to_str())
