@@ -62,6 +62,7 @@
     box-sizing: border-box;
     position: relative;
     overflow-wrap: break-word;
+    word-break: break-word;
     text-indent: 0;
     border-radius: var(--radius-r);
 
@@ -609,9 +610,6 @@ a.heading-link:focus::after {
     }
     .grid3 {
         grid-template-columns: 1fr;
-    }
-    .w2 {
-        grid-column: span 1;
     }
 }
 ::view-transition-old(expand),
