@@ -52,6 +52,9 @@ pub fn cron_task() -> BoxedTask {
                                 ctx.index.update_index(&update_outcome.file_changes).await;
                                 log::info!("{}", update_outcome);
                             } else {
+                                let mut system_info = ctx.system_info.load_full();
+                                Arc::make_mut(&mut system_info).content_hash = update_outcome.new_commit.clone();
+                                ctx.system_info.store(system_info);
                                 log::info!("Git repository is already up to date");
                             }
                         }

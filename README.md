@@ -1,7 +1,7 @@
 # wk-371tti-net
 自作 web backend で動く高性能Webドキュメントサーバーです。
 
-# 機能
+# Roadmap
 ## Booting
 - [x] git remote 連携
 - [x] git versioning
@@ -10,7 +10,10 @@
 - [x] ドキュメントの全文検索
 - [x] ディレクトリページの自動生成生成
 ## Features1
+- [ ] リーダーの共通化
+- [ ] レンダリングのキャッシュ実装
 - [ ] 画像のサムネイル生成
+## Features2
 - [ ] github ソーシャルログイン
 
 # 開発手順...
