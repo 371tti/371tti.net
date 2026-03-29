@@ -2,22 +2,12 @@ use std::{hash::Hash, path::Path, sync::Arc};
 
 use arc_swap::ArcSwap;
 use half::f16;
-use kurosabi::connection::file::FileContentBuilder;
 use serde::Serialize;
 use tf_idf_vectorizer::{Corpus, TFIDFVectorizer, TermFrequency, utils::datastruct::map::IndexMap};
 use tokio::fs;
-use tokio::io::AsyncReadExt;
 
 use crate::{
-    config::Config,
-    git::FileChange,
-    index::{build_index_plan, tokenizer::SudachiTokenizer},
-    markdown::PageMeta,
-    utils::Html2Text,
-    web::{
-        TemplateService,
-        api::docs::{DocKind, classify_mime},
-    },
+    config::Config, file::Content, git::FileChange, index::{build_index_plan, tokenizer::SudachiTokenizer}, markdown::PageMeta, utils::Html2Text, web::context::SiteContextShared
 };
 
 pub type IndexParameterType = f16;
@@ -54,18 +44,16 @@ impl Index {
     pub async fn new(config: Arc<Config>) -> Self {
         let corpus = Arc::new(Corpus::new());
         let indexes = ArcSwap::new(Arc::new(TFIDFVectorizer::new(corpus.clone())));
-        let mut instance = Self {
+        Self {
             corpus,
             indexes,
             tag_nap: ArcSwap::new(Arc::new(LinkIDMap::new())),
             config,
             tokenizer: SudachiTokenizer::new().expect("Failed to initialize SudachiTokenizer"),
-        };
-        instance.index_all().await;
-        instance
+        }
     }
 
-    pub async fn index_all(&mut self) {
+    pub async fn index_all(&self, s_ctx: &SiteContextShared) {
         let base_dir = Path::new(&self.config.base_dir);
         let rel_paths = Self::collect_index_targets(base_dir).await;
         let mut index = TFIDFVectorizer::new(self.corpus.clone());
@@ -73,7 +61,7 @@ impl Index {
 
         for rel_path in rel_paths {
             if self
-                .add(&mut index, rel_path.clone(), &mut tag_nap)
+                .add(&mut index, rel_path.clone(), &mut tag_nap, s_ctx)
                 .await
                 .is_some()
             {
@@ -87,7 +75,7 @@ impl Index {
         self.tag_nap.store(Arc::new(tag_nap));
     }
 
-    pub async fn update_index(&self, file_changes: &[FileChange]) {
+    pub async fn update_index(&self, file_changes: &[FileChange], s_ctx: &SiteContextShared) {
         log::info!("Updating index with");
         let plan = build_index_plan(file_changes);
         let mut index = self.indexes.load_full();
@@ -102,7 +90,7 @@ impl Index {
             }
         }
         for add in &plan.adds {
-            if self.add(index, add.clone(), tag_nap).await.is_some() {
+            if self.add(index, add.clone(), tag_nap, s_ctx).await.is_some() {
                 log::info!("Added index for file: {}", add);
             } else {
                 log::warn!("Failed to add index for file: {}", add);
@@ -118,8 +106,9 @@ impl Index {
         index: &mut TFIDFVectorizer<IndexParameterType, DocumentID>,
         path: String,
         tag_ids: &mut LinkIDMap<String>,
+        s_ctx: &SiteContextShared
     ) -> Option<()> {
-        let (meta, content) = self.read_file(&path.split('/').collect::<Vec<_>>()).await?;
+        let (meta, content) = self.read_file(&path.split('/').collect::<Vec<_>>(), s_ctx).await?;
         let key = DocumentID {
             tag_ids: Self::register_tags(tag_ids, meta.tags()),
             path,
@@ -167,28 +156,18 @@ impl Index {
         }
     }
 
-    async fn read_file(&self, path: &[&str]) -> Option<(PageMeta, String)> {
-        let builder = FileContentBuilder::base(&self.config.base_dir)
-            .path_url_segs(path)
-            .check_file_exists()
-            .await
-            .ok()?;
-
-        let mut file = builder.build().await.ok()?;
-        match classify_mime(&file.mime_type, &file.file_path) {
-            DocKind::Markdown => {
-                let mut buf = String::new();
-                let _bytes = file.file.read_to_string(&mut buf).await.ok()?;
-                Some(TemplateService::parse_front_matter(buf, path))
+    async fn read_file(&self, path: &[&str], s_ctx: &SiteContextShared) -> Option<(PageMeta, String)> {
+        let content = s_ctx.file_service.get_content(path).await?;
+        match content {
+            Content::HtmlHtml { html, meta } => {
+                let text = Html2Text::strip_html_text(&html);
+                Some((meta, text))
             }
-            DocKind::Html => {
-                let mut buf = String::new();
-                let _bytes = file.file.read_to_string(&mut buf).await.ok()?;
-                let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
-                let content_text = Html2Text::strip_html_text(&content_html);
-                Some((meta, content_text))
+            Content::MdHtml { html, meta } => {
+                let text = Html2Text::strip_html_text(&html);
+                Some((meta, text))
             }
-            DocKind::Other => None,
+            _ => None,
         }
     }
 

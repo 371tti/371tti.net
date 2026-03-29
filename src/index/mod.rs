@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::git::FileChange;
+use crate::{file::PathStr, git::FileChange};
 
 pub mod index;
 pub mod tokenizer;
@@ -8,13 +8,13 @@ pub mod search;
 
 #[derive(Debug, Clone, Default)]
 pub struct IndexPlan {
-    pub deletes: Vec<String>,
-    pub adds: Vec<String>,
+    pub deletes: Vec<PathStr>,
+    pub adds: Vec<PathStr>,
 }
 
 pub fn build_index_plan(file_changes: &[FileChange]) -> IndexPlan {
-    let mut deletes = HashSet::<String>::new();
-    let mut adds = HashSet::<String>::new();
+    let mut deletes = HashSet::<PathStr>::new();
+    let mut adds = HashSet::<PathStr>::new();
 
     for ch in file_changes {
         match ch {
@@ -44,7 +44,7 @@ pub fn build_index_plan(file_changes: &[FileChange]) -> IndexPlan {
     IndexPlan { deletes, adds }
 }
 
-fn path_depth(path: &str) -> usize {
+fn path_depth(path: &PathStr) -> usize {
     path.split('/').filter(|s| !s.is_empty()).count()
 }
 

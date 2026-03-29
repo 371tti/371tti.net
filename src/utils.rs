@@ -198,3 +198,123 @@ pub fn parse_http_like_range(input: &str, len: usize) -> Option<Range<usize>> {
         }
     }
 }
+
+pub fn string_on_memory_size_hint(s: &String) -> usize {
+    s.capacity() + std::mem::size_of::<String>()
+}
+
+pub mod byte_size_serde {
+    use serde::de::{self, Visitor};
+    use serde::{Deserializer, Serializer};
+    use std::fmt;
+
+    pub fn serialize<S>(value: &u64, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&format_bytes(*value))
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<u64, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ByteSizeVisitor;
+
+        impl<'de> Visitor<'de> for ByteSizeVisitor {
+            type Value = u64;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("a non-negative integer byte size or a string like 100MiB")
+            }
+
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(value)
+            }
+
+            fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                if value < 0 {
+                    Err(E::custom("byte size must be non-negative"))
+                } else {
+                    Ok(value as u64)
+                }
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                parse_size(value).map_err(E::custom)
+            }
+
+            fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                self.visit_str(&value)
+            }
+        }
+
+        deserializer.deserialize_any(ByteSizeVisitor)
+    }
+
+    fn parse_size(input: &str) -> Result<u64, String> {
+        let compact: String = input.chars().filter(|c| !c.is_whitespace()).collect();
+        if compact.is_empty() {
+            return Err("byte size cannot be empty".to_string());
+        }
+
+        let split = compact
+            .find(|c: char| !c.is_ascii_digit() && c != '_')
+            .unwrap_or(compact.len());
+
+        let number = compact[..split].replace('_', "");
+        if number.is_empty() {
+            return Err(format!("invalid byte size: {}", input));
+        }
+        let value = number
+            .parse::<u64>()
+            .map_err(|_| format!("invalid byte number: {}", input))?;
+
+        let unit = compact[split..].to_ascii_lowercase();
+        let multiplier = match unit.as_str() {
+            "" | "b" | "byte" | "bytes" => 1_u64,
+            "k" | "kb" => 1_000_u64,
+            "m" | "mb" => 1_000_000_u64,
+            "g" | "gb" => 1_000_000_000_u64,
+            "t" | "tb" => 1_000_000_000_000_u64,
+            "ki" | "kib" => 1_u64 << 10,
+            "mi" | "mib" => 1_u64 << 20,
+            "gi" | "gib" => 1_u64 << 30,
+            "ti" | "tib" => 1_u64 << 40,
+            _ => return Err(format!("unsupported byte unit: {}", unit)),
+        };
+
+        value
+            .checked_mul(multiplier)
+            .ok_or_else(|| "byte size is too large".to_string())
+    }
+
+    fn format_bytes(bytes: u64) -> String {
+        const UNITS: [(&str, u64); 4] = [
+            ("TiB", 1_u64 << 40),
+            ("GiB", 1_u64 << 30),
+            ("MiB", 1_u64 << 20),
+            ("KiB", 1_u64 << 10),
+        ];
+
+        for (unit, size) in UNITS {
+            if bytes >= size && bytes % size == 0 {
+                return format!("{}{}", bytes / size, unit);
+            }
+        }
+
+        format!("{}B", bytes)
+    }
+}

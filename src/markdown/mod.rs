@@ -53,4 +53,11 @@ impl PageMeta {
         .filter(|t| seen.insert(t.clone()))
         .collect()
     }
+
+    pub fn on_memory_size_hint(&self) -> usize {
+        self.title.as_ref().map_or(0, |t| t.capacity() + std::mem::size_of::<String>() + 24)
+            + self.authors.as_ref().map_or(0, |a| a.iter().map(|s| s.capacity() + std::mem::size_of::<String>() + 24).sum())
+            + self.description.as_ref().map_or(0, |d| d.capacity() + std::mem::size_of::<String>() + 24)
+            + self.tags.as_ref().map_or(0, |tags| tags.iter().map(|t| t.capacity() + std::mem::size_of::<String>() + 24).sum())
+    }
 }

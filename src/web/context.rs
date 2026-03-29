@@ -9,10 +9,13 @@ use srv_session::{
 };
 
 use crate::{
-    SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT, config::Config, index::index::Index, scheduler::{TaskID, TaskPriority, TaskScheduler, task}, state::{AccountKV, SessionKV, Storage}, web::{
-        TemplateService,
-        api::{DocsRouter, LsAPI, LsResponse},
-    }
+    SESSION_COOKIE_NAME, TASK_SCHEDULER_WORKER_COUNT,
+    config::Config,
+    file::FileService,
+    index::index::Index,
+    scheduler::{TaskID, TaskPriority, TaskScheduler, task},
+    state::{AccountKV, SessionKV, Storage},
+    web::{TemplateService, api::DocsRouter},
 };
 
 #[derive(Clone)]
@@ -23,7 +26,6 @@ pub struct SiteContext {
 }
 
 pub struct SiteContextShared {
-    pub ls_api: LsAPI,
     pub docs_router: DocsRouter,
     pub config: Arc<Config>,
     pub scheduler: TaskScheduler,
@@ -31,6 +33,7 @@ pub struct SiteContextShared {
     pub storage: Storage,
     pub auth_manager: AuthManager<SessionKV, AccountKV>,
     pub index: Index,
+    pub file_service: FileService,
 }
 
 #[derive(Clone)]
@@ -61,8 +64,8 @@ impl SiteContext {
             config.hash_config.clone(),
         );
         let index = Index::new(config.clone()).await;
+        let file_service = FileService::new(config.clone());
         let shared: Arc<SiteContextShared> = Arc::new(SiteContextShared {
-            ls_api: LsAPI::new(config.clone()),
             docs_router: DocsRouter::new(config.clone()),
             config,
             scheduler: TaskScheduler::new(),
@@ -73,14 +76,15 @@ impl SiteContext {
             storage,
             auth_manager,
             index,
+            file_service,
         });
         // Start the scheduler and push the cron task
         TaskScheduler::start(shared.clone(), TASK_SCHEDULER_WORKER_COUNT).await;
         shared
             .scheduler
             .push_task(
-                TaskID::CRON,
-                task::cron_task(),
+                TaskID::INIT,
+                task::init_task(),
                 TaskPriority::HIGH,
                 Some(Utc::now()),
                 None,
@@ -102,10 +106,6 @@ impl SiteContext {
             include_str!("../../static/404.html").to_string(),
             &self.shared,
         )
-    }
-
-    pub async fn ls_routing(&self, path: &[&str]) -> std::io::Result<LsResponse> {
-        self.shared.ls_api.list(path).await
     }
 
     pub fn session_check(&mut self, hex_session: Option<&str>) -> Option<Cookie> {

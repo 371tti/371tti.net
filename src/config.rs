@@ -7,9 +7,8 @@ use srv_session::HashConfig;
 use crate::{
     AUTH_HASH_TARGET_MS, DEFAULT_ACCOUNT_TIMEOUT_HOURS, DEFAULT_BASE_DIR,
     DEFAULT_COOKIE_MAX_AGE_SECONDS, DEFAULT_SESSION_TIMEOUT_HOURS, STORAGE_FILE_NAME,
+    utils::byte_size_serde, 
 };
-
-
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -17,7 +16,16 @@ pub struct Config {
     pub storage_config: StorageConfig,
     pub http_config: HttpConfig,
     pub git_config: GitConfig,
+    pub cache_config: CacheConfig,
     pub hash_config: HashConfig,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CacheConfig {
+    #[serde(with = "byte_size_serde")]
+    pub max_memory_bytes: u64,
+    #[serde(with = "byte_size_serde")]
+    pub max_entry_size_bytes: u64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -48,7 +56,14 @@ pub struct GitConfig {
 impl GitConfig {
     pub fn auth_able_url(&self) -> String {
         if let Some(token) = &self.token {
-            self.remote_url.replace("https://", &format!("https://{}:{}@", self.user.as_deref().unwrap_or("x-access-token"), token))
+            self.remote_url.replace(
+                "https://",
+                &format!(
+                    "https://{}:{}@",
+                    self.user.as_deref().unwrap_or("x-access-token"),
+                    token
+                ),
+            )
         } else {
             self.remote_url.clone()
         }
@@ -79,6 +94,10 @@ impl Default for Config {
                 remote_branch: "main".to_string(),
                 user: None,
                 token: None,
+            },
+            cache_config: CacheConfig {
+                max_memory_bytes: crate::DEFAULT_MAX_CACHE_MEMORY_BYTES,
+                max_entry_size_bytes: crate::DEFAULT_MAX_CACHE_ENTRY_SIZE_BYTES,
             },
             hash_config: HashConfig::benchmark(AUTH_HASH_TARGET_MS),
         }

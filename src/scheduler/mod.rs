@@ -60,13 +60,14 @@ impl PartialEq for TaskPriority {
 pub struct TaskID(u64);
 
 impl TaskID {
-    pub const ANY: Self = Self(0);
+    pub const INIT: Self = Self(0);
     pub const CRON: Self = Self(1 << 48);
     pub const SESSION_GC: Self = Self(2 << 48);
     pub const HEALTH_CHECK: Self = Self(3 << 48);
     pub const ACCOUNT_SAVE: Self = Self(4 << 48);
     pub const GIT_UPDATE: Self = Self(5 << 48);
     pub const STORAGE_SAVE: Self = Self(6 << 48);
+    pub const BUILD_INDEX: Self = Self(7 << 48);
 
     pub fn new(prefix: u16, counter: u64) -> Self {
         let counter = counter & 0x0000FFFFFFFFFFFF;
@@ -90,13 +91,14 @@ impl TaskID {
 
     pub fn prefix(&self) -> &'static str {
         match (self.0 >> 48) as u16 {
-            0 => "ANY",
+            0 => "INIT",
             1 => "CRON",
             2 => "SESSION_GC",
             3 => "HLTHCK",
             4 => "ACCTSV",
             5 => "GIT_UPDATE",
             6 => "STORAGE_SAVE",
+            7 => "BUILD_INDEX",
             _ => "UNKNOWN",
         }
     }

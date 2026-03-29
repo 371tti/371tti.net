@@ -1,23 +1,23 @@
-use std::{path::Path, sync::Arc};
+use std::sync::Arc;
 
 use kurosabi::{
-    connection::file::{DirEntryInfo, FileContentBuilder},
+    connection::file::DirEntryInfo,
     utils::{url_decode_fast, url_encode},
 };
-use tokio::io::AsyncReadExt;
 
 use crate::{
-    config::Config, markdown::PageMeta, web::{context::SiteContextShared, templates::TemplateService}
+    config::Config,
+    file::Content,
+    markdown::PageMeta,
+    web::{context::SiteContextShared, templates::TemplateService},
 };
 
 #[derive(Clone)]
-pub struct DocsRouter {
-    config: Arc<Config>,
-}
+pub struct DocsRouter;
 
 impl DocsRouter {
-    pub fn new(config: Arc<Config>) -> Self {
-        Self { config }
+    pub fn new(_config: Arc<Config>) -> Self {
+        Self
     }
 
     pub async fn route(
@@ -25,40 +25,22 @@ impl DocsRouter {
         path: &[&str],
         s_ctx: &SiteContextShared,
     ) -> std::io::Result<Option<String>> {
-        let builder = FileContentBuilder::base(&self.config.base_dir)
-            .path_url_segs(path)
-            .check_file_exists()
-            .await;
-
-        let builder = match builder {
-            Ok(found) => found,
-            // if it's a directory
-            Err(Some(dir)) => return Ok(Some(self.render_dir(dir, path, s_ctx).await?)),
-            Err(None) => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "File not found",
-                ));
+        match s_ctx.file_service.get_content(path).await {
+            Some(Content::HtmlHtml { html, meta }) => {
+                Ok(Some(TemplateService::render_common_html(html, meta, s_ctx)))
             }
-        };
-
-        let mut file = builder.build().await?;
-        match classify_mime(&file.mime_type, &file.file_path) {
-            DocKind::Markdown => {
-                let mut buf = String::new();
-                let _bytes = file.file.read_to_string(&mut buf).await?;
-                let (meta, content_md) = TemplateService::parse_front_matter(buf, path);
-                let html = TemplateService::render_common_page(content_md, meta, s_ctx);
+            Some(Content::MdHtml { html, meta }) => {
+                Ok(Some(TemplateService::render_common_page(html, meta, s_ctx)))
+            }
+            Some(Content::DirListing(dir)) => {
+                let html = self.render_dir(dir, path, s_ctx).await?;
                 Ok(Some(html))
             }
-            DocKind::Html => {
-                let mut buf = String::new();
-                let _bytes = file.file.read_to_string(&mut buf).await?;
-                let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
-                let html = TemplateService::render_common_html(content_html, meta, s_ctx);
-                Ok(Some(html))
-            }
-            DocKind::Other => Ok(None),
+            Some(Content::BinaryContent) => Ok(None),
+            None => Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "File not found",
+            )),
         }
     }
 
@@ -68,192 +50,212 @@ impl DocsRouter {
         path: &[&str],
         s_ctx: &SiteContextShared,
     ) -> std::io::Result<String> {
-        let mut path_with_index = if path == [""] { vec![] } else { path.to_vec() };
-        if dir.iter().any(|e| {
-            e.kind.is_file() && e.path.file_name().and_then(|n| n.to_str()) == Some("index.html")
-        }) {
-            path_with_index.push("index.html");
-            match FileContentBuilder::base(&self.config.base_dir)
-                .path_url_segs(&path_with_index)
-                .build()
-                .await
-            {
-                Ok(mut file) => {
-                    if !file.mime_type.contains("text/html;") {
-                        path_with_index.pop();
-                    } else {
-                        let mut buf = String::new();
-                        let _ = file.file.read_to_string(&mut buf).await;
-                        let (meta, content_html) = TemplateService::parse_front_matter(buf, path);
-                        return Ok(TemplateService::render_common_html(
-                            content_html,
-                            meta,
-                            s_ctx,
-                        ));
-                    }
-                }
-                Err(_) => {
-                    let _ = path_with_index.pop();
-                }
-            };
+        if let Some(rendered_html) = self.try_render_directory_index_html(path, s_ctx).await {
+            return Ok(rendered_html);
         }
-        path_with_index.push("index.md");
-        let index_md: Option<String> = match FileContentBuilder::base(&self.config.base_dir)
-            .path_url_segs(&path_with_index)
-            .build()
-            .await
-        {
-            Ok(mut file) => {
-                let mut buf = String::new();
-                file.file.read_to_string(&mut buf).await?;
-                Some(buf)
+
+        let (dirs, files) = Self::collect_visible_entries(&dir);
+        let path_segments = Self::decoded_path_segments(path);
+        let encoded_path = Self::encoded_path_segments(&path_segments);
+        let listing_html =
+            Self::build_directory_listing_html(&path_segments, &encoded_path, &dirs, &files);
+
+        let (meta, body) = match self.try_load_directory_index_md(path, s_ctx).await {
+            Some((meta, index_html)) => {
+                let mut body = String::with_capacity(index_html.len() + listing_html.len() + 8);
+                body.push_str(&index_html);
+                body.push_str("\n<hr>\n");
+                body.push_str(&listing_html);
+                (meta, body)
             }
-            Err(_) => None,
+            None => (Self::default_directory_meta(&path_segments), listing_html),
         };
-        let mut files: Vec<&str> = Vec::new();
-        let mut dirs: Vec<&str> = Vec::new();
-        for entry in dir.iter() {
+
+        Ok(TemplateService::render_common_page(body, meta, s_ctx))
+    }
+
+    async fn try_render_directory_index_html(
+        &self,
+        path: &[&str],
+        s_ctx: &SiteContextShared,
+    ) -> Option<String> {
+        let path_with_index = Self::path_with_child(path, "index.html");
+        match s_ctx.file_service.get_content(&path_with_index).await? {
+            Content::HtmlHtml { html, meta } | Content::MdHtml { html, meta } => {
+                Some(TemplateService::render_common_html(html, meta, s_ctx))
+            }
+            _ => None,
+        }
+    }
+
+    async fn try_load_directory_index_md(
+        &self,
+        path: &[&str],
+        s_ctx: &SiteContextShared,
+    ) -> Option<(PageMeta, String)> {
+        let path_with_index = Self::path_with_child(path, "index.md");
+        match s_ctx.file_service.get_content(&path_with_index).await? {
+            Content::MdHtml { html, meta } | Content::HtmlHtml { html, meta } => Some((meta, html)),
+            _ => None,
+        }
+    }
+
+    fn path_with_child<'a>(path: &[&'a str], child: &'a str) -> Vec<&'a str> {
+        let mut out = if path == [""] {
+            Vec::new()
+        } else {
+            path.to_vec()
+        };
+        out.push(child);
+        out
+    }
+
+    fn collect_visible_entries<'a>(entries: &'a [DirEntryInfo]) -> (Vec<&'a str>, Vec<&'a str>) {
+        let mut dirs = Vec::new();
+        let mut files = Vec::new();
+
+        for entry in entries {
             if entry.kind.is_dir() {
-                let opt_dir_name = entry.path.file_name().and_then(|n| n.to_str());
-                if let Some(dir_name) = opt_dir_name
-                    && !dir_name.starts_with(".")
+                if let Some(name) = entry.path.file_name().and_then(|n| n.to_str())
+                    && !name.starts_with('.')
                 {
-                    dirs.push(dir_name);
+                    dirs.push(name);
                 }
-            } else if entry.kind.is_file() {
-                let opt_file_name = entry.path.file_name().and_then(|n| n.to_str());
-                if let Some(file_name) = opt_file_name
-                    && !file_name.starts_with(".")
-                    && file_name != "index.md"
-                {
-                    files.push(file_name);
-                }
+                continue;
+            }
+
+            if entry.kind.is_file()
+                && let Some(name) = entry.path.file_name().and_then(|n| n.to_str())
+                && !name.starts_with('.')
+                && name != "index.md"
+            {
+                files.push(name);
             }
         }
-        files.sort_unstable();
+
         dirs.sort_unstable();
-        let path_segments: Vec<String> = path
-            .iter()
+        files.sort_unstable();
+        (dirs, files)
+    }
+
+    fn decoded_path_segments(path: &[&str]) -> Vec<String> {
+        path.iter()
             .filter(|p| !p.is_empty())
             .map(|s| url_decode_fast(s).to_string())
-            .collect();
-        let encoded_path = path_segments
-            .iter()
-            .map(|segment| url_encode(segment))
-            .collect::<Vec<_>>()
-            .join("/");
+            .collect()
+    }
 
-        let (meta, opt_md) = match &index_md {
-            Some(md) => {
-                let (m, c) = TemplateService::parse_front_matter(md.clone(), path);
-                (m, Some(c))
+    fn encoded_path_segments(path_segments: &[String]) -> String {
+        let mut out = String::new();
+        for (i, segment) in path_segments.iter().enumerate() {
+            if i > 0 {
+                out.push('/');
             }
-            None => (
-                PageMeta {
-                    title: Some(path_segments.last().map_or("Root", |v| v).to_string()),
-                    authors: Some(vec!["system".to_string()]),
-                    is_complete: true,
-                    ..Default::default()
-                },
-                None,
+            out.push_str(&url_encode(segment));
+        }
+        out
+    }
+
+    fn build_directory_listing_html(
+        path_segments: &[String],
+        encoded_path: &str,
+        dirs: &[&str],
+        files: &[&str],
+    ) -> String {
+        let mut html = String::with_capacity(256 + dirs.len() * 64 + files.len() * 64);
+        html.push_str("<section class=\"directory-list\">");
+        Self::append_breadcrumb_html(&mut html, path_segments);
+        Self::append_link_list_html(&mut html, "Directories", encoded_path, dirs, true);
+        Self::append_link_list_html(&mut html, "Files", encoded_path, files, false);
+        html.push_str("</section>");
+        html
+    }
+
+    fn append_breadcrumb_html(out: &mut String, path_segments: &[String]) {
+        out.push_str("<h2>Index of <a href=\"/\">root</a>");
+        if path_segments.is_empty() {
+            out.push_str("</h2>");
+            return;
+        }
+
+        out.push('/');
+        let mut encoded_prefix = String::new();
+        for (i, segment) in path_segments.iter().enumerate() {
+            if !encoded_prefix.is_empty() {
+                encoded_prefix.push('/');
+            }
+            encoded_prefix.push_str(&url_encode(segment));
+
+            if i + 1 == path_segments.len() {
+                Self::push_escaped_html(out, segment);
+            } else {
+                out.push_str("<a href=\"/");
+                out.push_str(&encoded_prefix);
+                out.push_str("\">");
+                Self::push_escaped_html(out, segment);
+                out.push_str("</a>/");
+            }
+        }
+        out.push_str("</h2>");
+    }
+
+    fn append_link_list_html(
+        out: &mut String,
+        title: &str,
+        encoded_path: &str,
+        names: &[&str],
+        trailing_slash: bool,
+    ) {
+        if names.is_empty() {
+            return;
+        }
+
+        out.push_str("<h3>");
+        Self::push_escaped_html(out, title);
+        out.push_str("</h3><ul>");
+
+        for name in names {
+            out.push_str("<li><a href=\"/");
+            if !encoded_path.is_empty() {
+                out.push_str(encoded_path);
+                out.push('/');
+            }
+            out.push_str(&url_encode(name));
+            if trailing_slash {
+                out.push('/');
+            }
+            out.push_str("\">");
+            Self::push_escaped_html(out, name);
+            out.push_str("</a></li>");
+        }
+
+        out.push_str("</ul>");
+    }
+
+    fn default_directory_meta(path_segments: &[String]) -> PageMeta {
+        PageMeta {
+            title: Some(
+                path_segments
+                    .last()
+                    .map_or("Root", String::as_str)
+                    .to_string(),
             ),
-        };
-        let mut md = String::new();
-        md.push_str(&format!(
-            "## Index of [root](/)/{}",
-            path_segments
-                .iter()
-                .enumerate()
-                .map(|(i, p)| {
-                    if i == path_segments.len() - 1 {
-                        p.to_string()
-                    } else {
-                        let href = format!(
-                            "/{}",
-                            path_segments
-                                .iter()
-                                .take(i + 1)
-                                .map(|segment| url_encode(segment))
-                                .collect::<Vec<_>>()
-                                .join("/")
-                        );
-                        format!("[{}]({})", p, href)
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("/")
-        ));
-        md.push_str(&match dirs
-            .iter()
-            .map(|d| {
-                format!(
-                    "- [{}]({}/{}/)",
-                    d,
-                    if encoded_path.is_empty() {
-                        "".to_string()
-                    } else {
-                        format!("/{}", encoded_path)
-                    },
-                    url_encode(d)
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-        {
-            s if s.is_empty() => "".to_string(),
-            s => format!("\n### Directories\n{}", s),
-        });
-        md.push_str(&match files
-            .iter()
-            .map(|f| {
-                format!(
-                    "- [{}]({}/{})",
-                    f,
-                    if encoded_path.is_empty() {
-                        "".to_string()
-                    } else {
-                        format!("/{}", encoded_path)
-                    },
-                    url_encode(f)
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-        {
-            s if s.is_empty() => "".to_string(),
-            s => format!("\n### Files\n{}", s),
-        });
-        md.push_str(&match opt_md {
-            Some(content) => format!("\n\n---\n\n{}", content),
-            None => "".to_string(),
-        });
-        Ok(TemplateService::render_common_page(md, meta, s_ctx))
+            authors: Some(vec!["system".to_string()]),
+            is_complete: true,
+            ..Default::default()
+        }
     }
-}
 
-pub enum DocKind {
-    Markdown,
-    Html,
-    Other,
-}
-
-pub fn classify_mime(mime_type: &str, path: &Path) -> DocKind {
-    let file_ext = path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .unwrap_or("")
-        .to_lowercase();
-    if file_ext == "md" || file_ext == "markdown" {
-        return DocKind::Markdown;
+    fn push_escaped_html(out: &mut String, raw: &str) {
+        for ch in raw.chars() {
+            match ch {
+                '&' => out.push_str("&amp;"),
+                '<' => out.push_str("&lt;"),
+                '>' => out.push_str("&gt;"),
+                '"' => out.push_str("&quot;"),
+                '\'' => out.push_str("&#39;"),
+                _ => out.push(ch),
+            }
+        }
     }
-    if file_ext == "html" || file_ext == "htm" {
-        return DocKind::Html;
-    }
-    if mime_type.contains("text/markdown") {
-        return DocKind::Markdown;
-    }
-    if mime_type.contains("text/html") {
-        return DocKind::Html;
-    }
-    DocKind::Other
 }

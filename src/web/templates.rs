@@ -5,7 +5,7 @@ use gray_matter::{Matter, engine::YAML};
 pub struct TemplateService;
 
 impl TemplateService {
-    pub fn render_common_page(md: String, meta: PageMeta, s_ctx: &SiteContextShared) -> String {
+    pub fn render_common_page(article_html: String, meta: PageMeta, s_ctx: &SiteContextShared) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
@@ -15,27 +15,26 @@ impl TemplateService {
             .map(|tag| format!("<code>{}</code>", tag))
             .collect::<Vec<_>>()
             .join(", ");
-        let md = if meta.is_complete {
-            md
-        } else if meta.parse_err.is_none() {
-            format!(
-                ">[!Warning] This article is incomplete and may be subject to changes.\n\n{}",
-                md
-            )
-        } else {
-            format!(
-                ">[!Warning] There was an error parsing the front matter: {}\n\n{}",
-                meta.parse_err.unwrap_or_default(),
-                md
-            )
-        };
-        let content = crate::render::md_to_html_gfm_highlight(&md);
+        // let md = if meta.is_complete {
+        //     md
+        // } else if meta.parse_err.is_none() {
+        //     format!(
+        //         ">[!Warning] This article is incomplete and may be subject to changes.\n\n{}",
+        //         md
+        //     )
+        // } else {
+        //     format!(
+        //         ">[!Warning] There was an error parsing the front matter: {}\n\n{}",
+        //         meta.parse_err.unwrap_or_default(),
+        //         md
+        //     )
+        // };
         format!(
             include_str!("../../static/index.html"),
             title = title,
             authors = authors,
             description = description,
-            content = content,
+            content = article_html,
             version = s_ctx.system_info.load().text(),
             count = s_ctx.storage.counter.text_report(),
             tags = tags

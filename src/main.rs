@@ -8,7 +8,7 @@ use wk_371tti_net::{SESSION_COOKIE_NAME, index::search::SearchQuery, web::{SiteC
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(
-        env_logger::Env::default().default_filter_or("info,wk_371tti_net::updater=debug"),
+        env_logger::Env::default().default_filter_or("debug,wk_371tti_net::updater=debug"),
     )
     .format_timestamp_millis()
     .init();
@@ -73,18 +73,6 @@ async fn main() -> std::io::Result<()> {
                     ["371tti_icon.png"] => conn
                         .add_header("Cache-Control", "public, max-age=300, must-revalidate")
                         .png_body(include_bytes!("../static/371tti_icon.png")),
-                    ["ls", path @ ..] => match conn.c.ls_routing(path).await {
-                        Ok(result) => match conn.json_body_serialized(&result) {
-                            Ok(c) => c,
-                            Err(e) => e
-                                .connection
-                                .set_status_code(HttpStatusCode::InternalServerError)
-                                .no_body(),
-                        },
-                        Err(_) => conn
-                            .set_status_code(HttpStatusCode::InternalServerError)
-                            .no_body(),
-                    },
                     ["api", api_name @ ..] => match api_name {
                         ["session"] => conn.text_body("not impl"),
                         ["tag-list", range] => {

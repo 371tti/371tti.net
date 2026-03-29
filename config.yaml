@@ -13,8 +13,11 @@ git_config:
   remote_branch: main
   user: null
   token: null
+cache_config:
+  max_memory_bytes: 100MiB
+  max_entry_size_bytes: 10MiB
 hash_config:
-  pepper: 788cfc6e9089c7fdf00e93c29f3cbb62
-  memory_kib: 152799
+  pepper: e06d25eaf4ff8e363d8a16eba8e3aac1
+  memory_kib: 155162
   time_cost: 3
-  lanes: 4
+  lanes: 1

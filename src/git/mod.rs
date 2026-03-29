@@ -10,7 +10,7 @@ use std::{
 use gix::{Repository, bstr::ByteSlice, object::tree::EntryMode, objs::tree::EntryKind};
 use log::{error, info};
 
-use crate::config::Config;
+use crate::{config::Config, file::PathStr};
 
 #[derive(Clone)]
 pub struct GitService {
@@ -20,23 +20,25 @@ pub struct GitService {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FileChange {
-    Added { path: String },
-    Modified { path: String },
-    Deleted { path: String },
-    Renamed { old_path: String, new_path: String },
+    Added { path: PathStr },
+    Modified { path: PathStr },
+    Deleted { path: PathStr },
+    Renamed { old_path: PathStr, new_path: PathStr },
 }
+
+pub type CommitHash = String;
 
 #[derive(Debug, Clone)]
 pub struct PullOutcome {
-    pub old_commit: String,
-    pub new_commit: String,
+    pub old_commit: CommitHash,
+    pub new_commit: CommitHash,
     pub changed: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct UpdateOutcome {
-    pub old_commit: String,
-    pub new_commit: String,
+    pub old_commit: CommitHash,
+    pub new_commit: CommitHash,
     pub changed: bool,
     pub file_changes: Vec<FileChange>,
 }

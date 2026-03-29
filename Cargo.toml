@@ -4,7 +4,7 @@ version = "2.3.2"
 edition = "2024"
 
 [dependencies]
-kurosabi = { version = "0.6.18" }
+kurosabi = { version = "0.6.20" }
 tokio = { version = "1", features = [
     "rt-multi-thread",
     "macros",
@@ -23,24 +23,29 @@ log = "0.4"
 dashmap = "6.1"
 gray_matter = "0.3.2"
 serde = "1.0"
-chrono = { version = "0.4", default-features = false, features = ["std", "serde", "clock"] }
+chrono = { version = "0.4", default-features = false, features = [
+    "std",
+    "serde",
+    "clock",
+] }
 serde_yaml = "0.9.34-deprecated"
-arc-swap = "1.8.2"
+arc-swap = "1.9.0"
 serde_json = "1.0"
 srv-session = "0.2.1"
 ciborium = "0.2.2"
 getrandom = "0.4"
-gix = { version = "0.80", default-features = false, features = [
+gix = { version = "0.80.0", default-features = false, features = [
     "status",
     "worktree-mutation",
     "blocking-network-client",
     "blocking-http-transport-reqwest",
     "blocking-http-transport-reqwest-rust-tls",
 ] }
-humantime-serde = "1.1.1"
+humantime-serde = "1"
 tf-idf-vectorizer = "0.10.5"
 sudachi = { git = "https://github.com/sorami/sudachi.rs.git", tag = "v0.6.10" }
-half = { version = "2.7.1", features = ["num-traits"] }
+half = { version = "2.7", features = ["num-traits"] }
+moka = { version = "0.12", features = ["future"] }
 
 [profile.release]
 opt-level = 3
