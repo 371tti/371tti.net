@@ -18,6 +18,8 @@ pub const DEFAULT_BASE_DIR: &str = "./data/";
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 const SUDACHI_SYSTEM_DIC: &[u8] = include_bytes!("../static/system.dic");
+pub const DEFAULT_FONT_DATA: &[u8] = include_bytes!("../static/UDEVGothicHSLG-Regular.ttf");
+pub const DEFAULT_FONT_NAME: &str = "UDEV Gothic HSLG";
 
 pub const AUTH_HASH_TARGET_MS: u64 = 200;
 

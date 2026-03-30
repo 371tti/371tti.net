@@ -1,11 +1,15 @@
-use std::{fs::FileType, path::{Path, PathBuf}, sync::Arc};
+use std::{
+    fs::FileType,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use kurosabi::connection::file::{DirEntryInfo, FileContentBuilder, FileContentBuilderReady};
+use kurosabi::utils::{url_decode_fast, url_encode};
 use tokio::io::AsyncReadExt;
 
 use crate::{
-    config::Config, markdown::PageMeta, utils::string_on_memory_size_hint,
-    web::TemplateService,
+    config::Config, markdown::PageMeta, utils::string_on_memory_size_hint, web::TemplateService,
 };
 
 pub type PathStr = String;
@@ -78,18 +82,29 @@ impl FileService {
     pub async fn purge_cache(&self) {
         self.rendered_cache.invalidate_all();
     }
-    
+
     pub async fn purge_cache_by_path(&self, path: &str) {
-        self.rendered_cache.invalidate(path).await;
+        let normalized = Self::normalize_cache_key(path);
+        self.rendered_cache.invalidate(&normalized).await;
+
+        // 互換目的: 旧キー(未正規化やエンコード済み)もまとめて無効化する
+        if path != normalized {
+            self.rendered_cache.invalidate(path).await;
+        }
+
+        let encoded = Self::encode_cache_key(&normalized);
+        if encoded != normalized {
+            self.rendered_cache.invalidate(&encoded).await;
+        }
     }
 
     pub async fn get_content(&self, path: &[&str]) -> Option<Content> {
-        let joined_path = path.join("/");
-        match self.get_from_cache(&joined_path).await {
+        let cache_key = Self::normalize_cache_key(&path.join("/"));
+        match self.get_from_cache(&cache_key).await {
             Some(cached) => {
-                log::debug!("Cache hit for path: {}", joined_path);
+                log::debug!("Cache hit for path: {}", cache_key);
                 Some(cached)
-            },
+            }
             None => {
                 match self.builder_ready(path).await {
                     Ok(builder) => {
@@ -98,10 +113,11 @@ impl FileService {
                             DocKind::Markdown => {
                                 let mut buf = String::new();
                                 let _bytes = file.file.read_to_string(&mut buf).await.ok()?;
-                                let (meta, content_md) = TemplateService::parse_front_matter(buf, path);
+                                let (meta, content_md) =
+                                    TemplateService::parse_front_matter(buf, path);
                                 let html = crate::render::md_to_html_gfm_highlight(&content_md);
                                 let content = Content::MdHtml { html, meta };
-                                self.put_in_cache(joined_path.clone(), content.clone()).await;
+                                self.put_in_cache(cache_key.clone(), content.clone()).await;
                                 Some(content)
                             }
                             DocKind::Html => {
@@ -109,7 +125,7 @@ impl FileService {
                                 let _bytes = file.file.read_to_string(&mut buf).await.ok()?;
                                 let (meta, html) = TemplateService::parse_front_matter(buf, path);
                                 let content = Content::HtmlHtml { html, meta };
-                                self.put_in_cache(joined_path.clone(), content.clone()).await;
+                                self.put_in_cache(cache_key.clone(), content.clone()).await;
                                 Some(content)
                             }
                             DocKind::Other => {
@@ -133,6 +149,19 @@ impl FileService {
             .path_url_segs(path)
             .check_file_exists()
             .await
+    }
+
+    fn normalize_cache_key(path: &str) -> String {
+        let decoded = url_decode_fast(path);
+        decoded.replace('\\', "/").trim_matches('/').to_string()
+    }
+
+    fn encode_cache_key(path: &str) -> String {
+        path.split('/')
+            .filter(|seg| !seg.is_empty())
+            .map(url_encode)
+            .collect::<Vec<_>>()
+            .join("/")
     }
 }
 

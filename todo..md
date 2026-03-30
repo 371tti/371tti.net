@@ -1,2 +1,4 @@
-- [ ] Path今ぜんぶStringになってるけどtype定義しておきたい
-- [ ] Cacheのデータ構造つくる
+- [x] Path今ぜんぶStringになってるけどtype定義しておきたい
+- [x] Cache実装
+- [ ] OGP画像のサムネイル生成
+- [ ] OGP画像のsvgインジェクション攻撃対策

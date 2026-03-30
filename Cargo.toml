@@ -46,6 +46,7 @@ tf-idf-vectorizer = "0.10.5"
 sudachi = { git = "https://github.com/sorami/sudachi.rs.git", tag = "v0.6.10" }
 half = { version = "2.7", features = ["num-traits"] }
 moka = { version = "0.12", features = ["future"] }
+resvg = "0.47.0"
 
 [profile.release]
 opt-level = 3

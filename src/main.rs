@@ -3,7 +3,14 @@ use kurosabi::{
     http::{HttpMethod, HttpStatusCode},
     server::tokio::KurosabiTokioServerBuilder,
 };
-use wk_371tti_net::{SESSION_COOKIE_NAME, index::search::SearchQuery, web::{SiteContext, api::{analyze::AnalyzeAPI, search::SearchAPI}}};
+use wk_371tti_net::{
+    SESSION_COOKIE_NAME,
+    index::search::SearchQuery,
+    web::{
+        SiteContext,
+        api::{analyze::AnalyzeAPI, search::SearchAPI, thumbnail::ThumbnailAPI},
+    },
+};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -75,6 +82,19 @@ async fn main() -> std::io::Result<()> {
                         .png_body(include_bytes!("../static/371tti_icon.png")),
                     ["api", api_name @ ..] => match api_name {
                         ["session"] => conn.text_body("not impl"),
+                        ["thumbnail", path @ ..] => {
+                            match ThumbnailAPI::render_png(&conn.c.shared, path).await {
+                                Some(png) => conn
+                                    .add_header(
+                                        "Cache-Control",
+                                        "public, max-age=300, must-revalidate",
+                                    )
+                                    .png_body(&png),
+                                None => conn
+                                    .set_status_code(HttpStatusCode::NotFound)
+                                    .no_body(),
+                            }
+                        }
                         ["tag-list", range] => {
                             let map = SearchAPI::tag_get_all(&conn.c.shared, range);
                             match conn.json_body_serialized(&map) {

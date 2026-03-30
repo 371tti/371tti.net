@@ -26,12 +26,12 @@ impl DocsRouter {
         s_ctx: &SiteContextShared,
     ) -> std::io::Result<Option<String>> {
         match s_ctx.file_service.get_content(path).await {
-            Some(Content::HtmlHtml { html, meta }) => {
-                Ok(Some(TemplateService::render_common_html(html, meta, s_ctx)))
-            }
-            Some(Content::MdHtml { html, meta }) => {
-                Ok(Some(TemplateService::render_common_page(html, meta, s_ctx)))
-            }
+            Some(Content::HtmlHtml { html, meta }) => Ok(Some(
+                TemplateService::render_common_html(html, meta, path, s_ctx),
+            )),
+            Some(Content::MdHtml { html, meta }) => Ok(Some(TemplateService::render_common_page(
+                html, meta, path, s_ctx,
+            ))),
             Some(Content::DirListing(dir)) => {
                 let html = self.render_dir(dir, path, s_ctx).await?;
                 Ok(Some(html))
@@ -71,7 +71,7 @@ impl DocsRouter {
             None => (Self::default_directory_meta(&path_segments), listing_html),
         };
 
-        Ok(TemplateService::render_common_page(body, meta, s_ctx))
+        Ok(TemplateService::render_common_page(body, meta, path, s_ctx))
     }
 
     async fn try_render_directory_index_html(
@@ -82,7 +82,7 @@ impl DocsRouter {
         let path_with_index = Self::path_with_child(path, "index.html");
         match s_ctx.file_service.get_content(&path_with_index).await? {
             Content::HtmlHtml { html, meta } | Content::MdHtml { html, meta } => {
-                Some(TemplateService::render_common_html(html, meta, s_ctx))
+                Some(TemplateService::render_common_html(html, meta, path, s_ctx))
             }
             _ => None,
         }

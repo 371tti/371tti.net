@@ -3,7 +3,7 @@ storage_config:
   storage_file: storage.cbor
 http_config:
   host: 0.0.0.0
-  port: 8080
+  port: 85
   session_timeout: 30days
   account_timeout: 7days
   cookie_max_age_seconds: 2592000

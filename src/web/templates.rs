@@ -1,3 +1,5 @@
+use kurosabi::utils::{url_decode_fast, url_encode};
+
 use crate::{markdown::PageMeta, web::context::SiteContextShared};
 use gray_matter::{Matter, engine::YAML};
 
@@ -5,10 +7,16 @@ use gray_matter::{Matter, engine::YAML};
 pub struct TemplateService;
 
 impl TemplateService {
-    pub fn render_common_page(article_html: String, meta: PageMeta, s_ctx: &SiteContextShared) -> String {
+    pub fn render_common_page(
+        article_html: String,
+        meta: PageMeta,
+        path: &[&str],
+        s_ctx: &SiteContextShared,
+    ) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
+        let og_image_url = Self::build_thumbnail_url(path);
         let tags = meta
             .tags()
             .iter()
@@ -37,14 +45,21 @@ impl TemplateService {
             content = article_html,
             version = s_ctx.system_info.load().text(),
             count = s_ctx.storage.counter.text_report(),
-            tags = tags
+            tags = tags,
+            og_image_url = og_image_url
         )
     }
 
-    pub fn render_common_html(html: String, meta: PageMeta, s_ctx: &SiteContextShared) -> String {
+    pub fn render_common_html(
+        html: String,
+        meta: PageMeta,
+        path: &[&str],
+        s_ctx: &SiteContextShared,
+    ) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
+        let og_image_url = Self::build_thumbnail_url(path);
         let tags = meta
             .tags()
             .iter()
@@ -59,13 +74,32 @@ impl TemplateService {
             content = html,
             version = s_ctx.system_info.load().text(),
             count = s_ctx.storage.counter.text_report(),
-            tags = tags
+            tags = tags,
+            og_image_url = og_image_url
         )
     }
 
     pub fn render_temp_html(html: String, s_ctx: &SiteContextShared) -> String {
         let (meta, content_html) = Self::parse_front_matter(html, &[]);
-        TemplateService::render_common_html(content_html, meta, s_ctx)
+        TemplateService::render_common_html(content_html, meta, &[], s_ctx)
+    }
+
+    pub fn build_thumbnail_url(path: &[&str]) -> String {
+        let mut url = String::from("/api/thumbnail");
+        let mut has_segment = false;
+
+        for segment in path.iter().copied().filter(|segment| !segment.is_empty()) {
+            let decoded = url_decode_fast(segment);
+            has_segment = true;
+            url.push('/');
+            url.push_str(&url_encode(&decoded));
+        }
+
+        if !has_segment {
+            url.push('/');
+        }
+
+        url
     }
 
     pub fn parse_front_matter(md: String, path: &[&str]) -> (PageMeta, String) {
