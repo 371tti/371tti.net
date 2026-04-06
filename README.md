@@ -14,6 +14,7 @@
 - [x] レンダリングのキャッシュ実装
 - [x] 画像のサムネイル生成
 ## Features2
+- [ ] sudachi dict の mmap load
 - [ ] github ソーシャルログイン
 
 # 開発手順...
