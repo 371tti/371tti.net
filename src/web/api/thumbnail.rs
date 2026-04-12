@@ -16,12 +16,32 @@ impl ThumbnailAPI {
             Some(Content::HtmlHtml { meta, .. }) | Some(Content::MdHtml { meta, .. }) => {
                 Self::from_page_meta(&display_path, &meta)
             }
-            Some(Content::DirListing(_)) => Self::from_directory(&display_path),
+            Some(Content::DirListing(_)) => {
+                Self::from_directory_with_index_meta(s_ctx, path, &display_path).await
+            }
             Some(Content::BinaryContent) => Self::from_binary(&display_path),
             None => return None,
         };
 
         ogp.render_png()
+    }
+
+    async fn from_directory_with_index_meta(
+        s_ctx: &SiteContextShared,
+        path: &[&str],
+        display_path: &str,
+    ) -> OgpData {
+        for file_name in ["index.html", "index.md"] {
+            let path_with_index = Self::path_with_child(path, file_name);
+            match s_ctx.file_service.get_content(&path_with_index).await {
+                Some(Content::HtmlHtml { meta, .. }) | Some(Content::MdHtml { meta, .. }) => {
+                    return Self::from_page_meta(display_path, &meta);
+                }
+                _ => {}
+            }
+        }
+
+        Self::from_directory(display_path)
     }
 
     fn from_page_meta(display_path: &str, meta: &PageMeta) -> OgpData {
@@ -39,13 +59,7 @@ impl ThumbnailAPI {
 
         let tags = meta.tags();
 
-        OgpData::new(
-            display_path.to_string(),
-            title,
-            description,
-            authors,
-            tags,
-        )
+        OgpData::new(display_path.to_string(), title, description, authors, tags)
     }
 
     fn from_directory(display_path: &str) -> OgpData {
@@ -84,6 +98,16 @@ impl ThumbnailAPI {
             vec!["system".to_string()],
             vec!["file".to_string()],
         )
+    }
+
+    fn path_with_child<'a>(path: &[&'a str], child: &'a str) -> Vec<&'a str> {
+        let mut out = if path == [""] {
+            Vec::new()
+        } else {
+            path.to_vec()
+        };
+        out.push(child);
+        out
     }
 
     fn display_path(path: &[&str]) -> String {

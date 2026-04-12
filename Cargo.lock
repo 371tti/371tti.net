@@ -4857,7 +4857,7 @@ dependencies = [
 
 [[package]]
 name = "wk-371tti-net"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
  "arc-swap",
  "chrono",
