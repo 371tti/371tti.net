@@ -8,7 +8,12 @@ use wk_371tti_net::{
     index::search::SearchQuery,
     web::{
         SiteContext,
-        api::{analyze::AnalyzeAPI, search::SearchAPI, thumbnail::ThumbnailAPI},
+        api::{
+            analyze::AnalyzeAPI,
+            fs::{FsAPI, FsLsError, FsStatError},
+            search::SearchAPI,
+            thumbnail::ThumbnailAPI,
+        },
     },
 };
 
@@ -90,9 +95,7 @@ async fn main() -> std::io::Result<()> {
                                         "public, max-age=300, must-revalidate",
                                     )
                                     .png_body(&png),
-                                None => conn
-                                    .set_status_code(HttpStatusCode::NotFound)
-                                    .no_body(),
+                                None => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                             }
                         }
                         ["tag-list", range] => {
@@ -100,7 +103,8 @@ async fn main() -> std::io::Result<()> {
                             match conn.json_body_serialized(&map) {
                                 Ok(c) => c,
                                 Err(e) => e
-                                    .connection.set_status_code(HttpStatusCode::InternalServerError)
+                                    .connection
+                                    .set_status_code(HttpStatusCode::InternalServerError)
                                     .no_body(),
                             }
                         }
@@ -109,23 +113,55 @@ async fn main() -> std::io::Result<()> {
                             match conn.json_body_serialized(&map) {
                                 Ok(c) => c,
                                 Err(e) => e
-                                    .connection.set_status_code(HttpStatusCode::InternalServerError)
+                                    .connection
+                                    .set_status_code(HttpStatusCode::InternalServerError)
                                     .no_body(),
                             }
                         }
-                        ["analyze", analyzer_name @ ..] => match analyzer_name {
-                            ["term-freq", path @ .. ] => match AnalyzeAPI::term_freq(&conn.c.shared, &path) {
-                                Some(result) => match conn.json_body_serialized(&result) {
+                        ["fs", "ls", path @ ..] => match FsAPI::ls(&conn.c.shared, path).await {
+                            Ok(result) => match conn.json_body_serialized(&result) {
+                                Ok(c) => c,
+                                Err(e) => e
+                                    .connection
+                                    .set_status_code(HttpStatusCode::InternalServerError)
+                                    .no_body(),
+                            },
+                            Err(FsLsError::NotDirectory) => {
+                                conn.set_status_code(HttpStatusCode::BadRequest).no_body()
+                            }
+                            Err(FsLsError::NotFound) => {
+                                conn.set_status_code(HttpStatusCode::NotFound).no_body()
+                            }
+                        },
+                        ["fs", "stat", path @ ..] => {
+                            match FsAPI::stat(&conn.c.shared, path).await {
+                                Ok(result) => match conn.json_body_serialized(&result) {
                                     Ok(c) => c,
                                     Err(e) => e
                                         .connection
                                         .set_status_code(HttpStatusCode::InternalServerError)
                                         .no_body(),
                                 },
-                                None => conn
-                                    .set_status_code(HttpStatusCode::NotFound)
-                                    .no_body(),
-                            },
+                                Err(FsStatError::NotFound) => {
+                                    conn.set_status_code(HttpStatusCode::NotFound).no_body()
+                                }
+                            }
+                        }
+                        ["analyze", analyzer_name @ ..] => match analyzer_name {
+                            ["term-freq", path @ ..] => {
+                                match AnalyzeAPI::term_freq(&conn.c.shared, &path) {
+                                    Some(result) => match conn.json_body_serialized(&result) {
+                                        Ok(c) => c,
+                                        Err(e) => e
+                                            .connection
+                                            .set_status_code(HttpStatusCode::InternalServerError)
+                                            .no_body(),
+                                    },
+                                    None => {
+                                        conn.set_status_code(HttpStatusCode::NotFound).no_body()
+                                    }
+                                }
+                            }
                             ["corpus-freq"] => {
                                 let result = AnalyzeAPI::corpus_freq(&conn.c.shared);
                                 match conn.json_body_serialized(&result) {
@@ -136,10 +172,8 @@ async fn main() -> std::io::Result<()> {
                                         .no_body(),
                                 }
                             }
-                            _ => conn
-                                .set_status_code(HttpStatusCode::NotFound)
-                                .no_body(),
-                        }
+                            _ => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
+                        },
                         _ => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                     },
                     ["raw", path @ ..] => {
@@ -175,9 +209,7 @@ async fn main() -> std::io::Result<()> {
                             Ok(q) => q,
                             Err(e) => {
                                 log::error!("Failed to deserialize search query: {}", e);
-                                return conn
-                                    .set_status_code(HttpStatusCode::BadRequest)
-                                    .no_body();
+                                return conn.set_status_code(HttpStatusCode::BadRequest).no_body();
                             }
                         };
                         match SearchAPI::search(&conn.c.shared, query).await {
@@ -193,9 +225,7 @@ async fn main() -> std::io::Result<()> {
                                 .no_body(),
                         }
                     }
-                    _ => conn
-                        .set_status_code(HttpStatusCode::NotFound)
-                        .no_body(),
+                    _ => conn.set_status_code(HttpStatusCode::NotFound).no_body(),
                 },
                 _ => conn
                     .set_status_code(HttpStatusCode::MethodNotAllowed)
