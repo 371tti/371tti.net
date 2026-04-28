@@ -97,13 +97,21 @@ impl SiteContext {
         })
     }
 
-    pub async fn docs_routing(&self, path: &[&str]) -> std::io::Result<Option<String>> {
-        self.shared.docs_router.route(path, &self.shared).await
+    pub async fn docs_routing(
+        &self,
+        path: &[&str],
+        request_path: &str,
+    ) -> std::io::Result<Option<String>> {
+        self.shared
+            .docs_router
+            .route(path, request_path, &self.shared)
+            .await
     }
 
-    pub fn not_found_routing(&self) -> String {
+    pub fn not_found_routing(&self, request_path: &str) -> String {
         TemplateService::render_temp_html(
             include_str!("../../static/404.html").to_string(),
+            request_path,
             &self.shared,
         )
     }

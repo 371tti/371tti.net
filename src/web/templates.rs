@@ -1,6 +1,6 @@
 use kurosabi::utils::{url_decode_fast, url_encode};
 
-use crate::{markdown::PageMeta, web::context::SiteContextShared};
+use crate::{DOMAIN, markdown::PageMeta, web::context::SiteContextShared};
 use gray_matter::{Matter, engine::YAML};
 
 #[derive(Clone, Default)]
@@ -11,12 +11,14 @@ impl TemplateService {
         article_html: String,
         meta: PageMeta,
         path: &[&str],
+        request_path: &str,
         s_ctx: &SiteContextShared,
     ) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
         let og_image_url = Self::build_thumbnail_url(path);
+        let og_url = Self::escape_html_attr(&Self::build_page_url(request_path));
         let tags = meta
             .tags()
             .iter()
@@ -39,6 +41,7 @@ impl TemplateService {
         // };
         format!(
             include_str!("../../static/index.html"),
+            domain = DOMAIN,
             title = title,
             authors = authors,
             description = description,
@@ -46,7 +49,8 @@ impl TemplateService {
             version = s_ctx.system_info.load().text(),
             count = s_ctx.storage.counter.text_report(),
             tags = tags,
-            og_image_url = og_image_url
+            og_image_url = og_image_url,
+            og_url = og_url
         )
     }
 
@@ -54,12 +58,14 @@ impl TemplateService {
         html: String,
         meta: PageMeta,
         path: &[&str],
+        request_path: &str,
         s_ctx: &SiteContextShared,
     ) -> String {
         let title = meta.title();
         let description = meta.description();
         let authors = meta.authors();
         let og_image_url = Self::build_thumbnail_url(path);
+        let og_url = Self::escape_html_attr(&Self::build_page_url(request_path));
         let tags = meta
             .tags()
             .iter()
@@ -68,6 +74,7 @@ impl TemplateService {
             .join(", ");
         format!(
             include_str!("../../static/temp.html"),
+            domain = DOMAIN,
             title = title,
             authors = authors,
             description = description,
@@ -75,13 +82,14 @@ impl TemplateService {
             version = s_ctx.system_info.load().text(),
             count = s_ctx.storage.counter.text_report(),
             tags = tags,
-            og_image_url = og_image_url
+            og_image_url = og_image_url,
+            og_url = og_url
         )
     }
 
-    pub fn render_temp_html(html: String, s_ctx: &SiteContextShared) -> String {
+    pub fn render_temp_html(html: String, request_path: &str, s_ctx: &SiteContextShared) -> String {
         let (meta, content_html) = Self::parse_front_matter(html, &[]);
-        TemplateService::render_common_html(content_html, meta, &[], s_ctx)
+        TemplateService::render_common_html(content_html, meta, &[], request_path, s_ctx)
     }
 
     pub fn build_thumbnail_url(path: &[&str]) -> String {
@@ -100,6 +108,23 @@ impl TemplateService {
         }
 
         url
+    }
+
+    fn build_page_url(request_path: &str) -> String {
+        if request_path.starts_with('/') {
+            format!("https://{}{}", DOMAIN, request_path)
+        } else {
+            format!("https://{}/{}", DOMAIN, request_path)
+        }
+    }
+
+    fn escape_html_attr(value: &str) -> String {
+        value
+            .replace('&', "&amp;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;")
+            .replace('"', "&quot;")
+            .replace('\'', "&#39;")
     }
 
     pub fn parse_front_matter(md: String, path: &[&str]) -> (PageMeta, String) {

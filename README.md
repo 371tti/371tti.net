@@ -14,13 +14,13 @@
 - [x] レンダリングのキャッシュ実装
 - [x] 画像のサムネイル生成
 ## Features2
-- [ ] sudachi dict の mmap load
+- [x] sudachi dict の mmap load
 - [ ] github ソーシャルログイン
 
 # 開発手順...
 git cloneして
-任意のsudachi dictionaryを `static/system.dic` に置いてください。
-ググれば出てきます。はは。
+起動時に Sudachi dictionary を自動ダウンロードして `static/system.dic` にキャッシュします。
+初回起動だけネットワークが必要です。
 
 
 # えとせとら

@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 kurosabi = { version = "0.6.20" }
-tokio = { version = "1", features = [
+tokio = { version = "1.52.1", features = [
     "rt-multi-thread",
     "macros",
     "net",
@@ -29,12 +29,13 @@ chrono = { version = "0.4", default-features = false, features = [
     "clock",
 ] }
 serde_yaml = "0.9.34-deprecated"
-arc-swap = "1.9.0"
+arc-swap = "1.9.1"
 serde_json = "1.0"
 srv-session = "0.2.1"
 ciborium = "0.2.2"
 getrandom = "0.4"
-gix = { version = "0.80.0", default-features = false, features = [
+gix = { version = "0.83.0", default-features = false, features = [
+    "sha1",
     "status",
     "worktree-mutation",
     "blocking-network-client",
@@ -47,12 +48,11 @@ sudachi = { git = "https://github.com/sorami/sudachi.rs.git", tag = "v0.6.10" }
 half = { version = "2.7", features = ["num-traits"] }
 moka = { version = "0.12", features = ["future"] }
 resvg = "0.47.0"
+memmap2 = "0.9"
+reqwest = { version = "0.13.3", features = ["blocking", "rustls"] }
+zip = "8.6"
 
 [profile.release]
 opt-level = 3
 lto = "fat"
 strip = true
-
-[build-dependencies]
-reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
-zip = "2"

@@ -33,6 +33,7 @@ async fn main() -> std::io::Result<()> {
         .bind(config.get_host())
         .port(config.http_config.port)
         .router_and_build(|mut conn| async move {
+            let request_path = conn.req.path_full().to_string();
             let mut conn = if let Some(cookie) = conn
                 .c
                 .session_check(conn.req.get_cookie(SESSION_COOKIE_NAME).await.as_deref())
@@ -191,7 +192,7 @@ async fn main() -> std::io::Result<()> {
                                 .unwrap_or_else(|p| p.connection)
                         }
                     }
-                    path => match conn.c.docs_routing(path).await {
+                    path => match conn.c.docs_routing(path, &request_path).await {
                         Ok(Some(html)) => {
                             conn.c.shared.storage.counter.increment_page_views();
                             conn.html_body(html)
@@ -238,7 +239,7 @@ async fn main() -> std::io::Result<()> {
                 conn.c.shared.storage.counter.increment_unique_visitors();
             }
             if status == 404 {
-                let not_found_html = conn.c.not_found_routing();
+                let not_found_html = conn.c.not_found_routing(&request_path);
                 conn.cancel()
                     .set_status_code(HttpStatusCode::NotFound)
                     .html_body(not_found_html)

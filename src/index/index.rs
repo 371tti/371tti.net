@@ -7,7 +7,13 @@ use tf_idf_vectorizer::{Corpus, TFIDFVectorizer, TermFrequency, utils::datastruc
 use tokio::fs;
 
 use crate::{
-    config::Config, file::Content, git::FileChange, index::{build_index_plan, tokenizer::SudachiTokenizer}, markdown::PageMeta, utils::Html2Text, web::context::SiteContextShared
+    config::Config,
+    file::Content,
+    git::FileChange,
+    index::{build_index_plan, tokenizer::SudachiTokenizer},
+    markdown::PageMeta,
+    utils::Html2Text,
+    web::context::SiteContextShared,
 };
 
 pub type IndexParameterType = f16;
@@ -49,7 +55,9 @@ impl Index {
             indexes,
             tag_nap: ArcSwap::new(Arc::new(LinkIDMap::new())),
             config,
-            tokenizer: SudachiTokenizer::new().expect("Failed to initialize SudachiTokenizer"),
+            tokenizer: tokio::task::block_in_place(|| {
+                SudachiTokenizer::new().expect("Failed to initialize SudachiTokenizer")
+            }),
         }
     }
 
@@ -106,9 +114,11 @@ impl Index {
         index: &mut TFIDFVectorizer<IndexParameterType, DocumentID>,
         path: String,
         tag_ids: &mut LinkIDMap<String>,
-        s_ctx: &SiteContextShared
+        s_ctx: &SiteContextShared,
     ) -> Option<()> {
-        let (meta, content) = self.read_file(&path.split('/').collect::<Vec<_>>(), s_ctx).await?;
+        let (meta, content) = self
+            .read_file(&path.split('/').collect::<Vec<_>>(), s_ctx)
+            .await?;
         let key = DocumentID {
             tag_ids: Self::register_tags(tag_ids, meta.tags()),
             path,
@@ -156,7 +166,11 @@ impl Index {
         }
     }
 
-    async fn read_file(&self, path: &[&str], s_ctx: &SiteContextShared) -> Option<(PageMeta, String)> {
+    async fn read_file(
+        &self,
+        path: &[&str],
+        s_ctx: &SiteContextShared,
+    ) -> Option<(PageMeta, String)> {
         let content = s_ctx.file_service.get_content(path).await?;
         match content {
             Content::HtmlHtml { html, meta } => {

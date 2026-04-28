@@ -23,17 +23,22 @@ impl DocsRouter {
     pub async fn route(
         &self,
         path: &[&str],
+        request_path: &str,
         s_ctx: &SiteContextShared,
     ) -> std::io::Result<Option<String>> {
         match s_ctx.file_service.get_content(path).await {
             Some(Content::HtmlHtml { html, meta }) => Ok(Some(
-                TemplateService::render_common_html(html, meta, path, s_ctx),
+                TemplateService::render_common_html(html, meta, path, request_path, s_ctx),
             )),
             Some(Content::MdHtml { html, meta }) => Ok(Some(TemplateService::render_common_page(
-                html, meta, path, s_ctx,
+                html,
+                meta,
+                path,
+                request_path,
+                s_ctx,
             ))),
             Some(Content::DirListing(dir)) => {
-                let html = self.render_dir(dir, path, s_ctx).await?;
+                let html = self.render_dir(dir, path, request_path, s_ctx).await?;
                 Ok(Some(html))
             }
             Some(Content::BinaryContent) => Ok(None),
@@ -48,9 +53,13 @@ impl DocsRouter {
         &self,
         dir: Vec<DirEntryInfo>,
         path: &[&str],
+        request_path: &str,
         s_ctx: &SiteContextShared,
     ) -> std::io::Result<String> {
-        if let Some(rendered_html) = self.try_render_directory_index_html(path, s_ctx).await {
+        if let Some(rendered_html) = self
+            .try_render_directory_index_html(path, request_path, s_ctx)
+            .await
+        {
             return Ok(rendered_html);
         }
 
@@ -71,19 +80,26 @@ impl DocsRouter {
             None => (Self::default_directory_meta(&path_segments), listing_html),
         };
 
-        Ok(TemplateService::render_common_page(body, meta, path, s_ctx))
+        Ok(TemplateService::render_common_page(
+            body,
+            meta,
+            path,
+            request_path,
+            s_ctx,
+        ))
     }
 
     async fn try_render_directory_index_html(
         &self,
         path: &[&str],
+        request_path: &str,
         s_ctx: &SiteContextShared,
     ) -> Option<String> {
         let path_with_index = Self::path_with_child(path, "index.html");
         match s_ctx.file_service.get_content(&path_with_index).await? {
-            Content::HtmlHtml { html, meta } | Content::MdHtml { html, meta } => {
-                Some(TemplateService::render_common_html(html, meta, path, s_ctx))
-            }
+            Content::HtmlHtml { html, meta } | Content::MdHtml { html, meta } => Some(
+                TemplateService::render_common_html(html, meta, path, request_path, s_ctx),
+            ),
             _ => None,
         }
     }
