@@ -9,7 +9,7 @@ pub mod state;
 pub mod utils;
 pub mod web;
 
-pub const DOMAIN: &str = "dev.371tti.net";
+pub const DOMAIN: &str = "371tti.net";
 
 pub const TASK_SCHEDULER_WORKER_COUNT: usize = 4;
 
