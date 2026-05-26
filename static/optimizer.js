@@ -2,10 +2,7 @@ class SpeculationRulesManager {
     constructor() {
         this.enabled = HTMLScriptElement.supports?.("speculationrules") ??
             false;
-        this.rules = {
-            prerender: [],
-            prefetch: [],
-        };
+        this.rules = { prefetch: [] };
         this.scriptEl = null;
     }
 
@@ -30,18 +27,8 @@ class SpeculationRulesManager {
         this.scriptEl = newScriptEl;
     }
 
-    addPrerenderRule(rule) {
-        this.rules.prerender.push(rule);
-        this.#update();
-    }
-
     addPrefetchRule(rule) {
         this.rules.prefetch.push(rule);
-        this.#update();
-    }
-
-    clearPrerender() {
-        this.rules.prerender = [];
         this.#update();
     }
 
@@ -51,7 +38,7 @@ class SpeculationRulesManager {
     }
 
     clearAll() {
-        this.rules = { prerender: [], prefetch: [] };
+        this.rules = { prefetch: [] };
         this.#update();
     }
 
@@ -83,8 +70,8 @@ class PreloadController {
 
     setLevel(level) {
         const n = parseInt(level, 10);
-        if (Number.isNaN(n) || n < 0 || n > 3) {
-            console.log("Invalid preload level:", level, "(expected 0,1,2,3)");
+        if (Number.isNaN(n) || n < 0 || n > 2) {
+            console.log("Invalid preload level:", level, "(expected 0,1,2)");
             return;
         }
         this.level = n;
@@ -100,11 +87,10 @@ class PreloadController {
     handleCommand(args) {
         const raw = args && args[0] ? String(args[0]) : "";
         if (!raw) {
-            console.log("Usage: Config preload <0|1|2|3>");
-            console.log("  0: off (no prerender/prefetch)");
-            console.log("  1: moderate (same-origin, moderate)");
-            console.log("  2: local origin all (same-origin, eager)");
-            console.log("  3: everything (same-origin eager + prefetch https)");
+            console.log("Usage: Config preload <0|1|2>");
+            console.log("  0: off (no prefetch)");
+            console.log("  1: moderate prefetch (same-origin, moderate)");
+            console.log("  2: aggressive prefetch (same-origin eager + https links)");
             return;
         }
         this.setLevel(raw);
@@ -118,19 +104,13 @@ class PreloadController {
             case 0:
                 break;
             case 1:
-                window.SpeculationRules.addPrerenderRule({
+                window.SpeculationRules.addPrefetchRule({
                     where: { href_matches: "/*" },
                     eagerness: "moderate",
                 });
                 break;
             case 2:
-                window.SpeculationRules.addPrerenderRule({
-                    where: { href_matches: "/*" },
-                    eagerness: "eager",
-                });
-                break;
-            case 3:
-                window.SpeculationRules.addPrerenderRule({
+                window.SpeculationRules.addPrefetchRule({
                     where: { href_matches: "/*" },
                     eagerness: "eager",
                 });
@@ -145,7 +125,7 @@ class PreloadController {
     #loadLevel() {
         const saved = parseInt(localStorage.getItem("preloadLevel") || "1", 10);
         if (Number.isNaN(saved)) return 1;
-        return Math.min(Math.max(saved, 0), 3);
+        return Math.min(Math.max(saved, 0), 2);
     }
 }
 
@@ -170,7 +150,7 @@ window.RustyDocCommands = window.RustyDocCommands || {
 window.RustyDocCommands.register({
     cmd: "Config preload",
     desc:
-        "Configure prerender/prefetch level (0:off, 1:moderate, 2:local, 3:all)",
+        "Configure prefetch level (0:off, 1:moderate, 2:aggressive)",
     action: (args) => preloadController.handleCommand(args),
     getCandidates: (parts) => {
         if (
@@ -180,10 +160,9 @@ window.RustyDocCommands.register({
             return [];
         }
         const options = [
-            { level: 0, label: "Off (no prerender/prefetch)" },
-            { level: 1, label: "Moderate (same-origin, moderate)" },
-            { level: 2, label: "Local origin all (same-origin, eager)" },
-            { level: 3, label: "Everything (eager + prefetch https)" },
+            { level: 0, label: "Off (no prefetch)" },
+            { level: 1, label: "Moderate prefetch (same-origin, moderate)" },
+            { level: 2, label: "Aggressive prefetch (same-origin eager + https links)" },
         ];
         const currentLevel = preloadController.getLevel();
         return options.map((opt) => ({

@@ -1,4 +1,44 @@
 const THEMES = {
+    "low-contrast-dark": {
+        "--color-bg-0": "#121212",
+        "--color-bg-1": "#1a1a1a",
+        "--color-bg-2": "#282828",
+        "--color-text-0": "#999999",
+        "--color-text-1": "#cccccc",
+        "--color-accent-0": "#6f7a95",
+        "--color-accent-1": "#a9b7e6",
+    },
+    
+    "low-contrast-white": {
+        "--color-bg-0": "#e8e8e8",
+        "--color-bg-1": "#dddddd",
+        "--color-bg-2": "#cfcfcf",
+        "--color-text-0": "#5f5f5f",
+        "--color-text-1": "#2f2f2f",
+        "--color-accent-0": "#6f7890",
+        "--color-accent-1": "#4d5d8a"
+    },
+    
+    paper: {
+        "--color-bg-0": "#fbf7f1",
+        "--color-bg-1": "#f0e8dc",
+        "--color-bg-2": "#e0d2bf",
+        "--color-text-0": "#5a4b3c",
+        "--color-text-1": "#201812",
+        "--color-accent-0": "#a46a3f",
+        "--color-accent-1": "#7d4a2a",
+    },
+    
+    "deep-dark": {
+        "--color-bg-0": "#000000",
+        "--color-bg-1": "#0a0c10",
+        "--color-bg-2": "#141826",
+        "--color-text-0": "#b5bccb",
+        "--color-text-1": "#f3f6ff",
+        "--color-accent-0": "#6f7a95",
+        "--color-accent-1": "#a9b7e6",
+    },
+
     coffee: {
         "--color-bg-0": "#12100e",
         "--color-bg-1": "#1b1612",
@@ -69,35 +109,6 @@ const THEMES = {
         "--color-accent-1": "#374151",
     },
 
-    paper: {
-        "--color-bg-0": "#fbf7f1",
-        "--color-bg-1": "#f0e8dc",
-        "--color-bg-2": "#e0d2bf",
-        "--color-text-0": "#5a4b3c",
-        "--color-text-1": "#201812",
-        "--color-accent-0": "#a46a3f",
-        "--color-accent-1": "#7d4a2a",
-    },
-
-    "deep-dark": {
-        "--color-bg-0": "#000000",
-        "--color-bg-1": "#0a0c10",
-        "--color-bg-2": "#141826",
-        "--color-text-0": "#b5bccb",
-        "--color-text-1": "#f3f6ff",
-        "--color-accent-0": "#6f7a95",
-        "--color-accent-1": "#a9b7e6",
-    },
-
-    "low-contrast-dark": {
-        "--color-bg-0": "#121212",
-        "--color-bg-1": "#1a1a1a",
-        "--color-bg-2": "#282828",
-        "--color-text-0": "#999999",
-        "--color-text-1": "#cccccc",
-        "--color-accent-0": "#6f7a95",
-        "--color-accent-1": "#a9b7e6",
-    },
 };
 
 function normalizeRadiusMm(raw) {

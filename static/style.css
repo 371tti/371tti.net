@@ -100,7 +100,6 @@
 }
 
 html {
-    view-transition-name: vt;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -699,13 +698,17 @@ a.heading-link:focus::after {
     }
 }
 
-::view-transition-old(expand),
-::view-transition-new(vt) {
+::view-transition {
+    background-color: var(--color-bg-0);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
     animation-duration: var(--transition-duration);
     animation-timing-function: var(--transition-timing);
 }
 
-::view-transition-new(vt) {
+::view-transition-new(root) {
     animation: expandGrow var(--transition-duration) var(--transition-timing) both;
 }
 
