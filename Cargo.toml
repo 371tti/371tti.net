@@ -51,6 +51,7 @@ resvg = "0.47.0"
 memmap2 = "0.9"
 reqwest = { version = "0.13.3", features = ["blocking", "rustls"] }
 zip = "8.6"
+tylax = "0.3.0"
 
 [profile.release]
 opt-level = 3
